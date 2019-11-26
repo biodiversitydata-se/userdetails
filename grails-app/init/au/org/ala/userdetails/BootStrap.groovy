@@ -3,11 +3,19 @@ package au.org.ala.userdetails
 import au.org.ala.userdetails.Role
 
 class BootStrap {
+    def messageSource
 
     def customObjectMarshallers
 
     def init = { servletContext ->
         log.info("Running bootstrap queries")
+
+        messageSource.setBasenames(
+                "file:///var/opt/atlas/i18n/userdetails/messages",
+                "file:///opt/atlas/i18n/userdetails/messages",
+                "WEB-INF/grails-app/i18n/messages",
+                "classpath:messages"
+        )
 
         customObjectMarshallers.register()
         addRoles()

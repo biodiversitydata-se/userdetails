@@ -10,7 +10,7 @@
 <div class="row">
     <h1><g:message code="flickr.fail.link.failed" /></h1>
     <p class="well text-danger">
-        <g:message code="flickr.fail.description" args="[grailsApplication.config.supportEmail, grailsApplication.config.supportEmail]" />
+        <g:message code="flickr.fail.description" args="[grailsApplication.config.supportEmail]" />
     </p>
 </div>
 </body>

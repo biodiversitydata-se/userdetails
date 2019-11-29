@@ -62,19 +62,19 @@
         <div class="col-md-8 col-md-push-4">
             <div class="well">
                 <g:if test="${!edit}">
-                    <h2>Do I need to create an account?</h2>
+                    <h2><g:message code="create.account.do.i.need.account" /></h2>
 
-                    <p>If you already have an account with an institution that participates in the Australian Access Federation or an account with Google, Facebook or Twitter we highly recommend login using it instead as that will:
+                    <p><g:message code="create.account.motivation.intro" />
 
                     <ul>
-                    <li>Save you typing the basic information like your name and email address that you already have with one of those accounts.
-                    <li>You don't have to set and remember yet another password.
-                    <li>Your account will be activated without going through verification emails
-                    <li>Overall you will save time
+                    <li><g:message code="create.account.motivation.1" />
+                    <li><g:message code="create.account.motivation.2" />
+                    <li><g:message code="create.account.motivation.3" />
+                    <li><g:message code="create.account.motivation.4" />
                     </ul>
-                    <p>Of course if you don't have an account with such providers or prefer to use a different email you still can create an account with us by filling in the information on the left.
+                    <p><g:message code="create.account.motivation.footer" />
                 </g:if>
-                <h2>Your account</h2>
+                <h2><g:message code="create.account.your.account.title" /></h2>
                 <p>
                     <g:message code="create.account.your.email.will.be.your.account.login" args="[grailsApplication.config.skin.orgNameShort]" />
                 </p>

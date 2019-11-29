@@ -10,7 +10,7 @@
 <div class="row">
     <h1><g:message code="inaturalist.fail.link" /></h1>
     <p class="well text-danger">
-        <g:message code="inaturalist.fail.description" args="[grailsApplication.config.supportEmail, grailsApplication.config.supportEmail]" />
+        <g:message code="inaturalist.fail.description" args="[grailsApplication.config.supportEmail]" />
     </p>
 </div>
 </body>

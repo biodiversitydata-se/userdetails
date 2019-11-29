@@ -24,36 +24,36 @@
         </div>
 
         <div class="form-group">
-            <label for="organisation">Organisation</label>
+            <label for="organisation"><g:message code="create.account.organisation" /></label>
             <input id="organisation" name="organisation" type="text" class="form-control" value="${props?.organisation}"/>
         </div>
 
         <div class="form-group">
-            <label for="country">Country</label>
+            <label for="country"><g:message code="create.account.country" /></label>
             <g:select id="country" name="country"
                       class="form-control chosen-select"
                       value="${props?.country ?: 'AU'}"
                       keys="${l.countries()*.isoCode}"
                       from="${l.countries()*.name}"
-                      noSelection="['':'-Choose your country-']"
+                      noSelection="${['': message(code:'create.account.choose.your.country')]}"
                       valueMessagePrefix="ala.country."
             />
         </div>
 
         <div class="form-group">
-            <label for="state">State / province</label>
+            <label for="state"><g:message code="create.account.state.province" /></label>
             <g:select id="state" name="state"
                       class="form-control chosen-select"
                       value="${props?.state}"
                       keys="${l.states(country: props?.country ?: 'AU')*.isoCode}"
                       from="${l.states(country: props?.country ?: 'AU')*.name}"
-                      noSelection="['':'-Choose your state-']"
+                      noSelection="${['': message(code:'create.account.choose.your.state')]}"
                       valueMessagePrefix="ala.state."
             />
         </div>
 
         <div class="form-group">
-            <label for="city">City</label>
+            <label for="city"><g:message code="create.account.city" /></label>
             <input id="city" name="city" type="text" class="form-control" value="${props?.city}" />
         </div>
 
@@ -62,7 +62,7 @@
     <div class="fieldcontain ${hasErrors(bean: userInstance, field: 'activated', 'error')} ">
         <div class="checkbox">
             <label>
-                <g:checkBox name="activated" value="${userInstance?.activated}"/> Activated
+                <g:checkBox name="activated" value="${userInstance?.activated}"/> <g:message code="user.form.activated" />
             </label>
         </div>
     </div>
@@ -70,7 +70,7 @@
 <div class="fieldcontain ${hasErrors(bean: userInstance, field: 'locked', 'error')} ">
     <div class="checkbox">
         <label>
-            <g:checkBox name="locked" value="${userInstance?.locked}"/> Locked
+            <g:checkBox name="locked" value="${userInstance?.locked}"/> <g:message code="user.form.locked" />
         </label>
     </div>
 </div>

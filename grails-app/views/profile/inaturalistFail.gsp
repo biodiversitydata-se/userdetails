@@ -3,15 +3,14 @@
 <head>
     <meta name="layout" content="${grailsApplication.config.skin.layout}"/>
     <meta name="section" content="home"/>
-    <title>My profile | ${grailsApplication.config.skin.orgNameLong}</title>
+    <title><g:message code="userdetails.my.profile" /> | ${grailsApplication.config.skin.orgNameLong}</title>
     <asset:stylesheet src="application.css" />
 </head>
 <body>
 <div class="row">
-    <h1>iNaturalist account link failed</h1>
+    <h1><g:message code="inaturalist.fail.link" /></h1>
     <p class="well text-danger">
-        We were unable to link to your iNaturalist account.
-        If this problem persists, please email <a href="mailto:${grailsApplication.config.supportEmail}">${grailsApplication.config.supportEmail}</a>
+        <g:message code="inaturalist.fail.description" args="[grailsApplication.config.supportEmail, grailsApplication.config.supportEmail]" />
     </p>
 </div>
 </body>

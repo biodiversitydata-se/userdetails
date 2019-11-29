@@ -31,7 +31,7 @@
 
 					<g:sortableColumn property="description" title="${message(code: 'role.description.label', default: 'Description')}" />
 
-					<th>Actions</th>
+					<th><g:message code="user.list.actions" /></th>
 
 				</tr>
 				</thead>

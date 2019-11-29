@@ -5,98 +5,96 @@
     <meta name="layout" content="${grailsApplication.config.skin.layout}"/>
     <meta name="section" content="home"/>
     <meta name="breadcrumb" content="My Profile" />
-    <title>My profile | ${grailsApplication.config.skin.orgNameLong}</title>
+    <title><g:message code="userdetails.my.profile" /> | ${grailsApplication.config.skin.orgNameLong}</title>
     <asset:stylesheet src="application.css" />
 </head>
 <body>
 
 <div class="row">
     <div class="col-md-6">
-        <h1>Hello ${user.firstName} !</h1>
+        <h1><g:message code="myprofile.hello" args="[user.firstName]" /></h1>
         <ul class="userdetails-menu">
             <li>
                 <g:link controller="registration" action="editAccount">
-                     Update your profile
+                     <g:message code="myprofile.update" />
                 </g:link>
             </li>
             <li>
                 <a href="${grailsApplication.config.sightings.url}">
-                     View your timeline of sightings recorded through the Atlas
+                     <g:message code="myprofile.your.timeline" />
                 </a>
             </li>
             <li>
                 <a href="${grailsApplication.config.spatial.url}">
-                    Tabulate and graph all functions you've used in the Spatial Portal
+                    <g:message code="myprofile.spatial.portal" />
                 </a>
             </li>
             <li>
                 <a href="${grailsApplication.config.volunteer.url}">
-                    View your tasks on the DigiVol Portal
+                    <g:message code="myprofile.tasks.digivol" />
                 </a>
             </li>
             <li>
                 <a href="${grailsApplication.config.lists.url}">
-                    View your uploaded species lists
+                    <g:message code="myprofile.uploaded.species.lists" />
                 </a>
             </li>
             <li>
                 <a href="${grailsApplication.config.biocache.search.url}%22${user.id}%22">
-                    View records you have annotated
+                    <g:message code="myprofile.view.records.you.annotated" />
                 </a>
             </li>
             <li>
                 <a href="${grailsApplication.config.biocache.myDownloads.url}">
-                    View your downloaded records
+                    <g:message code="myprofile.your.downloads" />
                 </a>
             </li>
             <li>
                 <a href="${grailsApplication.config.alerts.url}">
-                    Manage your alerts
+                    <g:message code="myprofile.your.alerts" />
                 </a>
             </li>
             <li>
                 <g:link controller="registration" action="forgottenPassword">
-                    Reset my password
+                    <g:message code="userdetails.index.reset.password" />
                 </g:link>
             </li>
 
             <g:if test="${isAdmin}">
             <li>
                 <g:link controller="admin">
-                    Admin tools
+                    <g:message code="myprofile.admin.tools" />
                 </g:link>
             </li>
             </g:if>
         </ul>
 
-        <h3>External site linkages</h3>
+        <h3><g:message code="myprofile.external.site.linkages" /></h3>
         <g:if test="${Holders.config.getProperty('oauth.providers.flickr.enabled', Boolean, true)}">
         <div class="well well-small">
-            <h4>Flickr</h4>
+            <h4><g:message code="myprofile.flickr.title" /></h4>
             <g:if test="${props.flickrUsername}">
-                <strong>You have connected to flickr account with username:
-                    <a href="http://www.flickr.com/photos/${props.flickrId}">${props.flickrUsername}</a>.
+                <strong><g:message code="myprofile.flickr.connected" args="[props.flickrId, props.flickrUsername]" />
                 </strong>
                 <p>
-                Linking with Flickr enables images shared through
+                <g:message code="myprofile.linking.with.flickr.enables.images" />
 
-                <a href="http://www.flickr.com/groups/encyclopedia_of_life/">Flickr EOL Group</a>
+                <a href="http://www.flickr.com/groups/encyclopedia_of_life/"><g:message code="myprofile.flickr.eol.group" /></a>
 
-                to be linked to your Atlas account so they can be attributed to you.
+                <g:message code="myprofile.to.be.linked.to.your.atlas" />
                 </p>
 
 
 
-                <g:link controller="profile" class="btn btn-default" action="removeLink" params="[provider: 'flickr']">Remove link to flickr account</g:link>
+                <g:link controller="profile" class="btn btn-default" action="removeLink" params="[provider: 'flickr']"><g:message code="myprofile.remove.link.to.flickr.account" /></g:link>
             </g:if>
             <g:else>
                 <p>
-                Linking with Flick enables images shared through Flickr to be linked to your Atlas account
-                so they can be attributed to you.
+                <g:message code="myprofile.flicker.link.description" />
                 </p>
 
                 <span class="btn btn-default">
-                    <oauth:connect provider="flickr">Link to my Flickr account</oauth:connect>
+                    <oauth:connect provider="flickr"><g:message code="myprofile.link.to.my.flickr.account" /></oauth:connect>
                 </span>
             </g:else>
         </div>
@@ -105,7 +103,7 @@
         <div class="well well-small">
             <h4>${grailsApplication.config.inaturalist.name}</h4>
             <g:if test="${props.inaturalistId}">
-                <strong>You have connected to ${grailsApplication.config.inaturalist.name} with the username:
+                <strong><g:message code="myprofile.inat.you.have.connected.with.user" args="[grailsApplication.config.inaturalist.name]" />
                     <u:link baseProperty="inaturalist.baseUrl" paths="['people', props.inaturalistId]">${props.inaturalistUsername}</u:link>
                 </strong>
                 <p>
@@ -113,15 +111,15 @@
                     <u:link baseProperty="biocache.search.baseUrl" params='[q: grailsApplication.config.inaturalist.searchQuery + " OR " + grailsApplication.config.inaturalist.sightingsSearchQuery, fq: "alau_user_id:${props.inaturalistUsername} OR alau_user_id:\"${user.id}\""]'>View my iNaturalist observations and my ${grailsApplication.config.skin.orgNameShort} Sightings in ${grailsApplication.config.skin.orgNameShort}</u:link>
                 </p>
 
-                <g:link controller="profile" class="btn btn-default" action="removeLink" params="[provider: 'inaturalist']">Remove link to iNaturalist account</g:link>
+                <g:link controller="profile" class="btn btn-default" action="removeLink" params="[provider: 'inaturalist']"><g:message code="myprofile.remove.link.to.inaturalist" /></g:link>
             </g:if>
             <g:else>
                 <p>
-                    Linking your ALA account with iNaturalist will make it easier to find your observations in ALA.
+                    <g:message code="myprofile.inaturalists.link.description" args="[grailsApplication.config.skin.orgNameShort, grailsApplication.config.skin.orgNameShort]" />
                 </p>
 
                 <span class="btn btn-default">
-                    <oauth:connect provider="inaturalist">Link to my iNaturalist account</oauth:connect>
+                    <oauth:connect provider="inaturalist"><g:message code="myprofile.link.to.my.inaturalist" /></oauth:connect>
                 </span>
             </g:else>
         </div>

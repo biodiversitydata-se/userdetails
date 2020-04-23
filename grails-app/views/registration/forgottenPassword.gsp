@@ -3,7 +3,7 @@
 <head>
     <meta name="layout" content="${grailsApplication.config.skin.layout}"/>
     <meta name="section" content="home"/>
-    <title>Reset my password</title>
+    <title><g:message code="forgotten.password.title" /></title>
     <asset:stylesheet src="application.css" />
 </head>
 <body>
@@ -15,37 +15,36 @@
 
             <g:if test="${captchaInvalid}">
             <p class="well text-danger">
-                Your input did not match the text in the image. Please try again.
+                <g:message code="forgotten.password.captcha.fail" />
             </p>
             </g:if>
             <g:if test="${invalidEmail}">
             <p class="well text-danger">
-                We don't recognise that email address.
+                <g:message code="forgotten.password.don.t.recognise.email" />
             </p>
             </g:if>
 
             <g:form action="startPasswordReset" method="POST" onsubmit="submitResetBtn.disabled = true; return true;">
                 <div class="form-group">
-                    <label for="email">Your email address</label>
+                    <label for="email"><g:message code="forgotten.password.email" /></label>
                     <input id="email" name="email" type="text" class="form-control" value="${params.email ?: email}"/>
                 </div>
 
                 <img src="${createLink(controller: 'simpleCaptcha', action: 'captcha')}"/>
                 <div class="form-group">
-                    <label for="captcha">Type the letters above in the box below:</label>
+                    <label for="captcha"><g:message code="forgotten.password.captcha" /></label>
                     <g:textField name="captcha" class="form-control"/>
                 </div>
 
                 <br/>
-                <g:submitButton id="submitResetBtn" class="btn btn-primary" name="submit" value="Send Password Reset Link"/>
+                <g:submitButton id="submitResetBtn" class="btn btn-primary" name="submit" value="${message(code:'forgotten.password.reset.link')}"/>
             </g:form>
         </div>
         <div class="col-md-6">
             <p class="well">
-                When you click the Send Password Reset Link button, a one-time link will be emailed to your
-                registered email address, allowing you to enter a new password.
+                <g:message code="forgotten.password.description.send.pass" />
                 <br/>
-                The link will be valid for 48 hours.
+                <g:message code="forgotten.password..valid.hours" />
             </p>
         </div>
 

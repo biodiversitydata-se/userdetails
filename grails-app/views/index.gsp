@@ -3,7 +3,7 @@
 <head>
     <meta name="layout" content="${grailsApplication.config.skin.layout}"/>
     <meta name="section" content="home"/>
-    <title>${grailsApplication.config.skin.orgNameShort} accounts</title>
+    <title><g:message code="userdetails.index.accounts" args="[grailsApplication.config.skin.orgNameShort]" /></title>
     <asset:stylesheet src="application.css" />
 </head>
 <body>
@@ -19,17 +19,17 @@
             </div>
         </g:if>
 
-        <h1>${grailsApplication.config.skin.orgNameShort} accounts</h1>
+        <h1><g:message code="userdetails.index.accounts" args="[grailsApplication.config.skin.orgNameShort]" /></h1>
         <ul class="userdetails-menu">
-            <li><g:link controller="registration" action="createAccount">Create a new account</g:link></li>
-            <li><g:link controller="registration" action="forgottenPassword">Reset my password</g:link></li>
-            <li><g:link controller="profile">My profile</g:link></li>
+            <li><g:link controller="registration" action="createAccount"><g:message code="userdetails.index.create.new.account" /></g:link></li>
+            <li><g:link controller="registration" action="forgottenPassword"><g:message code="userdetails.index.reset.password" /></g:link></li>
+            <li><g:link controller="profile"><g:message code="userdetails.index.my.profile" /></g:link></li>
         </ul>
 
     </div>
     <auth:ifAllGranted roles="ROLE_ADMIN">
         <div style="color:white;" class="pull-right">
-            <g:link style="color:#DDDDDD; font-weight:bold;" controller="admin">Admin tools (${grailsApplication.config.skin.orgNameShort} administrators only)</g:link>
+            <g:link style="color:#DDDDDD; font-weight:bold;" controller="admin"><g:message code="userdetails.index.admin.tools" args="[grailsApplication.config.skin.orgNameShort]" /></g:link>
         </div>
     </auth:ifAllGranted>
 </div>

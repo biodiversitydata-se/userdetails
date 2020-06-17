@@ -5,7 +5,6 @@ import au.org.ala.recaptcha.RecaptchaResponse
 import grails.testing.gorm.DataTest
 import grails.testing.web.controllers.ControllerUnitTest
 import org.grails.web.servlet.mvc.SynchronizerTokensHolder
-import retrofit2.Response
 import retrofit2.mock.Calls
 
 //@Mock([User, Role, UserRole, UserProperty])
@@ -15,6 +14,7 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
     def userService = Mock(UserService)
     def emailService = Mock(EmailService)
     def recaptchaClient = Mock(RecaptchaClient)
+
     void setup() {
         controller.passwordService = passwordService
         controller.userService = userService
@@ -28,9 +28,12 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
 
     void "A new password must be supplied"() {
         setup:
+        String authKey = UUID.randomUUID().toString()
+        User user = createUser(authKey)
+        def calculatedUserName = 'test'
         request.method = 'POST'
-        params.userId = Long.toString(1)
-        params.authKey = "test"
+        params.userId = user.id
+        params.authKey = authKey
 
         when:
         params.password = ""
@@ -38,63 +41,111 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
         controller.updatePassword()
 
         then:
-        model.errors.getFieldError("password") != null
+        1 * passwordService.validatePassword(calculatedUserName, "") >> [valid: false, metadata: null, details: null, entropy: 0]
+        0 * _ // no other interactions
+        model.errors.getFieldError("password").codes.any { c -> c.contains('.blank.')}
         view == '/registration/passwordReset'
     }
 
-    void "The new password must be at least 6 characters long"() {
+    void "The new password must be at least the minimum required length"() {
         setup:
+        String authKey = UUID.randomUUID().toString()
+        String password = "12345"
+        User user = createUser(authKey)
+        def calculatedUserName = 'test'
         request.method = 'POST'
-        params.userId = Long.toString(1)
-        params.authKey = "test"
+        params.userId = user.id
+        params.authKey = authKey
 
         when:
-        params.password = "12345"
+        params.password = password
+        params.reenteredPassword = password
         controller.updatePassword()
 
         then:
-        model.errors.getFieldError("password") != null
+        1 * passwordService.validatePassword(calculatedUserName, password) >> [valid: false, metadata: null, details: null, entropy: 10]
+        0 * _ // no other interactions
+        model.errors.getFieldError("password").codes.any { c -> c.contains('.minSize.notmet.')}
         view == '/registration/passwordReset'
     }
 
-    void "The new re-entered password must be the same as the original"() {
+    void "Password is not updated when the re-entered password does not match"() {
         setup:
+        String authKey = UUID.randomUUID().toString()
+        String password = "123456789"
+        User user = createUser(authKey)
         request.method = 'POST'
-        params.userId = Long.toString(1)
-        params.authKey = "test"
+        params.userId = user.id
+        params.authKey = authKey
 
         when:
-        params.password = "123456"
-        params.reenteredPassword = "12345"
+        params.password = password
+        params.reenteredPassword = "123456543"
         controller.updatePassword()
 
         then:
-        model.errors.getFieldError("reenteredPassword") != null
+        1 * passwordService.validatePassword(_, password) >> [valid: true, metadata: null, details: null, entropy: 10]
+        0 * _ // no other interactions
+        model.errors.getFieldError("reenteredPassword").codes.any { c -> c.contains('.validator.invalid')}
+        model.passwordMatchFail
+        view == '/registration/passwordReset'
+    }
+
+    void "Password is not updated when the password validation fails"() {
+        setup:
+        String authKey = UUID.randomUUID().toString()
+        String password = "AKSdkffhMf"
+        User user = createUser(authKey)
+        def calculatedUserName = 'test'
+        request.method = 'POST'
+        params.userId = user.id
+        params.authKey = authKey
+
+        when:
+        params.password = password
+        params.reenteredPassword = password
+        controller.updatePassword()
+
+        then:
+        1 * passwordService.validatePassword(calculatedUserName, password) >> [
+                valid  : false, metadata: null, entropy: 10,
+                details: [[errorCodes: ['INSUFFICIENT_CHARACTERISTICS'], values: ['2', '3', '4'] as Object[]]]]
+        0 * _ // no other interactions
+        model.errors.getFieldError("password").codes.any { c -> c.contains('.insufficient_characteristics')}
+        model.passwordMatchFail
         view == '/registration/passwordReset'
     }
 
     void "Duplicate submits of the password form are directed to a page explaining what has happened"() {
         setup:
+        String authKey = UUID.randomUUID().toString()
+        String password = "password1"
+        User user = createUser(authKey)
+        def calculatedUserName = 'test'
         request.method = 'POST'
-        params.userId = Long.toString(1)
-        params.authKey = "test"
+        params.userId = user.id
+        params.authKey = authKey
 
         when:
-        params.password = "123456"
-        params.reenteredPassword = "123456"
+        params.password = password
+        params.reenteredPassword = password
 
         // Note that duplicate submit error is the default behaviour.
         controller.updatePassword()
 
         then:
+        1 * passwordService.validatePassword(calculatedUserName, password) >> [valid: true, metadata: null, details: null, entropy: 10]
+        0 * _ // no other interactions
+        !model.errors
         response.redirectedUrl == '/registration/duplicateSubmit'
     }
 
-    void "A successful submission will result in the users password being reset"() {
+    void "A successful submission will result in the password being reset"() {
         setup:
-        String authKey = "test"
-        String password = "password"
+        String authKey = UUID.randomUUID().toString()
+        String password = "password1"
         User user = createUser(authKey)
+        def calculatedUserName = 'test'
         request.method = 'POST'
         params.userId = Long.toString(1)
         params.authKey = authKey
@@ -113,15 +164,23 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
         controller.updatePassword()
 
         then:
+        1 * passwordService.validatePassword(calculatedUserName, password) >> [valid: true, metadata: null, details: null, entropy: 10]
         1 * passwordService.resetPassword(user, password)
         1 * userService.clearTempAuthKey(user)
+        0 * _ // no other interactions
         response.redirectedUrl == '/registration/passwordResetSuccess'
     }
 
     def "Account is registered when a recaptcha response is supplied and recaptcha secret key is defined"() {
         setup:
-        def secretKey = 'xyz'
-        grailsApplication.config.recaptcha.secretKey = secretKey
+        def password = 'password'
+        def email = 'test@example.org'
+        def calculatedUserName = 'test'
+        def authKey = '987'
+        def recaptchaSecretKey = 'xyz'
+        def recaptchaResponseKey = '123'
+        def remoteAddressIp = '127.0.0.1'
+        grailsApplication.config.recaptcha.secretKey = recaptchaSecretKey
 
         // This is to allow the submitted token to pass validation.  Failure to do this will result in the invalidToken block being used.
         def tokenHolder = SynchronizerTokensHolder.store(session)
@@ -130,30 +189,38 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
         params[SynchronizerTokensHolder.TOKEN_KEY] = tokenHolder.generateToken(params[SynchronizerTokensHolder.TOKEN_URI])
 
         when:
-        params.email = 'test@example.org'
+        params.email = email
         params.firstName = 'Test'
         params.lastName = 'Test'
         params['organisation'] = 'Org'
         params.country = 'AU'
         params.state = 'ACT'
         params.city = 'Canberra'
-        params.password = 'password'
-        params.reenteredPassword = 'password'
-        params['g-recaptcha-response'] = '123'
-        request.remoteAddr = '127.0.0.1'
+        params.password = password
+        params.reenteredPassword = password
+        params['g-recaptcha-response'] = recaptchaResponseKey
+        request.remoteAddr = remoteAddressIp
 
         controller.register()
 
         then:
-        1 * recaptchaClient.verify(secretKey, '123', '127.0.0.1') >> { Calls.response(new RecaptchaResponse(true, '2019-09-27T16:06:00Z', 'test-host', [])) }
-        1 * userService.registerUser(_) >> { def user = new User(params); user.tempAuthKey = '123'; user }
-        1 * passwordService.resetPassword(_, 'password')
-        1 * emailService.sendAccountActivation(_, '123')
+        1 * recaptchaClient.verify(recaptchaSecretKey, recaptchaResponseKey, remoteAddressIp) >> { Calls.response(new RecaptchaResponse(true, '2019-09-27T16:06:00Z', 'test-host', [])) }
+        1 * userService.isEmailRegistered(email) >> false
+        1 * passwordService.validatePassword(calculatedUserName, password) >> [valid: true, metadata: null, details: null, entropy: 10]
+        1 * userService.registerUser(_) >> { def user = new User(params); user.tempAuthKey = authKey; user }
+        1 * passwordService.resetPassword(_, password)
+        1 * emailService.sendAccountActivation(_, authKey)
+        0 * _ // no other interactions
         response.redirectedUrl == '/registration/accountCreated'
     }
 
     def "Account is registered when no recaptcha secret key is defined"() {
         setup:
+        def password = 'password'
+        def email = 'test@example.org'
+        def calculatedUserName = 'test'
+        def authKey = '987'
+        def remoteAddressIp = '127.0.0.1'
         grailsApplication.config.recaptcha.secretKey = ''
 
         // This is to allow the submitted token to pass validation.  Failure to do this will result in the invalidToken block being used.
@@ -163,28 +230,31 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
         params[SynchronizerTokensHolder.TOKEN_KEY] = tokenHolder.generateToken(params[SynchronizerTokensHolder.TOKEN_URI])
 
         when:
-        params.email = 'test@example.org'
+        params.email = email
         params.firstName = 'Test'
         params.lastName = 'Test'
         params['organisation'] = 'Org'
         params.country = 'AU'
         params.state = 'ACT'
         params.city = 'Canberra'
-        params.password = 'password'
-        params.reenteredPassword = 'password'
-        request.remoteAddr = '127.0.0.1'
+        params.password = password
+        params.reenteredPassword = password
+        request.remoteAddr = remoteAddressIp
 
         controller.register()
 
         then:
         0 * recaptchaClient.verify(_, _, _)
-        1 * userService.registerUser(_) >> { def user = new User(params); user.tempAuthKey = '123'; user }
-        1 * passwordService.resetPassword(_, 'password')
-        1 * emailService.sendAccountActivation(_, '123')
+        1 * userService.isEmailRegistered(email) >> false
+        1 * passwordService.validatePassword(calculatedUserName, password) >> [valid: true, metadata: null, details: null, entropy: 10]
+        1 * userService.registerUser(_) >> { def user = new User(params); user.tempAuthKey = authKey; user }
+        1 * passwordService.resetPassword(_, password)
+        1 * emailService.sendAccountActivation(_, authKey)
+        0 * _ // no other interactions
         response.redirectedUrl == '/registration/accountCreated'
     }
 
-    def "Account is not register when recaptcha secret key is defined and no recaptcha response is present"() {
+    def "Account is not registered when recaptcha secret key is defined and no recaptcha response is present"() {
         setup:
         def secretKey = 'xyz'
         grailsApplication.config.recaptcha.secretKey = secretKey
@@ -215,5 +285,48 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
         0 * userService.registerUser(_)
         0 * passwordService.resetPassword(_, _)
         0 * emailService.sendAccountActivation(_, _)
+        0 * _ // no other interactions
+        view == '/registration/createAccount'
+        !model.edit
+    }
+
+    def "Account is not registered when password fails password policy"() {
+        setup:
+        def password = 'password'
+        def email = 'test@example.org'
+        def calculatedUserName = 'test'
+        def remoteAddressIp = '127.0.0.1'
+        grailsApplication.config.recaptcha.secretKey = ''
+
+        // This is to allow the submitted token to pass validation.  Failure to do this will result in the invalidToken block being used.
+        def tokenHolder = SynchronizerTokensHolder.store(session)
+
+        params[SynchronizerTokensHolder.TOKEN_URI] = '/controller/handleForm'
+        params[SynchronizerTokensHolder.TOKEN_KEY] = tokenHolder.generateToken(params[SynchronizerTokensHolder.TOKEN_URI])
+
+        when:
+        params.email = email
+        params.firstName = 'Test'
+        params.lastName = 'Test'
+        params['organisation'] = 'Org'
+        params.country = 'AU'
+        params.state = 'ACT'
+        params.city = 'Canberra'
+        params.password = password
+        params.reenteredPassword = password
+        request.remoteAddr = remoteAddressIp
+
+        controller.register()
+
+        then:
+        0 * recaptchaClient.verify(_, _, _)
+        1 * userService.isEmailRegistered(email) >> false
+        1 * passwordService.validatePassword(calculatedUserName, password) >> [
+                valid  : false, metadata: null, entropy: 10,
+                details: [[errorCodes: ['INSUFFICIENT_CHARACTERISTICS'], values: ['2', '3', '4'] as Object[]]]]
+        0 * _ // no other interactions
+        view == '/registration/createAccount'
+        !model.edit
+        flash.message.startsWith('The selected password does not meet the password policy.')
     }
 }

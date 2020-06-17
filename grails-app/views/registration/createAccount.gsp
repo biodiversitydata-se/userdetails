@@ -81,6 +81,26 @@
                 <g:if test="${!edit}">
                     <p><g:message code="create.account.activation.description" /></p>
                 </g:if>
+
+                <g:if test="${!edit}">
+                    <h3><g:message code="account.password.policy.title" /></h3>
+                    <p>
+                        <g:message code="account.password.policy.requirements.length" />
+                        <g:message code="account.password.policy.requirements.complexity.intro" />
+                    </p>
+                    <ul>
+                        <li><g:message code="account.password.policy.requirements.complexity.upper" /></li>
+                        <li><g:message code="account.password.policy.requirements.complexity.lower" /></li>
+                        <li><g:message code="account.password.policy.requirements.complexity.number" /></li>
+                        <li><g:message code="account.password.policy.requirements.complexity.special" /></li>
+                    </ul>
+                    <p>
+                        <g:message code="account.password.policy.requirements.complexity.common" />
+                        <g:message code="account.password.policy.requirements.complexity.username" />
+                        <g:message code="account.password.policy.requirements.complexity.knownsequence" />
+                    </p>
+                </g:if>
+
                 <h2><g:message code="create.account.policy.title" /></h2>
                 <p>
                     <g:message code="create.account.privacy.title" />

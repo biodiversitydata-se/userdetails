@@ -13,7 +13,7 @@ class UpdatePasswordCommand implements Validateable {
     String authKey
 
     static constraints = {
-        password minSize: 6, blank: false
+        password minSize: 8, blank: false
         reenteredPassword validator: {val, cmd -> val == cmd.password}
         userId nullable: false
         authKey blank: false

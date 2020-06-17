@@ -41,4 +41,13 @@ public class LegacyPasswordEncoder implements PasswordEncoder {
             return new String(digest);
         }
     }
+
+    @Override
+    public Boolean matches(String plainPassword, String hashedPassword) {
+        if (plainPassword == null || plainPassword.length() < 1 || hashedPassword == null || hashedPassword.length() < 1) {
+            throw new IllegalArgumentException("Must provide both plain password and hashed password.");
+        }
+        String encoded = encode(plainPassword);
+        return encoded.equals(hashedPassword);
+    }
 }

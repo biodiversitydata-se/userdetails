@@ -123,6 +123,8 @@ dependencies {
         exclude module: 'bootstrap' // dependency from skin
     }
 
+    compile 'org.passay:passay:1.6.0'
+
     testCompile('com.squareup.retrofit2:retrofit-mock:2.4.0')
 }
 

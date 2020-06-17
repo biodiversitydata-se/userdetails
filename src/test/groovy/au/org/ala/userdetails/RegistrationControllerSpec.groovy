@@ -329,4 +329,112 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
         !model.edit
         flash.message.startsWith('The selected password does not meet the password policy.')
     }
+
+    def "Account is updated when the current password is included"() {
+        setup:
+        def password = "HPVBq46QmEH0YhWo6xek"
+        def authKey = "W0E6QMaKUJnzTlqSNQXk"
+        User user = createUser(authKey)
+
+        when:
+        params.email = 'test@example.org'
+        params.firstName = 'Test'
+        params.lastName = 'Test'
+        params['organisation'] = 'Org'
+        params.country = 'AU'
+        params.state = 'ACT'
+        params.city = 'Canberra'
+        params.confirmUserPassword = password
+        request.remoteAddr = '127.0.0.1'
+
+        controller.update()
+
+        then:
+        1 * userService.currentUser >> user
+        1 * passwordService.checkUserPassword(user, password) >> true
+        1 * userService.updateUser(user, params) >> true
+        0 * _ // no other interactions
+        response.redirectedUrl == '/profile'
+    }
+
+    def "Account is not updated when wrong password is specified"() {
+        setup:
+        def wrongPassword = 'O6I8NdjRFLXpwOVhYeWt'
+        def authKey = "W0E6QMaKUJnzTlqSNQXk"
+        User user = createUser(authKey)
+
+        when:
+        params.email = 'test@example.org'
+        params.firstName = 'Test'
+        params.lastName = 'Test'
+        params['organisation'] = 'Org'
+        params.country = 'AU'
+        params.state = 'ACT'
+        params.city = 'Canberra'
+        params.confirmUserPassword = wrongPassword
+        request.remoteAddr = '127.0.0.1'
+
+        controller.update()
+
+        then:
+        1 * userService.currentUser >> user
+        1 * passwordService.checkUserPassword(user, wrongPassword) >> false
+        0 * _ // no other interactions
+        flash.message == 'Incorrect password. Could not update account details. Please try again.'
+        model.edit
+        model.user == user
+        view == '/registration/createAccount'
+    }
+
+    def "Account is not updated when the user cannot be found"() {
+        setup:
+        def password = 'HPVBq46QmEH0YhWo6xek'
+
+        when:
+        params.email = 'test@example.org'
+        params.firstName = 'Test'
+        params.lastName = 'Test'
+        params['organisation'] = 'Org'
+        params.country = 'AU'
+        params.state = 'ACT'
+        params.city = 'Canberra'
+        params.confirmUserPassword = password
+        request.remoteAddr = '127.0.0.1'
+
+        controller.update()
+
+        then:
+        1 * userService.currentUser >> null
+        0 * _ // no other interactions
+        model.msg == "The current user details could not be found"
+        view == '/registration/accountError'
+    }
+
+    def "Account is not updated when the user details cannot be updated"() {
+        setup:
+        def password = 'HPVBq46QmEH0YhWo6xek'
+        def authKey = "W0E6QMaKUJnzTlqSNQXk"
+        User user = createUser(authKey)
+
+        when:
+        params.email = 'test@example.org'
+        params.firstName = 'Test'
+        params.lastName = 'Test'
+        params['organisation'] = 'Org'
+        params.country = 'AU'
+        params.state = 'ACT'
+        params.city = 'Canberra'
+        params.confirmUserPassword = password
+        request.remoteAddr = '127.0.0.1'
+
+        controller.update()
+
+        then:
+        1 * userService.currentUser >> user
+        1 * passwordService.checkUserPassword(user, password) >> true
+        1 * userService.updateUser(user, params) >> false
+        0 * _ // no other interactions
+        model.msg == "Failed to update user profile - unknown error"
+        view == '/registration/accountError'
+    }
 }

@@ -186,6 +186,20 @@
                     <input id="city" name="city" type="text" class="form-control" value="${props?.city}" />
                 </div>
                 <g:if test="${edit}">
+                    <div class="form-group">
+                        <label for="confirmUserPassword">
+                            <g:message code="create.account.confirm.password" />
+                        </label>
+                        <input id="confirmUserPassword"
+                               name="confirmUserPassword"
+                               class="form-control"
+                               value=""
+                               data-validation-engine="validate[required, minSize[8]]"
+                               data-errormessage-value-missing="Password is required!"
+                               type="password"
+                               autocomplete="current-password"/>
+                    </div>
+
                     <button id="updateAccountSubmit" class="btn btn-primary"><g:message code="create.account.update.account" /></button>
                     <button id="disableAccountSubmit" class="btn btn-danger"><g:message code="create.account.disable.account" /></button>
                 </g:if>

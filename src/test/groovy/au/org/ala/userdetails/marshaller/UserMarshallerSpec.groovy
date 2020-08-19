@@ -25,7 +25,7 @@ class UserMarshallerSpec extends UserDetailsSpec implements DataTest {
         when:
         registerMarshallers()
         User user = createUser()
-        def expectedSerializedProperies = ['userId', 'userName', 'firstName', 'lastName', 'email', 'roles', 'locked']
+        def expectedSerializedProperies = ['userId', 'userName', 'firstName', 'lastName', 'email', 'roles', 'activated', 'locked']
         JSON json = user as JSON
         Map deserializedJson = JSON.parse(json.toString())
 
@@ -37,6 +37,7 @@ class UserMarshallerSpec extends UserDetailsSpec implements DataTest {
         deserializedJson.firstName == user.firstName
         deserializedJson.lastName == user.lastName
         deserializedJson.email == user.email
+        deserializedJson.activated == user.activated
         deserializedJson.locked == user.locked
         deserializedJson.roles == ['ROLE_USER']
 
@@ -48,7 +49,7 @@ class UserMarshallerSpec extends UserDetailsSpec implements DataTest {
         User user = createUser()
         registerMarshallers()
 
-        def expectedSerializedProperties = ['userId', 'userName', 'firstName', 'lastName', 'email', 'roles', 'locked', 'props']
+        def expectedSerializedProperties = ['userId', 'userName', 'firstName', 'lastName', 'email', 'roles', 'activated', 'locked', 'props']
 
         JSON.use(UserMarshaller.WITH_PROPERTIES_CONFIG) {
             json = user as JSON
@@ -63,6 +64,7 @@ class UserMarshallerSpec extends UserDetailsSpec implements DataTest {
         deserializedJson.firstName == user.firstName
         deserializedJson.lastName == user.lastName
         deserializedJson.email == user.email
+        deserializedJson.activated == user.activated
         deserializedJson.locked == user.locked
         deserializedJson.roles == ['ROLE_USER']
         deserializedJson.props == [prop1:'prop1', prop2:'prop2']

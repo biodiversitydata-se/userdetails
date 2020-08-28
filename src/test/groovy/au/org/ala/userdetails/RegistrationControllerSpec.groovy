@@ -5,9 +5,10 @@ import au.org.ala.recaptcha.RecaptchaResponse
 import grails.testing.gorm.DataTest
 import grails.testing.web.controllers.ControllerUnitTest
 import org.grails.web.servlet.mvc.SynchronizerTokensHolder
+import org.passay.RuleResult
+import org.passay.RuleResultDetail
 import retrofit2.mock.Calls
 
-//@Mock([User, Role, UserRole, UserProperty])
 class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUnitTest<RegistrationController>, DataTest {
 
     def passwordService = Mock(PasswordService)
@@ -28,113 +29,118 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
 
     void "A new password must be supplied"() {
         setup:
-        String authKey = UUID.randomUUID().toString()
-        User user = createUser(authKey)
-        def calculatedUserName = 'test'
-        request.method = 'POST'
-        params.userId = user.id
-        params.authKey = authKey
+        def authKey = UUID.randomUUID().toString()
+        def user = createUser(authKey)
+        def username = user.userName ?: user.email ?: ''
 
         when:
-        params.password = ""
-        params.reenterPassword = ""
+        params.userId = user.id
+        params.password = ''
+        params.reenteredPassword = ''
+        params.authKey = authKey
+        request.method = 'POST'
         controller.updatePassword()
 
         then:
-        1 * passwordService.validatePassword(calculatedUserName, "") >> [valid: false, metadata: null, details: null, entropy: 0]
+        1 * passwordService.validatePassword(username, "") >> new RuleResult(
+                false,
+                new RuleResultDetail('TOO_SHORT', [minimumLength: 8, maximumLength: 64])
+        )
         0 * _ // no other interactions
-        model.errors.getFieldError("password").codes.any { c -> c.contains('.blank.')}
+        model.errors.getFieldError("password").codes.any { c -> c.contains('.blank.') }
         view == '/registration/passwordReset'
     }
 
     void "The new password must be at least the minimum required length"() {
         setup:
-        String authKey = UUID.randomUUID().toString()
-        String password = "12345"
-        User user = createUser(authKey)
-        def calculatedUserName = 'test'
-        request.method = 'POST'
-        params.userId = user.id
-        params.authKey = authKey
+        def authKey = UUID.randomUUID().toString()
+        def password = "12345"
+        def user = createUser(authKey)
 
         when:
+        params.userId = user.id
         params.password = password
         params.reenteredPassword = password
+        params.authKey = authKey
+        request.method = 'POST'
         controller.updatePassword()
 
         then:
-        1 * passwordService.validatePassword(calculatedUserName, password) >> [valid: false, metadata: null, details: null, entropy: 10]
+        1 * passwordService.validatePassword(user.email, password) >> new RuleResult(
+                false,
+                new RuleResultDetail('TOO_SHORT', [minimumLength: 8, maximumLength: 64])
+        )
         0 * _ // no other interactions
-        model.errors.getFieldError("password").codes.any { c -> c.contains('.minSize.notmet.')}
+        model.errors.getFieldError("password").codes.any { c -> c.contains('.too_short.') }
         view == '/registration/passwordReset'
     }
 
     void "Password is not updated when the re-entered password does not match"() {
         setup:
-        String authKey = UUID.randomUUID().toString()
-        String password = "123456789"
-        User user = createUser(authKey)
-        request.method = 'POST'
-        params.userId = user.id
-        params.authKey = authKey
+        def authKey = UUID.randomUUID().toString()
+        def password = "123456789"
+        def user = createUser(authKey)
+        def reenteredPassword = "123456543"
 
         when:
+        params.userId = user.id
         params.password = password
-        params.reenteredPassword = "123456543"
+        params.reenteredPassword = reenteredPassword
+        params.authKey = authKey
+        request.method = 'POST'
         controller.updatePassword()
 
         then:
-        1 * passwordService.validatePassword(_, password) >> [valid: true, metadata: null, details: null, entropy: 10]
+        1 * passwordService.validatePassword(user.email, password) >> new RuleResult(true)
         0 * _ // no other interactions
-        model.errors.getFieldError("reenteredPassword").codes.any { c -> c.contains('.validator.invalid')}
+        model.errors.getFieldError("reenteredPassword").codes.any { c -> c.contains('.validator.invalid') }
         model.passwordMatchFail
         view == '/registration/passwordReset'
     }
 
     void "Password is not updated when the password validation fails"() {
         setup:
-        String authKey = UUID.randomUUID().toString()
-        String password = "AKSdkffhMf"
-        User user = createUser(authKey)
-        def calculatedUserName = 'test'
-        request.method = 'POST'
-        params.userId = user.id
-        params.authKey = authKey
+        def authKey = UUID.randomUUID().toString()
+        def password = "AKSdkffhMf"
+        def user = createUser(authKey)
+        def reenteredPassword = password
 
         when:
+        params.userId = user.id
         params.password = password
-        params.reenteredPassword = password
+        params.reenteredPassword = reenteredPassword
+        params.authKey = authKey
+        request.method = 'POST'
         controller.updatePassword()
 
         then:
-        1 * passwordService.validatePassword(calculatedUserName, password) >> [
-                valid  : false, metadata: null, entropy: 10,
-                details: [[errorCodes: ['INSUFFICIENT_CHARACTERISTICS'], values: ['2', '3', '4'] as Object[]]]]
+        1 * passwordService.validatePassword(user.email, password) >> new RuleResult(
+                false,
+                new RuleResultDetail('INSUFFICIENT_CHARACTERISTICS', [successCount: '2', minimumRequired: '3', ruleCount: '4'])
+        )
         0 * _ // no other interactions
-        model.errors.getFieldError("password").codes.any { c -> c.contains('.insufficient_characteristics')}
+        model.errors.getFieldError("password").codes.any { c -> c.contains('.insufficient_characteristics') }
         model.passwordMatchFail
         view == '/registration/passwordReset'
     }
 
     void "Duplicate submits of the password form are directed to a page explaining what has happened"() {
         setup:
-        String authKey = UUID.randomUUID().toString()
-        String password = "password1"
-        User user = createUser(authKey)
-        def calculatedUserName = 'test'
-        request.method = 'POST'
-        params.userId = user.id
-        params.authKey = authKey
+        def authKey = UUID.randomUUID().toString()
+        def password = "password1"
+        def user = createUser(authKey)
 
         when:
+        params.userId = user.id
         params.password = password
         params.reenteredPassword = password
-
+        params.authKey = authKey
+        request.method = 'POST'
         // Note that duplicate submit error is the default behaviour.
         controller.updatePassword()
 
         then:
-        1 * passwordService.validatePassword(calculatedUserName, password) >> [valid: true, metadata: null, details: null, entropy: 10]
+        1 * passwordService.validatePassword(user.email, password) >> new RuleResult(true)
         0 * _ // no other interactions
         !model.errors
         response.redirectedUrl == '/registration/duplicateSubmit'
@@ -145,10 +151,7 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
         String authKey = UUID.randomUUID().toString()
         String password = "password1"
         User user = createUser(authKey)
-        def calculatedUserName = 'test'
-        request.method = 'POST'
-        params.userId = Long.toString(1)
-        params.authKey = authKey
+        def userId = Long.toString(1)?.toLong()
 
         // This is to allow the submitted token to pass validation.  Failure to do this will result in the invalidToken block being used.
         def tokenHolder = SynchronizerTokensHolder.store(session)
@@ -157,14 +160,16 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
         params[SynchronizerTokensHolder.TOKEN_KEY] = tokenHolder.generateToken(params[SynchronizerTokensHolder.TOKEN_URI])
 
         when:
+        params.userId = userId
         params.password = password
         params.reenteredPassword = password
-
+        params.authKey = authKey
+        request.method = 'POST'
         // Note that duplicate submit error is the default behaviour.
         controller.updatePassword()
 
         then:
-        1 * passwordService.validatePassword(calculatedUserName, password) >> [valid: true, metadata: null, details: null, entropy: 10]
+        1 * passwordService.validatePassword(user.email, password) >> new RuleResult(true)
         1 * passwordService.resetPassword(user, password)
         1 * userService.clearTempAuthKey(user)
         0 * _ // no other interactions
@@ -175,7 +180,6 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
         setup:
         def password = 'password'
         def email = 'test@example.org'
-        def calculatedUserName = 'test'
         def authKey = '987'
         def recaptchaSecretKey = 'xyz'
         def recaptchaResponseKey = '123'
@@ -206,7 +210,7 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
         then:
         1 * recaptchaClient.verify(recaptchaSecretKey, recaptchaResponseKey, remoteAddressIp) >> { Calls.response(new RecaptchaResponse(true, '2019-09-27T16:06:00Z', 'test-host', [])) }
         1 * userService.isEmailRegistered(email) >> false
-        1 * passwordService.validatePassword(calculatedUserName, password) >> [valid: true, metadata: null, details: null, entropy: 10]
+        1 * passwordService.validatePassword(email, password) >> new RuleResult(true)
         1 * userService.registerUser(_) >> { def user = new User(params); user.tempAuthKey = authKey; user }
         1 * passwordService.resetPassword(_, password)
         1 * emailService.sendAccountActivation(_, authKey)
@@ -218,7 +222,6 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
         setup:
         def password = 'password'
         def email = 'test@example.org'
-        def calculatedUserName = 'test'
         def authKey = '987'
         def remoteAddressIp = '127.0.0.1'
         grailsApplication.config.recaptcha.secretKey = ''
@@ -246,7 +249,7 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
         then:
         0 * recaptchaClient.verify(_, _, _)
         1 * userService.isEmailRegistered(email) >> false
-        1 * passwordService.validatePassword(calculatedUserName, password) >> [valid: true, metadata: null, details: null, entropy: 10]
+        1 * passwordService.validatePassword(email, password) >> new RuleResult(true)
         1 * userService.registerUser(_) >> { def user = new User(params); user.tempAuthKey = authKey; user }
         1 * passwordService.resetPassword(_, password)
         1 * emailService.sendAccountActivation(_, authKey)
@@ -294,7 +297,6 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
         setup:
         def password = 'password'
         def email = 'test@example.org'
-        def calculatedUserName = 'test'
         def remoteAddressIp = '127.0.0.1'
         grailsApplication.config.recaptcha.secretKey = ''
 
@@ -321,9 +323,10 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
         then:
         0 * recaptchaClient.verify(_, _, _)
         1 * userService.isEmailRegistered(email) >> false
-        1 * passwordService.validatePassword(calculatedUserName, password) >> [
-                valid  : false, metadata: null, entropy: 10,
-                details: [[errorCodes: ['INSUFFICIENT_CHARACTERISTICS'], values: ['2', '3', '4'] as Object[]]]]
+        1 * passwordService.validatePassword(email, password) >> new RuleResult(
+                false,
+                new RuleResultDetail('INSUFFICIENT_CHARACTERISTICS', [successCount: '2', minimumRequired: '3', ruleCount: '4'])
+        )
         0 * _ // no other interactions
         view == '/registration/createAccount'
         !model.edit

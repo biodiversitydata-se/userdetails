@@ -1,7 +1,6 @@
 package au.org.ala.auth
 
 import grails.validation.Validateable
-
 /**
  * Data binding and validation for the password update action.
  */
@@ -13,11 +12,10 @@ class UpdatePasswordCommand implements Validateable {
     String authKey
 
     static constraints = {
-        password minSize: 8, blank: false
-        reenteredPassword validator: {val, cmd -> val == cmd.password}
+        // note that the password validation is done in the controller actions, not the command
+        password blank: false
+        reenteredPassword validator: { val, cmd -> val == cmd.password }
         userId nullable: false
         authKey blank: false
     }
-
-
 }

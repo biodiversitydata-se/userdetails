@@ -1,6 +1,8 @@
 package au.org.ala.userdetails
 
 import au.org.ala.auth.UpdatePasswordCommand
+import au.org.ala.recaptcha.RecaptchaClient
+import org.passay.RuleResult
 import org.springframework.context.i18n.LocaleContextHolder
 import org.springframework.validation.Errors
 
@@ -20,7 +22,7 @@ class RegistrationController {
     def passwordService
     def userService
     def locationService
-    def recaptchaClient
+    RecaptchaClient recaptchaClient
     def messageSource
 
 
@@ -28,7 +30,11 @@ class RegistrationController {
         redirect(action: 'createAccount')
     }
 
-    def createAccount() {}
+    def createAccount() {
+        render(view: 'createAccount', model: [
+                passwordPolicy: passwordService.buildPasswordPolicy(),
+        ])
+    }
 
     def editAccount() {
         def user = userService.currentUser
@@ -36,12 +42,19 @@ class RegistrationController {
     }
 
     def passwordReset() {
-        User user = User.get(params.userId?.toLong())
+        def userId = params.userId?.toLong()
+        User user = User.get(userId)
         if (!user) {
-            render(view: 'accountError', model: [msg: "User not found with ID ${params.userId}"])
+            render(view: 'accountError', model: [
+                    msg: "User not found with ID ${params.userId}"
+            ])
         } else if (user.tempAuthKey == params.authKey) {
             //keys match, so lets reset password
-            render(view: 'passwordReset', model: [user: user, authKey: params.authKey])
+            render(view: 'passwordReset', model: [
+                    user          : user,
+                    authKey       : params.authKey,
+                    passwordPolicy: passwordService.buildPasswordPolicy()
+            ])
         } else {
             render(view: 'authKeyExpired')
         }
@@ -51,17 +64,17 @@ class RegistrationController {
         User user = User.get(cmd.userId)
 
         // since the email address is the user name, use the part before the @ as the username
-        def username = (user?.userName ?: user?.email ?: '').split('@')[0]
+        def username = user?.userName ?: user?.email ?: ''
         def validationResult = passwordService.validatePassword(username, cmd?.password)
         buildErrorMessages(validationResult, cmd.errors)
 
         if (cmd.hasErrors()) {
-            render(view: 'passwordReset', model: [user: user, authKey: cmd.authKey, errors:cmd.errors, passwordMatchFail: true])
+            render(view: 'passwordReset', model: [user: user, authKey: cmd.authKey, errors: cmd.errors, passwordMatchFail: true])
             return
         }
 
         withForm {
-            if (user.tempAuthKey == params.authKey) {
+            if (user.tempAuthKey == cmd.authKey) {
                 //update the password
                 try {
                     passwordService.resetPassword(user, cmd.password)
@@ -76,8 +89,7 @@ class RegistrationController {
                 log.error "Password was not reset as AUTH_KEY did not match -- ${user.tempAuthKey} vs ${cmd.authKey}"
                 render(view: 'accountError', model: [msg: "Password was not reset as AUTH_KEY did not match"])
             }
-        }
-        .invalidToken {
+        }.invalidToken {
             redirect(action: 'duplicateSubmit', model: [msg: ""])
         }
 
@@ -173,6 +185,8 @@ class RegistrationController {
     }
 
     def register() {
+        def paramsEmail = params?.email?.toString()
+        def paramsPassword = params?.password?.toString()
         withForm {
 
             def recaptchaKey = grailsApplication.config.getProperty('recaptcha.secretKey')
@@ -183,13 +197,13 @@ class RegistrationController {
                 if (response.isSuccessful()) {
                     def verifyResponse = response.body()
                     if (!verifyResponse.success) {
-                        log.warn('Recaptcha verify reported an error: {}', verifyResponse)
+                        log.warn("Recaptcha verify reported an error: ${verifyResponse}")
                         flash.message = 'There was an error with the captcha, please try again'
                         render(view: 'createAccount', model: [edit: false, user: params, props: params])
                         return
                     }
                 } else {
-                    log.warn("error from recaptcha {}", response)
+                    log.warn("error from recaptcha ${response}")
                     flash.message = 'There was an error with the captcha, please try again'
                     render(view: 'createAccount', model: [edit: false, user: params, props: params])
                     return
@@ -197,17 +211,16 @@ class RegistrationController {
             }
 
             //create user account...
-            if (!params.email || userService.isEmailRegistered(params.email)) {
-                def inactiveUser = !userService.isActive(params.email)
+            if (!paramsEmail || userService.isEmailRegistered(paramsEmail)) {
+                def inactiveUser = !userService.isActive(paramsEmail)
                 render(view: 'createAccount', model: [edit: false, user: params, props: params, alreadyRegistered: true, inactiveUser: inactiveUser])
                 return
             }
 
             // since the email address is the user name, use the part before the @ as the username
-            def username = params.email.split('@')[0]
-            def passwordValidation = passwordService.validatePassword(username, params.password)
+            def passwordValidation = passwordService.validatePassword(paramsEmail, paramsPassword)
             if (!passwordValidation.valid) {
-                log.warn("The password for user name '${username}' did not meet the validation criteria '{}'", passwordValidation)
+                log.warn("The password for user name '${paramsEmail}' did not meet the validation criteria '${passwordValidation}'")
                 flash.message = "The selected password does not meet the password policy. Please try again with a different password. ${buildErrorMessages(passwordValidation)}"
                 render(view: 'createAccount', model: [edit: false, user: params, props: params])
                 return
@@ -266,7 +279,7 @@ class RegistrationController {
             respond locations.states
     }
 
-    private String buildErrorMessages(Map<String, Object> validationResult, Errors errors = null) {
+    private String buildErrorMessages(RuleResult validationResult, Errors errors = null) {
         if (validationResult.valid) {
             return null
         }

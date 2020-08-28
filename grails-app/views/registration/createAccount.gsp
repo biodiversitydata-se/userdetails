@@ -76,39 +76,28 @@
                 </g:if>
                 <h2><g:message code="create.account.your.account.title" /></h2>
                 <p>
-                    <g:message code="create.account.your.email.will.be.your.account.login" args="[grailsApplication.config.skin.orgNameShort]" />
+                    <g:message code="create.account.your.email.will.be.your.account.login"
+                               args="[grailsApplication.config.skin.orgNameShort]" />
                 </p>
                 <g:if test="${!edit}">
                     <p><g:message code="create.account.activation.description" /></p>
                 </g:if>
 
                 <g:if test="${!edit}">
-                    <h3><g:message code="account.password.policy.title" /></h3>
-                    <p>
-                        <g:message code="account.password.policy.requirements.length" />
-                        <g:message code="account.password.policy.requirements.complexity.intro" />
-                    </p>
-                    <ul>
-                        <li><g:message code="account.password.policy.requirements.complexity.upper" /></li>
-                        <li><g:message code="account.password.policy.requirements.complexity.lower" /></li>
-                        <li><g:message code="account.password.policy.requirements.complexity.number" /></li>
-                        <li><g:message code="account.password.policy.requirements.complexity.special" /></li>
-                    </ul>
-                    <p>
-                        <g:message code="account.password.policy.requirements.complexity.common" />
-                        <g:message code="account.password.policy.requirements.complexity.username" />
-                        <g:message code="account.password.policy.requirements.complexity.knownsequence" />
-                    </p>
+                    <g:render template="passwordPolicy"
+                              model="[passwordPolicy: passwordPolicy]"/>
                 </g:if>
 
                 <h2><g:message code="create.account.policy.title" /></h2>
                 <p>
                     <g:message code="create.account.privacy.title" />
-                    <a href="${grailsApplication.config.privacyPolicy}"><g:message code="create.account.privacy.link" /></a>.
+                    <a href="${grailsApplication.config.privacyPolicy}">
+                    <g:message code="create.account.privacy.link" /></a>.
                 </p>
                 <h2><g:message code="create.account.tos.title" /></h2>
                 <p>
-                    <g:message code="create.account.tos.description" args="[grailsApplication.config.skin.orgNameShort, grailsApplication.config.termsOfUse]" />
+                    <g:message code="create.account.tos.description"
+                               args="[grailsApplication.config.skin.orgNameShort, grailsApplication.config.termsOfUse]" />
                 </p>
             </div>
         </div>

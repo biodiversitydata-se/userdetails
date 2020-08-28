@@ -36,22 +36,8 @@
 <div class="row">
     <h1><g:message code="password.reset.description" /></h1>
 
-    <h3><g:message code="account.password.policy.title" /></h3>
-    <p>
-        <g:message code="account.password.policy.requirements.length" />
-        <g:message code="account.password.policy.requirements.complexity.intro" />
-    </p>
-    <ul>
-        <li><g:message code="account.password.policy.requirements.complexity.upper" /></li>
-        <li><g:message code="account.password.policy.requirements.complexity.lower" /></li>
-        <li><g:message code="account.password.policy.requirements.complexity.number" /></li>
-        <li><g:message code="account.password.policy.requirements.complexity.special" /></li>
-    </ul>
-    <p>
-        <g:message code="account.password.policy.requirements.complexity.common" />
-        <g:message code="account.password.policy.requirements.complexity.username" />
-        <g:message code="account.password.policy.requirements.complexity.knownsequence" />
-    </p>
+    <g:render template="passwordPolicy"
+              model="[passwordPolicy: passwordPolicy]"/>
 
     <g:hasErrors>
     <div class="alert alert-danger">

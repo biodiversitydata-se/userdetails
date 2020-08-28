@@ -249,7 +249,6 @@ class PasswordServiceSpec extends UserDetailsSpec implements ServiceUnitTest<Pas
         (result.metadata.hasCount(charAllowed) ? result.metadata.getCount(charAllowed) : 0) == 0
         (result.metadata.hasCount(charIllegal) ? result.metadata.getCount(charIllegal) : 0) == 0
         result.details.size() == 0
-        result.entropy == 42.0
     }
 
     void 'test invalid password with username fails password check'() {
@@ -276,7 +275,6 @@ class PasswordServiceSpec extends UserDetailsSpec implements ServiceUnitTest<Pas
         result.details[0].getParameters().size() == 2
         result.details[0].getParameters().username == 'test'
         result.details[0].getParameters().matchBehavior.description == 'contains'
-        result.entropy == 46.0
     }
 
     void 'test invalid password too short and not enough required chars fails password check'() {
@@ -299,24 +297,31 @@ class PasswordServiceSpec extends UserDetailsSpec implements ServiceUnitTest<Pas
         (result.metadata.hasCount(charAllowed) ? result.metadata.getCount(charAllowed) : 0) == 0
         (result.metadata.hasCount(charIllegal) ? result.metadata.getCount(charIllegal) : 0) == 0
         result.details.size() == 4
-        result.details[0].getErrorCodes() == ['TOO_SHORT']
-        result.details[0].getParameters().size() == 2
-        result.details[0].getParameters().minimumLength == 8
-        result.details[0].getParameters().maximumLength == 64
-        result.details[1].getErrorCodes() == ['INSUFFICIENT_DIGIT']
-        result.details[1].getParameters().size() == 4
-        result.details[1].getParameters().minimumRequired == 1
-        result.details[1].getParameters().matchingCharacterCount == 0
-        result.details[2].getErrorCodes() == ['INSUFFICIENT_SPECIAL']
-        result.details[2].getParameters().size() == 4
-        result.details[2].getParameters().minimumRequired == 1
-        result.details[2].getParameters().matchingCharacterCount == 0
-        result.details[3].getErrorCodes() == ['INSUFFICIENT_CHARACTERISTICS']
-        result.details[3].getParameters().size() == 3
-        result.details[3].getParameters().successCount == 2
-        result.details[3].getParameters().minimumRequired == 3
-        result.details[3].getParameters().ruleCount == 4
-        result.entropy == 20.0
+
+        then:
+        def tooShort = result.details.find{ it.errorCodes == ['TOO_SHORT'] }
+        tooShort.getParameters().size() == 2
+        tooShort.getParameters().minimumLength == 8
+        tooShort.getParameters().maximumLength == 64
+
+        then:
+        def insuffDigit = result.details.find{ it.errorCodes == ['INSUFFICIENT_DIGIT'] }
+        insuffDigit.getParameters().size() == 4
+        insuffDigit.getParameters().minimumRequired == 1
+        insuffDigit.getParameters().matchingCharacterCount == 0
+
+        then:
+        def insuffSpecial = result.details.find{ it.errorCodes == ['INSUFFICIENT_SPECIAL'] }
+        insuffSpecial.getParameters().size() == 4
+        insuffSpecial.getParameters().minimumRequired == 1
+        insuffSpecial.getParameters().matchingCharacterCount == 0
+
+        then:
+        def insuffChar = result.details.find{ it.errorCodes == ['INSUFFICIENT_CHARACTERISTICS'] }
+        insuffChar.getParameters().size() == 3
+        insuffChar.getParameters().successCount == 2
+        insuffChar.getParameters().minimumRequired == 3
+        insuffChar.getParameters().ruleCount == 4
     }
 
     void 'test generate new password produces a valid password'() {

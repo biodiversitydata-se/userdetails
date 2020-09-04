@@ -45,16 +45,10 @@ class RegistrationController {
         def userId = params.userId?.toLong()
         User user = User.get(userId)
         if (!user) {
-            render(view: 'accountError', model: [
-                    msg: "User not found with ID ${params.userId}"
-            ])
+            render(view: 'accountError', model: [msg: "User not found with ID ${params.userId}"])
         } else if (user.tempAuthKey == params.authKey) {
             //keys match, so lets reset password
-            render(view: 'passwordReset', model: [
-                    user          : user,
-                    authKey       : params.authKey,
-                    passwordPolicy: passwordService.buildPasswordPolicy()
-            ])
+            render(view: 'passwordReset', model: [user: user, authKey: params.authKey, passwordPolicy: passwordService.buildPasswordPolicy()])
         } else {
             render(view: 'authKeyExpired')
         }
@@ -69,28 +63,29 @@ class RegistrationController {
         buildErrorMessages(validationResult, cmd.errors)
 
         if (cmd.hasErrors()) {
-            render(view: 'passwordReset', model: [user: user, authKey: cmd.authKey, errors: cmd.errors, passwordMatchFail: true])
-            return
+            render(view: 'passwordReset', model: [user: user, authKey: cmd.authKey, errors:cmd.errors, passwordMatchFail: true])
         }
-
-        withForm {
-            if (user.tempAuthKey == cmd.authKey) {
-                //update the password
-                try {
-                    passwordService.resetPassword(user, cmd.password)
-                    userService.clearTempAuthKey(user)
-                    redirect(controller: 'registration', action: 'passwordResetSuccess')
-                    log.info("Password successfully reset for user: " + cmd.userId)
-                } catch (e) {
-                    log.error("Couldn't reset password", e)
-                    render(view: 'accountError', model: [msg: "Failed to reset password"])
+        else {
+            withForm {
+                if (user.tempAuthKey == cmd.authKey) {
+                    //update the password
+                    try {
+                        passwordService.resetPassword(user, cmd.password)
+                        userService.clearTempAuthKey(user)
+                        redirect(controller: 'registration', action: 'passwordResetSuccess')
+                        log.info("Password successfully reset for user: " + cmd.userId)
+                    } catch (e) {
+                        log.error("Couldn't reset password", e)
+                        render(view: 'accountError', model: [msg: "Failed to reset password"])
+                    }
+                } else {
+                    log.error "Password was not reset as AUTH_KEY did not match -- ${user.tempAuthKey} vs ${cmd.authKey}"
+                    render(view: 'accountError', model: [msg: "Password was not reset as AUTH_KEY did not match"])
                 }
-            } else {
-                log.error "Password was not reset as AUTH_KEY did not match -- ${user.tempAuthKey} vs ${cmd.authKey}"
-                render(view: 'accountError', model: [msg: "Password was not reset as AUTH_KEY did not match"])
             }
-        }.invalidToken {
-            redirect(action: 'duplicateSubmit', model: [msg: ""])
+            .invalidToken {
+                redirect(action: 'duplicateSubmit', model: [msg: ""])
+            }
         }
 
     }
@@ -159,28 +154,27 @@ class RegistrationController {
         def user = userService.currentUser
         log.debug("Updating account for " + user)
 
-        if (!user) {
-            render(view: "accountError", model: [msg: "The current user details could not be found"])
-            return
-        }
+        if (user) {
+            if (params.email != user.email) {
+                // email address has changed, and username and email address must be kept in sync
+                params.userName = params.email
+            }
 
-        if (params.email != user.email) {
-            // email address has changed, and username and email address must be kept in sync
-            params.userName = params.email
-        }
+            def isCorrectPassword = passwordService.checkUserPassword(user, params.confirmUserPassword)
+            if (!isCorrectPassword) {
+                flash.message = 'Incorrect password. Could not update account details. Please try again.'
+                render(view: 'createAccount', model: [edit: true, user: user, props: user?.propsAsMap()])
+                return
+            }
 
-        def isCorrectPassword = passwordService.checkUserPassword(user, params.confirmUserPassword)
-        if (!isCorrectPassword) {
-            flash.message = 'Incorrect password. Could not update account details. Please try again.'
-            render(view: 'createAccount', model: [edit: true, user: user, props: user?.propsAsMap()])
-            return
-        }
-
-        def success = userService.updateUser(user, params)
-        if (success) {
-            redirect(controller: 'profile')
+            def success = userService.updateUser(user, params)
+            if (success) {
+                redirect(controller: 'profile')
+            } else {
+                render(view: "accountError", model: [msg: "Failed to update user profile - unknown error"])
+            }
         } else {
-            render(view: "accountError", model: [msg: "Failed to update user profile - unknown error"])
+            render(view: "accountError", model: [msg: "The current user details could not be found"])
         }
     }
 
@@ -197,13 +191,13 @@ class RegistrationController {
                 if (response.isSuccessful()) {
                     def verifyResponse = response.body()
                     if (!verifyResponse.success) {
-                        log.warn("Recaptcha verify reported an error: ${verifyResponse}")
+                        log.warn('Recaptcha verify reported an error: {}', verifyResponse)
                         flash.message = 'There was an error with the captcha, please try again'
                         render(view: 'createAccount', model: [edit: false, user: params, props: params])
                         return
                     }
                 } else {
-                    log.warn("error from recaptcha ${response}")
+                    log.warn("error from recaptcha {}", response)
                     flash.message = 'There was an error with the captcha, please try again'
                     render(view: 'createAccount', model: [edit: false, user: params, props: params])
                     return
@@ -214,35 +208,34 @@ class RegistrationController {
             if (!paramsEmail || userService.isEmailRegistered(paramsEmail)) {
                 def inactiveUser = !userService.isActive(paramsEmail)
                 render(view: 'createAccount', model: [edit: false, user: params, props: params, alreadyRegistered: true, inactiveUser: inactiveUser])
-                return
-            }
+            } else {
 
-            // since the email address is the user name, use the part before the @ as the username
-            def passwordValidation = passwordService.validatePassword(paramsEmail, paramsPassword)
-            if (!passwordValidation.valid) {
-                log.warn("The password for user name '${paramsEmail}' did not meet the validation criteria '${passwordValidation}'")
-                flash.message = "The selected password does not meet the password policy. Please try again with a different password. ${buildErrorMessages(passwordValidation)}"
-                render(view: 'createAccount', model: [edit: false, user: params, props: params])
-                return
-            }
-
-            try {
-                //does a user with the supplied email address exist
-                def user = userService.registerUser(params)
-
-                //store the password
-                try {
-                    passwordService.resetPassword(user, params.password)
-                    //store the password
-                    emailService.sendAccountActivation(user, user.tempAuthKey)
-                    redirect(action: 'accountCreated', id: user.id)
-                } catch (e) {
-                    log.error("Couldn't reset password", e)
-                    render(view: "accountError", model: [msg: "Failed to reset password"])
+                def passwordValidation = passwordService.validatePassword(paramsEmail, paramsPassword)
+                if (!passwordValidation.valid) {
+                    log.warn("The password for user name '${paramsEmail}' did not meet the validation criteria '${passwordValidation}'")
+                    flash.message = "The selected password does not meet the password policy. Please try again with a different password. ${buildErrorMessages(passwordValidation)}"
+                    render(view: 'createAccount', model: [edit: false, user: params, props: params])
+                    return
                 }
-            } catch (Exception e) {
-                log.error(e.getMessage(), e)
-                render(view: "accountError", model: [msg: e.getMessage()])
+
+                try {
+                    //does a user with the supplied email address exist
+                    def user = userService.registerUser(params)
+
+                    //store the password
+                    try {
+                        passwordService.resetPassword(user, params.password)
+                        //store the password
+                        emailService.sendAccountActivation(user, user.tempAuthKey)
+                        redirect(action: 'accountCreated', id: user.id)
+                    } catch (e) {
+                        log.error("Couldn't reset password", e)
+                        render(view: "accountError", model: [msg: "Failed to reset password"])
+                    }
+                } catch (Exception e) {
+                    log.error(e.getMessage(), e)
+                    render(view: "accountError", model: [msg: e.getMessage()])
+                }
             }
         }
     }

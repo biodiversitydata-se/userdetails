@@ -214,7 +214,7 @@
 
             $("#disableAccountSubmit").attr('disabled','disabled');
 
-            var valid = confirm("${g.message(code: 'default.button.delete.user.confirm.message', default: 'Are you sure want to disable your account? You won\'t be able to login again. You will have to contact us in the future if you want to reactivate your account.')}");
+            var valid = confirm("${message(code: 'default.button.delete.user.confirm.message', default: 'Are you sure want to disable your account? You won\'t be able to login again. You will have to contact us in the future if you want to reactivate your account.')}");
 
             if (valid) {
                 $('#updateAccountForm').validationEngine('detach');

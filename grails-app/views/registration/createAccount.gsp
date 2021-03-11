@@ -77,9 +77,18 @@
                 <h2><g:message code="create.account.your.account.title" /></h2>
                 <p>
                     <g:message code="create.account.your.email.will.be.your.account.login" args="[grailsApplication.config.skin.orgNameShort]" />
+                    <g:if test="${grailsApplication.config.registration.showAlaMessage}">
+                        <g:message code="create.account.your.email.will.be.your.account.login.ala" args="[grailsApplication.config.registration.resetPasswordArticle, grailsApplication.config.registration.alertArticle]" />
+                    </g:if>
                 </p>
+                <g:if test="${grailsApplication.config.registration.showAlaMessage}">
+                    <p><b><g:message code="create.account.your.email.will.be.your.account.confirm.ala" /></b></p>
+                </g:if>
                 <g:if test="${!edit}">
-                    <p><g:message code="create.account.activation.description" /></p>
+                    <p><g:message code="create.account.activation.description" />
+                    <g:if test="${grailsApplication.config.registration.showAlaMessage}">
+                        <g:message code="create.account.activation.description.ala" args="[grailsApplication.config.registration.activationArticle]" />
+                    </g:if></p>
                 </g:if>
                 <h2><g:message code="create.account.policy.title" /></h2>
                 <p>

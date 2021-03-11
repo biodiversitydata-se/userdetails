@@ -15,14 +15,14 @@
     <div class="row">
         <div class="col-md-12">
             <div class="well well-lg">
-                <g:message code="account.activated.created.thank.you.for.registering" args="[grailsApplication.config.skin.orgNameLong]" />
-                <br/>
-                <g:message code="account.activated.created.check.your.email" />
-                <br/>
-                <g:message code="account.activated.created.problems.please.email" args="[grailsApplication.config.supportEmail]" />
+                <p><g:message code="account.activated.created.thank.you.for.registering" args="[grailsApplication.config.skin.orgNameLong]" /></p>
+
+                <p><g:message code="account.activated.created.check.your.email" /></p>
+
+                <p><g:message code="account.activated.created.problems.please.email" args="[grailsApplication.config.supportEmail]" /></p>
             </div>
         </div>
-   </div>
+    </div>
 </div>
 </body>
 </html>

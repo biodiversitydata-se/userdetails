@@ -209,6 +209,13 @@ biocache:
 markdown:
     removeHtml: true
 
+# set to true to display more ALA registration messages
+registration:
+    showAlaMessage: false
+    resetPasswordArticle:
+    alertArticle:
+    activationArticle:
+
 recaptcha:
   baseUrl: https://www.google.com/recaptcha/api/
   siteKey:

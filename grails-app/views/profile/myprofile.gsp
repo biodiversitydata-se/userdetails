@@ -20,7 +20,7 @@
                 </g:link>
             </li>
             <li>
-                <a href="${grailsApplication.config.sightings.url}">
+                <a href="${grailsApplication.config.sightings.url}/${user.id}">
                      <g:message code="myprofile.your.timeline" />
                 </a>
             </li>

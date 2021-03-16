@@ -27,6 +27,7 @@ class RegistrationController {
     def passwordService
     def userService
     def locationService
+    def cookieService
     RecaptchaClient recaptchaClient
 
 
@@ -152,6 +153,13 @@ class RegistrationController {
             if (params.email != user.email) {
                 // email address has changed, and username and email address must be kept in sync
                 params.userName = params.email
+                // update cookie when email address changed https://github.com/AtlasOfLivingAustralia/userdetails/issues/98
+                // cookie config values need to be consistent with values in CAS
+                def cookieName = grailsApplication.config.ala.cookie.name
+                if (cookieName && cookieService.findCookie(cookieName)) {
+                    cookieService.setCookie(cookieName, quoteValue(params.email), grailsApplication.config.ala.cookie.maxAge, grailsApplication.config.ala.cookie.path,
+                            grailsApplication.config.ala.cookie.domain, grailsApplication.config.ala.cookie.secure, grailsApplication.config.ala.cookie.httpOnly)
+                }
             }
 
             def success = userService.updateUser(user, params)
@@ -163,6 +171,10 @@ class RegistrationController {
         } else {
             render(view: "accountError", model: [msg: "The current user details could not be found"])
         }
+    }
+
+    def quoteValue(String value) {
+        "\"$value\""
     }
 
     def register() {

@@ -50,6 +50,11 @@
                 </a>
             </li>
             <li>
+                <a href="${grailsApplication.config.myData.url}">
+                    <g:message code="myprofile.your.datasets" />
+                </a>
+            </li>
+            <li>
                 <a href="${grailsApplication.config.alerts.url}">
                     <g:message code="myprofile.your.alerts" />
                 </a>

@@ -4,8 +4,8 @@ import au.org.ala.auth.BulkUserLoadResults
 import au.org.ala.auth.PasswordResetFailedException
 import grails.converters.JSON
 import grails.plugin.cache.Cacheable
-import grails.transaction.NotTransactional
-import grails.transaction.Transactional
+import grails.gorm.transactions.NotTransactional
+import grails.gorm.transactions.Transactional
 import grails.util.Environment
 import grails.web.servlet.mvc.GrailsParameterMap
 import org.apache.http.HttpStatus
@@ -59,6 +59,12 @@ class UserService {
     @Transactional(readOnly = true)
     boolean isEmailRegistered(String email) {
         return User.findByEmailOrUserName(email?.toLowerCase(), email?.toLowerCase()) != null
+    }
+
+    @Transactional(readOnly = true)
+    boolean isEmailInUse(String newEmail, User user) {
+        def userByEmail = User.findByEmailOrUserName(newEmail?.toLowerCase(), newEmail?.toLowerCase())
+        return user.userName != userByEmail.userName
     }
 
     def activateAccount(User user) {

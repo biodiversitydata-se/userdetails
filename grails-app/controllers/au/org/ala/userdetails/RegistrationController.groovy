@@ -55,7 +55,6 @@ class RegistrationController {
     }
 
     def updatePassword(UpdatePasswordCommand cmd) {
-
         User user = User.get(cmd.userId)
         if (cmd.hasErrors()) {
             render(view: 'passwordReset', model: [user: user, authKey: cmd.authKey, errors:cmd.errors, passwordMatchFail: true])
@@ -151,7 +150,12 @@ class RegistrationController {
 
         if (user) {
             if (params.email != user.email) {
-                // email address has changed, and username and email address must be kept in sync
+                // email address has changed
+                if (userService.isEmailInUse(params.email, user)) {
+                    render(view: "accountError", model: [msg: "Failed to update user profile - A user is already registered with the email address"])
+                    return
+                }
+                // and username and email address must be kept in sync
                 params.userName = params.email
                 // update cookie when email address changed https://github.com/AtlasOfLivingAustralia/userdetails/issues/98
                 // cookie config values need to be consistent with values in CAS

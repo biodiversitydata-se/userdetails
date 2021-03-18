@@ -64,7 +64,11 @@ class UserService {
     @Transactional(readOnly = true)
     boolean isEmailInUse(String newEmail, User user) {
         def userByEmail = User.findByEmailOrUserName(newEmail?.toLowerCase(), newEmail?.toLowerCase())
-        return user.userName != userByEmail.userName
+        if (userByEmail == null) {
+            return false
+        } else {
+            return user.userName != userByEmail.userName
+        }
     }
 
     def activateAccount(User user) {

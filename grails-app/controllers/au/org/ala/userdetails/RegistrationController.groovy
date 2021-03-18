@@ -147,6 +147,7 @@ class RegistrationController {
     def update() {
         def user = userService.currentUser
         log.debug("Updating account for " + user)
+        boolean emailChanged = false
 
         if (user) {
             if (params.email != user.email) {
@@ -157,17 +158,23 @@ class RegistrationController {
                 }
                 // and username and email address must be kept in sync
                 params.userName = params.email
-                // update cookie when email address changed https://github.com/AtlasOfLivingAustralia/userdetails/issues/98
-                // cookie config values need to be consistent with values in CAS
-                def cookieName = grailsApplication.config.ala.cookie.name
-                if (cookieName && cookieService.findCookie(cookieName)) {
-                    cookieService.setCookie(cookieName, quoteValue(params.email), grailsApplication.config.ala.cookie.maxAge, grailsApplication.config.ala.cookie.path,
-                            grailsApplication.config.ala.cookie.domain, grailsApplication.config.ala.cookie.secure, grailsApplication.config.ala.cookie.httpOnly)
-                }
+                emailChanged = true
             }
 
             def success = userService.updateUser(user, params)
             if (success) {
+                if (emailChanged){
+                    // update cookie when email address changed https://github.com/AtlasOfLivingAustralia/userdetails/issues/98
+                    // cookie config values need to be consistent with values in CAS
+                    def cookieName = grailsApplication.config.getProperty('ala.cookie.name', String, null)
+                    if (cookieName && cookieService.findCookie(cookieName)) {
+                        cookieService.setCookie(cookieName, quoteValue(encodeValue(params.email)), grailsApplication.config.getProperty('ala.cookie.maxAge', Integer, -1),
+                                grailsApplication.config.getProperty('ala.cookie.path', String, '/'),
+                                grailsApplication.config.getProperty('ala.cookie.domain', String, 'ala.org.au'),
+                                grailsApplication.config.getProperty('ala.cookie.secure', Boolean, false),
+                                grailsApplication.config.getProperty('ala.cookie.httpOnly', Boolean, true))
+                    }
+                }
                 redirect(controller: 'profile')
             } else {
                 render(view: "accountError", model: [msg: "Failed to update user profile - unknown error"])
@@ -177,8 +184,20 @@ class RegistrationController {
         }
     }
 
-    def quoteValue(String value) {
-        "\"$value\""
+    String quoteValue(String value) {
+        if (grailsApplication.config.getProperty('ala.cookie.quoteCookieValue', Boolean, true)) {
+            "\"$value\""
+        } else {
+            value
+        }
+    }
+
+    String encodeValue(String value) {
+        if (grailsApplication.config.getProperty('ala.cookie.encodeCookieValue', Boolean, false)) {
+            URLEncoder.encode(value, "UTF-8")
+        } else {
+            value
+        }
     }
 
     def register() {

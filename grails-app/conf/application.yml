@@ -123,14 +123,16 @@ security:
         realm: ALA User Details
         path:
           - /status/**
-#ala:
-#    cookie:
-#        domain: ala.org.au
-#        httpOnly: true
-#        maxAge: -1
-#        name: ALA-Auth-Test
-#        path: /
-#        secure: false
+ala:
+    cookie:
+        quoteCookieValue: true
+        encodeCookieValue: false
+        domain: ala.org.au
+        httpOnly: true
+        maxAge: -1
+        name: ALA-Auth-Test
+        path: /
+        secure: false
 
 # Spring Actuator Endpoints are Disabled by Default
 endpoints:

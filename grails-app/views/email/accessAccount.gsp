@@ -2,7 +2,8 @@
 <html>
   <head><title><g:message code="accessing.account.title" /></title></head>
   <body>
-    <h1><g:message code="accessing.account.header" /></h1>
+    <h3><g:message code="accessing.account.header" /></h3>
+    <p>Dear ${userName}</p>
     <p>
         <g:message code="accessing.account.description" />
     </p>

@@ -27,6 +27,7 @@ class UserService {
             user.locked = false
             user.save(failOnError: true, flush:true)
             updateProperties(user, params)
+            emailService.sendUpdateProfileSuccess(user)
             true
         } catch (Exception e){
             log.error(e.getMessage(), e)

@@ -27,7 +27,7 @@ class EmailService {
               to user.email
               body (view: '/email/resetPassword',
                     plugin:"email-confirmation",
-                    model:[link:getServerUrl() + "resetPassword/" +  user.id +  "/"  + authKey, emailTitle: emailTitle, emailBody: emailBody, password: password ]
+                    model:[userName: user.firstName, link: getServerUrl() + "resetPassword/" +  user.id +  "/"  + authKey, emailTitle: emailTitle, emailBody: emailBody, password: password ]
               )
             }
         } catch (Exception ex) {
@@ -42,19 +42,31 @@ class EmailService {
           to user.email
           body (view: '/email/activateAccount',
                 plugin:"email-confirmation",
-                model:[link:getServerUrl() + "activateAccount/" + user.id + "/"  + authKey, orgNameLong: grailsApplication.config.skin.orgNameLong ]
+                model:[userName: user.firstName, link: getServerUrl() + "activateAccount/" + user.id + "/"  + authKey, orgNameLong: grailsApplication.config.skin.orgNameLong ]
           )
         }
     }
 
-    def sendAccountActivationSuccess(def user, def activatedAlerts) {
+    def sendAccountActivationSuccess(user, activatedAlerts) {
         sendMail {
             from grailsApplication.config.emailSenderTitle+"<" + grailsApplication.config.emailSender + ">"
             subject "Account activated successfully"
             to user.email
             body (view: '/email/activateAccountSuccess',
                     plugin:"email-confirmation",
-                    model:[activatedAlerts: activatedAlerts, alertsUrl: grailsApplication.config.alerts.url]
+                    model:[userName: user.firstName, activatedAlerts: activatedAlerts, alertsUrl: grailsApplication.config.alerts.url]
+            )
+        }
+    }
+
+    def sendUpdateProfileSuccess(user) {
+        sendMail {
+            from grailsApplication.config.emailSenderTitle+"<" + grailsApplication.config.emailSender + ">"
+            subject "Account updated successfully"
+            to user.email
+            body (view: '/email/updateAccountSuccess',
+                    plugin:"email-confirmation",
+                    model:[userName: user.firstName, support: grailsApplication.config.supportEmail]
             )
         }
     }
@@ -66,7 +78,7 @@ class EmailService {
           to user.email
           body (view: '/email/accessAccount',
                 plugin:"email-confirmation",
-                model:[link:getLoginUrl(user.email), generatedPassword: generatedPassword]
+                model:[userName: user.firstName, link: getLoginUrl(user.email), generatedPassword: generatedPassword]
           )
         }
     }

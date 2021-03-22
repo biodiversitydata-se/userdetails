@@ -173,6 +173,7 @@ class RegistrationController {
                                 grailsApplication.config.getProperty('ala.cookie.domain', String, 'ala.org.au'),
                                 grailsApplication.config.getProperty('ala.cookie.secure', Boolean, false),
                                 grailsApplication.config.getProperty('ala.cookie.httpOnly', Boolean, true))
+                        log.info("New cookie set for user: {}, cookie name: {}, cookie value: {}", user.id, cookieName , quoteValue(encodeValue(params.email)))
                     }
                 }
                 redirect(controller: 'profile')

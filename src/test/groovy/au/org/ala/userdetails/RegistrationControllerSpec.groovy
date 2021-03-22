@@ -5,8 +5,11 @@ import au.org.ala.recaptcha.RecaptchaResponse
 import grails.testing.gorm.DataTest
 import grails.testing.web.controllers.ControllerUnitTest
 import org.grails.web.servlet.mvc.SynchronizerTokensHolder
+import grails.plugin.cookie.CookieService
 import retrofit2.Response
 import retrofit2.mock.Calls
+
+import javax.servlet.http.Cookie
 
 //@Mock([User, Role, UserRole, UserProperty])
 class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUnitTest<RegistrationController>, DataTest {
@@ -14,11 +17,14 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
     def passwordService = Mock(PasswordService)
     def userService = Mock(UserService)
     def emailService = Mock(EmailService)
+    def cookieService = Mock (CookieService)
     def recaptchaClient = Mock(RecaptchaClient)
+
     void setup() {
         controller.passwordService = passwordService
         controller.userService = userService
         controller.emailService = emailService
+        controller.cookieService = cookieService
         controller.recaptchaClient = recaptchaClient
     }
 
@@ -216,4 +222,76 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
         0 * passwordService.resetPassword(_, _)
         0 * emailService.sendAccountActivation(_, _)
     }
+
+    void "A new email address must not be in use by others"() {
+        setup:
+        User currentUser = new User()
+        currentUser.email = 'currentUser@example.org'
+        userService.currentUser >> currentUser
+        params.email = 'in.use@example.org'
+
+        when:
+        controller.update()
+
+        then:
+        1 * userService.isEmailInUse(params.email, currentUser) >> true
+        model.msg.indexOf("A user is already registered") != -1
+        view == '/registration/accountError'
+    }
+
+    void "Account is updated when a valid new email address is supplied"() {
+        setup:
+        User currentUser = new User()
+        currentUser.email = 'currentUser@example.org'
+        userService.currentUser >> currentUser
+
+        params.email = 'test@example.org'
+        params.firstName = 'Test'
+        params.lastName = 'Test'
+        params['organisation'] = 'Org'
+        params.country = 'AU'
+        params.state = 'ACT'
+        params.city = 'Canberra'
+        params.password = 'password'
+        params.reenteredPassword = 'password'
+
+        when:
+        controller.update()
+
+        then:
+        1 * userService.updateUser(_, _) >> true
+        1 * userService.isEmailInUse(params.email, currentUser) >> false
+        response.redirectedUrl == '/profile'
+    }
+
+    void "A cookie is set when a valid new email address is supplied"() {
+        setup:
+        User currentUser = new User()
+        currentUser.email = 'currentUser@example.org'
+        userService.currentUser >> currentUser
+
+        params.email = 'test@example.org'
+        params.firstName = 'Test'
+        params.lastName = 'Test'
+        params['organisation'] = 'Org'
+        params.country = 'AU'
+        params.state = 'ACT'
+        params.city = 'Canberra'
+        params.password = 'password'
+        params.reenteredPassword = 'password'
+
+        def cookieName = grailsApplication.config.getProperty('ala.cookie.name', String, null)
+
+        when:
+        controller.update()
+
+        then:
+        1 * userService.updateUser(_, _) >> true
+        1 * userService.isEmailInUse(params.email, currentUser) >> false
+        1 * cookieService.findCookie(cookieName) >> {new Cookie(cookieName, 'oldEmail')}
+        1 * cookieService.setCookie(_, _, _, _, _, _, _) >> {Cookie newCookie = new Cookie(cookieName, params.email); response.addCookie(newCookie); newCookie}
+        response.getCookie(cookieName) != null
+        response.redirectedUrl == '/profile'
+    }
+
 }

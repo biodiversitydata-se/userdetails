@@ -3,6 +3,7 @@
   <head><title>${emailTitle}</title></head>
   <body>
     <h3>${emailTitle}</h3>
+    <p><g:message code="email.greeting" /> ${userName}</p>
     <p>
         <markdown:renderHtml text="${emailBody}"/>
     </p>

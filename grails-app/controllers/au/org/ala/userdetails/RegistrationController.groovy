@@ -157,6 +157,7 @@ class RegistrationController {
             def success = userService.updateUser(user, params)
             if (success) {
                 redirect(controller: 'profile')
+                log.info("Account details updated for user: " + user.id + " username: " + user.userName)
             } else {
                 render(view: "accountError", model: [msg: "Failed to update user profile - unknown error"])
             }

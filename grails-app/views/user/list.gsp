@@ -37,22 +37,22 @@
     <table class="table table-bordered table-striped table-condensed">
         <thead>
         <tr>
-            <g:sortableColumn property="id" title="${message(code: 'user.id.label', default: 'ID')}"/>
+            <g:sortableColumn property="id" title="${message(code: 'user.id.label', default: 'ID')}" mapping="adminUserList"/>
 
-            <g:sortableColumn property="email" title="${message(code: 'user.email.label', default: 'Email')}"/>
+            <g:sortableColumn property="email" title="${message(code: 'user.email.label', default: 'Email')}" mapping="adminUserList"/>
 
             <g:sortableColumn property="firstName"
-                              title="${message(code: 'user.firstName.label', default: 'First Name')}"/>
+                              title="${message(code: 'user.firstName.label', default: 'First Name')}" mapping="adminUserList"/>
 
             <g:sortableColumn property="lastName"
-                              title="${message(code: 'user.lastName.label', default: 'Last Name')}"/>
+                              title="${message(code: 'user.lastName.label', default: 'Last Name')}" mapping="adminUserList"/>
 
             <g:sortableColumn property="activated"
-                              title="${message(code: 'user.activated.label', default: 'Activated')}"/>
+                              title="${message(code: 'user.activated.label', default: 'Activated')}" mapping="adminUserList"/>
 
-            <g:sortableColumn property="locked" title="${message(code: 'user.locked.label', default: 'Locked')}"/>
+            <g:sortableColumn property="locked" title="${message(code: 'user.locked.label', default: 'Locked')}" mapping="adminUserList"/>
 
-            <g:sortableColumn property="created" title="${message(code: 'user.dateCreated.label', default: 'Created')}"/>
+            <g:sortableColumn property="dateCreated" title="${message(code: 'user.dateCreated.label', default: 'Created')}" mapping="adminUserList"/>
 
         </tr>
         </thead>

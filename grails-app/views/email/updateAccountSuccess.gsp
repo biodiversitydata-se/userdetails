@@ -3,7 +3,7 @@
   <head><title><g:message code="update.account.success.title" /></title></head>
   <body>
     <h3><g:message code="update.account.success.header" /></h3>
-    <p>Dear ${userName}</p>
+    <p><g:message code="email.greeting" /> ${userName}</p>
     <p>
         <g:message code="update.account.success.description" />
     </p>

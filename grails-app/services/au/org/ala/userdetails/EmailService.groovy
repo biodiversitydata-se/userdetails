@@ -35,51 +35,67 @@ class EmailService {
         }
     }
 
-    def sendAccountActivation(user, authKey){
-        sendMail {
-          from grailsApplication.config.emailSenderTitle+"<" + grailsApplication.config.emailSender + ">"
-          subject "Activate your account"
-          to user.email
-          body (view: '/email/activateAccount',
-                plugin:"email-confirmation",
-                model:[userName: user.firstName, link: getServerUrl() + "activateAccount/" + user.id + "/"  + authKey, orgNameLong: grailsApplication.config.skin.orgNameLong ]
-          )
+    def sendAccountActivation(user, authKey) {
+        try {
+            sendMail {
+                from grailsApplication.config.emailSenderTitle + "<" + grailsApplication.config.emailSender + ">"
+                subject "Activate your account"
+                to user.email
+                body(view: '/email/activateAccount',
+                        plugin: "email-confirmation",
+                        model: [userName: user.firstName, link: getServerUrl() + "activateAccount/" + user.id + "/" + authKey, orgNameLong: grailsApplication.config.skin.orgNameLong]
+                )
+            }
+        } catch (Exception ex) {
+            throw new PasswordResetFailedException(ex)
         }
     }
 
     def sendAccountActivationSuccess(user, activatedAlerts) {
-        sendMail {
-            from grailsApplication.config.emailSenderTitle+"<" + grailsApplication.config.emailSender + ">"
-            subject "Account activated successfully"
-            to user.email
-            body (view: '/email/activateAccountSuccess',
-                    plugin:"email-confirmation",
-                    model:[userName: user.firstName, activatedAlerts: activatedAlerts, alertsUrl: grailsApplication.config.alerts.url]
-            )
+        try {
+            sendMail {
+                from grailsApplication.config.emailSenderTitle + "<" + grailsApplication.config.emailSender + ">"
+                subject "Account activated successfully"
+                to user.email
+                body(view: '/email/activateAccountSuccess',
+                        plugin: "email-confirmation",
+                        model: [userName: user.firstName, activatedAlerts: activatedAlerts, alertsUrl: grailsApplication.config.alerts.url]
+                )
+            }
+        } catch (Exception ex) {
+            throw new PasswordResetFailedException(ex)
         }
     }
 
     def sendUpdateProfileSuccess(user) {
-        sendMail {
-            from grailsApplication.config.emailSenderTitle+"<" + grailsApplication.config.emailSender + ">"
-            subject "Account updated successfully"
-            to user.email
-            body (view: '/email/updateAccountSuccess',
-                    plugin:"email-confirmation",
-                    model:[userName: user.firstName, support: grailsApplication.config.supportEmail]
-            )
+        try {
+            sendMail {
+                from grailsApplication.config.emailSenderTitle+"<" + grailsApplication.config.emailSender + ">"
+                subject "Account updated successfully"
+                to user.email
+                body (view: '/email/updateAccountSuccess',
+                        plugin:"email-confirmation",
+                        model:[userName: user.firstName, support: grailsApplication.config.supportEmail]
+                )
+            }
+        } catch (Exception ex) {
+            throw new PasswordResetFailedException(ex)
         }
     }
 
     def sendGeneratedPassword(user, generatedPassword){
-        sendMail {
-          from grailsApplication.config.emailSenderTitle+"<" + grailsApplication.config.emailSender + ">"
-          subject "Accessing your account"
-          to user.email
-          body (view: '/email/accessAccount',
-                plugin:"email-confirmation",
-                model:[userName: user.firstName, link: getLoginUrl(user.email), generatedPassword: generatedPassword]
-          )
+        try {
+            sendMail {
+              from grailsApplication.config.emailSenderTitle+"<" + grailsApplication.config.emailSender + ">"
+              subject "Accessing your account"
+              to user.email
+              body (view: '/email/accessAccount',
+                    plugin:"email-confirmation",
+                    model:[userName: user.firstName, link: getLoginUrl(user.email), generatedPassword: generatedPassword]
+              )
+            }
+        } catch (Exception ex) {
+            throw new PasswordResetFailedException(ex)
         }
     }
 
@@ -92,7 +108,6 @@ class EmailService {
     def getMyProfileUrl(){
             grailsApplication.config.grails.serverURL  +
                     "/myprofile/"
-
     }
 
     def getServerUrl(){

@@ -217,6 +217,13 @@ biocache:
   search:
     baseUrl: https://biocache.ala.org.au/occurrences/search
 
+supportEmail: support-local@ala.org.au
+homeUrl: https://www.ala.org.au
+homeLogoUrl: https://www.ala.org.au/app/uploads/2020/06/ALA_Logo_Inline_RGB-300x63.png
+mainTitle: Atlas of Living Australia (local)
+emailSenderTitle: Atlas of Living Australia
+emailSender: support@ala.org.au
+
 markdown:
     removeHtml: true
 

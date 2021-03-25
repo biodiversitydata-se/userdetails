@@ -113,15 +113,15 @@ class RegistrationController {
             if (user) {
                 try {
                     userService.resetAndSendTemporaryPassword(user, null, null, null)
-                    [:]
+                    render(view: 'startPasswordReset', model: [email: params.email])
                 } catch (Exception e) {
                     log.error("Problem starting password reset for email address: " + params.email)
                     log.error(e.getMessage(), e)
                     render(view: 'accountError', model: [msg: e.getMessage()])
                 }
             } else {
-                //send password reset link
-                render(view: 'forgottenPassword', model: [email: params.email, captchaInvalid: false, invalidEmail: true])
+                //invalid email address entered
+                log.warn("email address {} is not recognised.", params.email)
             }
         }
     }

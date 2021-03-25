@@ -12,7 +12,7 @@
     <div class="row">
         <div class="col-md-12">
             <p class="well">
-                <g:message code="start.password.reset.description" />
+                <g:message code="start.password.reset.description" args="[params.email]" />
                 <br/>
                 <g:message code="start.password.reset.description.click" />
             </p>

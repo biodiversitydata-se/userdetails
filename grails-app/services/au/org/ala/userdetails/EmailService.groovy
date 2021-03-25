@@ -8,7 +8,8 @@ class EmailService {
 
     static transactional = false
 
-    def sendPasswordReset(user, authKey, emailSubject=null, emailTitle = null, emailBody=null, password=null) throws PasswordResetFailedException {
+    def sendPasswordReset(user, authKey, emailSubject = null, emailTitle = null, emailBody1 = null, emailBody2 = null, password = null)
+            throws PasswordResetFailedException {
 
         if (!emailSubject) {
             emailSubject = "Reset your password"
@@ -17,8 +18,12 @@ class EmailService {
             emailTitle = "Reset your password"
         }
 
-        if (!emailBody) {
-            emailBody = "Please click the link below to reset your ALA password.  This will take you to a form where you can provide a new password for your account."
+        if (!emailBody1) {
+            emailBody1 = "We have received a password reset request for the account associated with {}. You can reset your password by clicking the link below.  " +
+                    "This will take you to a form where you can provide a new password for your account."
+        }
+        if (!emailBody2) {
+            emailBody2 = "If you did not request a new password, please let us know immediately by replying to this email."
         }
         try {
             sendMail {
@@ -27,7 +32,7 @@ class EmailService {
               to user.email
               body (view: '/email/resetPassword',
                     plugin:"email-confirmation",
-                    model:[userName: user.firstName, link: getServerUrl() + "resetPassword/" +  user.id +  "/"  + authKey, emailTitle: emailTitle, emailBody: emailBody, password: password ]
+                    model:[userName: user.firstName, link: getServerUrl() + "resetPassword/" +  user.id +  "/"  + authKey, emailTitle: emailTitle, emailBody1: emailBody1, emailBody2: emailBody2, password: password ]
               )
             }
         } catch (Exception ex) {
@@ -35,7 +40,7 @@ class EmailService {
         }
     }
 
-    def sendAccountActivation(user, authKey) {
+    def sendAccountActivation(user, authKey) throws PasswordResetFailedException {
         try {
             sendMail {
                 from grailsApplication.config.emailSenderTitle + "<" + grailsApplication.config.emailSender + ">"
@@ -51,7 +56,7 @@ class EmailService {
         }
     }
 
-    def sendAccountActivationSuccess(user, activatedAlerts) {
+    def sendAccountActivationSuccess(user, activatedAlerts) throws PasswordResetFailedException {
         try {
             sendMail {
                 from grailsApplication.config.emailSenderTitle + "<" + grailsApplication.config.emailSender + ">"
@@ -67,7 +72,7 @@ class EmailService {
         }
     }
 
-    def sendUpdateProfileSuccess(user) {
+    def sendUpdateProfileSuccess(user) throws PasswordResetFailedException {
         try {
             sendMail {
                 from grailsApplication.config.emailSenderTitle+"<" + grailsApplication.config.emailSender + ">"
@@ -83,7 +88,7 @@ class EmailService {
         }
     }
 
-    def sendGeneratedPassword(user, generatedPassword){
+    def sendGeneratedPassword(user, generatedPassword) throws PasswordResetFailedException {
         try {
             sendMail {
               from grailsApplication.config.emailSenderTitle+"<" + grailsApplication.config.emailSender + ">"

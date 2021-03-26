@@ -155,4 +155,5 @@ tasks.withType(Test) {
 assets {
     minifyJs = true
     minifyCss = true
+    includes = ["fonts/*"]
 }

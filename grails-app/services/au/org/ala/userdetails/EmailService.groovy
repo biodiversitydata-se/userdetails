@@ -8,8 +8,9 @@ class EmailService {
 
     static transactional = false
 
-    def sendPasswordReset(user, authKey, emailSubject = null, emailTitle = null, emailBody1 = null, emailBody2 = null, password = null)
+    def sendPasswordReset(user, authKey, emailSubject = null, emailTitle = null, emailBody1 = null, password = null)
             throws PasswordResetFailedException {
+        String emailBody2 = null
 
         if (!emailSubject) {
             emailSubject = "Reset your password"
@@ -19,10 +20,17 @@ class EmailService {
         }
 
         if (!emailBody1) {
-            emailBody1 = "We have received a password reset request for the account associated with {}. You can reset your password by clicking the link below.  " +
-                    "This will take you to a form where you can provide a new password for your account."
+            // user requested password reset
+            if (!password) {
+                emailBody1 = "We have received a password reset request. You can reset your password by clicking the link below.  " +
+                        "This will take you to a form where you can provide a new password for your account."
+            } else { // bulk load users
+                emailBody1 = "Please click the link below to reset your ALA password.  " +
+                        "This will take you to a form where you can provide a new password for your account."
+            }
         }
-        if (!emailBody2) {
+        if (!password) {
+            // only if user requested password reset, no temp password generated
             emailBody2 = "If you did not request a new password, please let us know immediately by replying to this email."
         }
         try {

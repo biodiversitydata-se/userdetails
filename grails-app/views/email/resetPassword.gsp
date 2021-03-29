@@ -24,7 +24,9 @@
             <g:message code="reset.password.description" args="[password]" />
         </g:if>
         <p><a href="${link}">${link}</a></p>
-        <p><markdown:renderHtml text="${emailBody2}"/></p>
+        <g:if test="${emailBody2}">
+            <p><markdown:renderHtml text="${emailBody2}"/></p>
+        </g:if>
     </div>
   </body>
 </html>

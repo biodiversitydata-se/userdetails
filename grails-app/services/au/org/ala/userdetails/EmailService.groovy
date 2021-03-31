@@ -25,8 +25,7 @@ class EmailService {
                 emailBody1 = "We have received a password reset request. You can reset your password by clicking the link below.  " +
                         "This will take you to a form where you can provide a new password for your account."
             } else { // bulk load users
-                emailBody1 = "Please click the link below to reset your ALA password.  " +
-                        "This will take you to a form where you can provide a new password for your account."
+                emailBody1 = "Welcome to the ALA!"
             }
         }
         if (!password) {

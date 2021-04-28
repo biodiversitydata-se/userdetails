@@ -217,6 +217,9 @@ biocache:
   search:
     baseUrl: https://biocache.ala.org.au/occurrences/search
 
+sightings:
+  url: https://biocollect.ala.org.au/spotter
+
 supportEmail: support-local@ala.org.au
 homeUrl: https://www.ala.org.au
 homeLogoUrl: https://www.ala.org.au/app/uploads/2020/06/ALA_Logo_Inline_RGB-300x63.png

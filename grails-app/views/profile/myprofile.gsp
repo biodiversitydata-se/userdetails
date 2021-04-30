@@ -60,11 +60,6 @@
                 </a>
             </li>
             <li>
-                <a href="${grailsApplication.config.dataprofile.url}" target="_blank">
-                    <g:message code="myprofile.your.dataprofile" />
-                </a>
-            </li>
-            <li>
                 <g:link controller="registration" action="forgottenPassword">
                     <g:message code="userdetails.index.reset.password" />
                 </g:link>

@@ -98,7 +98,7 @@ dependencies {
     // regular JAR dependencies
 
     runtime 'com.zaxxer:HikariCP:3.3.1'
-    runtime 'mysql:mysql-connector-java:5.1.44'
+    runtime 'mysql:mysql-connector-java:8.0.25'
     testRuntime "com.h2database:h2"
     compile 'com.google.guava:guava:21.0'
     compile 'org.apache.httpcomponents:httpcore:4.3.3'

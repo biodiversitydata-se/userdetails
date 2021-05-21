@@ -150,8 +150,8 @@ class RegistrationController {
         if (user) {
             if (params.email != user.email) {
                 // email address has changed
-                def msg = message(code: "update.account.failure.msg", default: "Failed to update user profile - A user is already registered with the email address.")
                 if (userService.isEmailInUse(params.email, user)) {
+                    def msg = message(code: "update.account.failure.msg", default: "Failed to update user profile - A user is already registered with the email address.")
                     render(view: "accountError", model: [msg: msg])
                     return
                 }

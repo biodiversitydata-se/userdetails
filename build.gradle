@@ -90,7 +90,6 @@ dependencies {
     compile "domurtag.plugins:grails-simple-captcha:1.0.0-grails3"
     compile "org.grails.plugins:export:2.0.0"
     compile 'org.grails.plugins:grails-markdown:3.0.0'
-    compile 'org.grails.plugins:grails-cookie:2.0.3'
 //    compile 'org.grails.plugins:cache-ehcache:2.0.0.ALA'
 //    compile 'org.grails.plugins:cache:4.0.0.RC1'
 //    compile 'org.grails.plugins:cache-ehcache:3.0.0.M1'

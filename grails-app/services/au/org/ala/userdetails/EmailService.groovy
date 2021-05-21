@@ -79,12 +79,12 @@ class EmailService {
         }
     }
 
-    def sendUpdateProfileSuccess(user) throws PasswordResetFailedException {
+    def sendUpdateProfileSuccess(User user, List<String> emailRecipients) throws PasswordResetFailedException {
         try {
             sendMail {
                 from grailsApplication.config.emailSenderTitle+"<" + grailsApplication.config.emailSender + ">"
                 subject "Account updated successfully"
-                to user.email
+                to (emailRecipients.toArray())
                 body (view: '/email/updateAccountSuccess',
                         plugin:"email-confirmation",
                         model:[userName: user.firstName, support: grailsApplication.config.supportEmail]

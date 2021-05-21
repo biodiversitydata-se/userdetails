@@ -21,13 +21,17 @@ class UserService {
     def webService
 
     def updateUser(User user, GrailsParameterMap params) {
+        def emailRecipients = [user.email]
+        if (params.email != user.email) {
+            emailRecipients << params.email
+        }
         try {
             user.setProperties(params)
             user.activated = true
             user.locked = false
             user.save(failOnError: true, flush:true)
             updateProperties(user, params)
-            emailService.sendUpdateProfileSuccess(user)
+            emailService.sendUpdateProfileSuccess(user, emailRecipients)
             true
         } catch (Exception e){
             log.error(e.getMessage(), e)

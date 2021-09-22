@@ -168,6 +168,8 @@ bcrypt:
 attributes:
     states:
         path: classpath:states.json
+    affiliations:
+      enabled: false
 
 skin:
     layout: "ala-main"

@@ -9,6 +9,7 @@ import grails.gorm.transactions.Transactional
 import grails.util.Environment
 import grails.web.servlet.mvc.GrailsParameterMap
 import org.apache.http.HttpStatus
+import org.springframework.beans.factory.annotation.Value
 
 @Transactional
 class UserService {
@@ -19,6 +20,9 @@ class UserService {
     def grailsApplication
     def messageSource
     def webService
+
+    @Value('${attributes.affiliations.enabled:false}')
+    boolean affiliationsEnabled = false
 
     def updateUser(User user, GrailsParameterMap params) {
         def emailRecipients = [user.email]
@@ -239,6 +243,9 @@ class UserService {
     def updateProperties(User user, GrailsParameterMap params) {
         ['city', 'organisation', 'state', 'country'].each { propName ->
             setUserProperty(user, propName, params.get(propName, ''))
+        }
+        if (affiliationsEnabled) {
+            setUserProperty(user, 'affiliation', params.get('affiliation', ''))
         }
     }
 

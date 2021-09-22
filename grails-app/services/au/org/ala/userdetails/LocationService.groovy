@@ -2,7 +2,7 @@ package au.org.ala.userdetails
 
 import grails.converters.JSON
 import grails.plugin.cache.Cacheable
-import grails.transaction.NotTransactional
+import grails.gorm.transactions.NotTransactional
 import org.grails.web.json.JSONObject
 
 import org.springframework.beans.factory.annotation.Value

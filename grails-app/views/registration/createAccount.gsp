@@ -144,6 +144,19 @@
                     />
                     </div>
                 </g:if>
+                <g:if test="${grailsApplication.config.getProperty('attributes.affiliations.enabled', Boolean, false)}">
+                    <div class="form-group">
+                        <label for="affiliation"><g:message code="create.account.affiliation" default="What is your institutional affiliation?" /></label>
+                        <g:select id="affiliation" name="affiliation"
+                                  class="form-control"
+                                  value="${props?.affiliation}"
+                                  from="${l.affiliations()}"
+                                  optionKey="key"
+                                  optionValue="value"
+                                  noSelection="${['': message(code:'create.account.choose.affiliation', default: '-- Choose one --')]}"
+                        />
+                    </div>
+                </g:if>
                 <div class="form-group">
                     <label for="organisation"><g:message code="create.account.organisation" /></label>
                     <input id="organisation" name="organisation" type="text" class="form-control" value="${props?.organisation}"/>
@@ -156,7 +169,7 @@
                               keys="${l.countries()*.isoCode}"
                               from="${l.countries()*.name}"
                               noSelection="${['': message(code:'create.account.choose.your.country')]}"
-                              valueMessagePrefix="ala.country."
+                              valueMessagePrefix="ala.country"
                     />
                 </div>
                 <div class="form-group">
@@ -167,7 +180,7 @@
                               keys="${l.states(country: props?.country ?: 'AU')*.isoCode}"
                               from="${l.states(country: props?.country ?: 'AU')*.name}"
                               noSelection="${['': message(code:'create.account.choose.your.state')]}"
-                              valueMessagePrefix="ala.state."
+                              valueMessagePrefix="ala.state"
                     />
                 </div>
                 <div class="form-group">

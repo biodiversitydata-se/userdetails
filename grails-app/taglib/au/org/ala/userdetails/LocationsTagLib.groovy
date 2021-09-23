@@ -35,6 +35,7 @@ class LocationsTagLib {
                 'govFederal': g.message(code:'ala.affiliations.govFederal', default:'Government - federal'),
                 'volunteer': g.message(code:'ala.affiliations.volunteer', default:'Volunteer including citizen scientists'),
                 'education': g.message(code:'ala.affiliations.education', default:'Education – primary and secondary'),
+                'nfp': g.message(code:'ala.affiliations.nfp', default:'Not for profit'),
                 'other': g.message(code:'ala.affiliations.other', default:'Other / unaffiliated'),
                 'disinclinedToAcquiesce': g.message(code:'ala.affiliations.disinclinedToAcquiesce', default:'Prefer not to say')
         ]

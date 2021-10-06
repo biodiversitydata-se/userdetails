@@ -146,7 +146,7 @@
                 </g:if>
                 <g:if test="${grailsApplication.config.getProperty('attributes.affiliations.enabled', Boolean, false)}">
                     <div class="form-group">
-                        <label for="affiliation"><g:message code="create.account.affiliation" default="What is your institutional affiliation?" /></label>
+                        <label for="affiliation"><g:message code="create.account.affiliation" default="What is your primary affiliation?" /> *</label>
                         <g:select id="affiliation" name="affiliation"
                                   class="form-control"
                                   value="${props?.affiliation}"
@@ -154,6 +154,7 @@
                                   optionKey="key"
                                   optionValue="value"
                                   noSelection="${['': message(code:'create.account.choose.affiliation', default: '-- Choose one --')]}"
+                                  data-validation-engine="validate[required]"
                         />
                     </div>
                 </g:if>
@@ -162,20 +163,23 @@
                     <input id="organisation" name="organisation" type="text" class="form-control" value="${props?.organisation}"/>
                 </div>
                 <div class="form-group">
-                    <label for="country"><g:message code="create.account.country" /></label>
+                    <label for="country"><g:message code="create.account.country" /> *</label>
                     <g:select id="country" name="country"
                               class="form-control chosen-select"
+                              autocomplete="off"
                               value="${props?.country ?: 'AU'}"
                               keys="${l.countries()*.isoCode}"
                               from="${l.countries()*.name}"
                               noSelection="${['': message(code:'create.account.choose.your.country')]}"
                               valueMessagePrefix="ala.country"
+                              data-validation-engine="validate[required]"
                     />
                 </div>
                 <div class="form-group">
                     <label for="state"><g:message code="create.account.state.province" /></label>
                     <g:select id="state" name="state"
                               class="form-control chosen-select"
+                              autocomplete="off"
                               value="${props?.state}"
                               keys="${l.states(country: props?.country ?: 'AU')*.isoCode}"
                               from="${l.states(country: props?.country ?: 'AU')*.name}"

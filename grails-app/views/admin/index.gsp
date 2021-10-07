@@ -17,6 +17,9 @@
                 <li><g:link controller="authorisedSystem" action="list">Authorised systems</g:link></li>
                 <li><g:link controller="admin" action="bulkUploadUsers">Bulk create user accounts</g:link></li>
                 <li><g:link controller="admin" action="exportUsers">Export users to CSV file</g:link></li>
+                <g:if test="${grailsApplication.config.getProperty('attributes.affiliations.enabled', Boolean, false)}">
+                    <li><g:link controller="admin" action="surveyResults">Get user survey results</g:link></li>
+                </g:if>
                 <li><g:link controller="alaAdmin" action="index">ALA admin page</g:link></li>
             </ul>
 

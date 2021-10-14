@@ -36,16 +36,16 @@ class LocationService {
                 'mri': messageSource.getMessage('ala.affiliations.mri', null, 'Medical Research Institute (MRI)', locale),
                 'museum': messageSource.getMessage('ala.affiliations.museum', null, 'Museum, herbarium, library, botanic gardens', locale),
                 'nfp': messageSource.getMessage('ala.affiliations.nfp', null, 'Not for profit', locale),
-                'other': messageSource.getMessage('ala.affiliations.other', null, 'Other', locale),
                 'otherResearch': messageSource.getMessage('ala.affiliations.otherResearch', null, 'Other research organisation, unaffiliated researcher', locale),
-                'disinclinedToAcquiesce': messageSource.getMessage('ala.affiliations.disinclinedToAcquiesce', null, 'Prefer not to say', locale),
                 'private': messageSource.getMessage('ala.affiliations.private', null, 'Private user', locale),
                 'publiclyFunded': messageSource.getMessage('ala.affiliations.publiclyFunded', null, 'Publicly Funded Research Agency (PFRA) e.g. CSIRO, AIMS, DSTO', locale),
                 'uniResearch': messageSource.getMessage('ala.affiliations.uniResearch', null, 'University – faculty, researcher', locale),
                 'uniGeneral': messageSource.getMessage('ala.affiliations.uniGeneral', null, 'University - general staff, administration, management', locale),
                 'uniStudent': messageSource.getMessage('ala.affiliations.uniStudent', null, 'University – student', locale),
                 'wildlife': messageSource.getMessage('ala.affiliations.wildlife', null, 'Wildlife park, sanctuary, zoo, aquarium, wildlife rescue', locale),
-                'volunteer': messageSource.getMessage('ala.affiliations.volunteer', null, 'Volunteer, citizen scientist', locale)
+                'volunteer': messageSource.getMessage('ala.affiliations.volunteer', null, 'Volunteer, citizen scientist', locale),
+                'other': messageSource.getMessage('ala.affiliations.other', null, 'Other', locale),
+                'disinclinedToAcquiesce': messageSource.getMessage('ala.affiliations.disinclinedToAcquiesce', null, 'Prefer not to say', locale),
         ]
     }
 }

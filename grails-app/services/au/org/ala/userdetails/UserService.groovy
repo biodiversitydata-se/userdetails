@@ -9,6 +9,7 @@ import grails.gorm.transactions.Transactional
 import grails.util.Environment
 import grails.web.servlet.mvc.GrailsParameterMap
 import org.apache.http.HttpStatus
+import org.springframework.beans.factory.annotation.Value
 
 @Transactional
 class UserService {
@@ -17,8 +18,12 @@ class UserService {
     def passwordService
     def authService
     def grailsApplication
+    def locationService
     def messageSource
     def webService
+
+    @Value('${attributes.affiliations.enabled:false}')
+    boolean affiliationsEnabled = false
 
     def updateUser(User user, GrailsParameterMap params) {
         def emailRecipients = [user.email]
@@ -240,6 +245,9 @@ class UserService {
         ['city', 'organisation', 'state', 'country'].each { propName ->
             setUserProperty(user, propName, params.get(propName, ''))
         }
+        if (affiliationsEnabled) {
+            setUserProperty(user, 'affiliation', params.get('affiliation', ''))
+        }
     }
 
     def deleteUser(User user) {
@@ -361,5 +369,26 @@ class UserService {
         jsonMap.totalUsersOneYearAgo = User.countByLockedAndActivatedAndDateCreatedLessThan(false, true, oneYearAgoDate)
         log.debug "jsonMap = ${jsonMap as JSON}"
         jsonMap
+    }
+
+    List<String[]> countByProfileAttribute(String s, Date date, Locale locale) {
+        def results = UserProperty.withCriteria {
+            if (date) {
+                user {
+                    gt 'lastLogin', date
+                }
+            }
+            eq 'name', s
+
+            projections {
+                groupProperty "value"
+                count 'name', 'count'
+            }
+            order('count')
+        }
+        def affiliations = locationService.affiliationSurvey(locale)
+        return results.collect {
+            [affiliations[it[0]] ?: it[0], it[1].toString()].toArray(new String[0])
+        }
     }
 }

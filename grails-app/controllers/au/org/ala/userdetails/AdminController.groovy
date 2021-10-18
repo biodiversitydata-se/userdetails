@@ -1,6 +1,9 @@
 package au.org.ala.userdetails
 
 import au.org.ala.auth.PreAuthorise
+import com.opencsv.CSVWriter
+import com.opencsv.CSVWriterBuilder
+import com.opencsv.RFC4180ParserBuilder
 import org.springframework.web.multipart.MultipartFile
 import org.springframework.web.multipart.MultipartHttpServletRequest
 
@@ -127,6 +130,18 @@ class AdminController {
             }
         }
         redirect(action:"bulkUploadUsers")
+    }
+
+    def surveyResults() {
+        def results = userService.countByProfileAttribute('affiliation', null, request.locale)
+        def csvWriter = new CSVWriterBuilder(response.writer)
+                .withParser(new RFC4180ParserBuilder().build())
+                .build()
+        response.status = 200
+        response.contentType = 'text/csv'
+        response.setHeader('Content-Disposition', "attachment; filename=user-survey-${new Date()}.csv")
+        csvWriter.writeAll(results)
+        csvWriter.flush()
     }
 
 }

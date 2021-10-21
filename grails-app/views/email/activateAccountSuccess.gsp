@@ -1,15 +1,31 @@
 <%@ page contentType="text/html"%>
 <html>
-<head><title>Your account has been successfully activated</title></head>
-<body>
-<h1>Your account has been successfully activated</h1>
-<p>
-    You are now automatically subscribed to the following alerts:
+<head>
+    <title><g:message code="activate.account.success.title" /></title>
+    <asset:stylesheet src="application.css" />
+    <style>
+    body {
+        font-family: 'Roboto';
+    }
+    </style>
+</head>
 
-    ${activatedAlerts}
-</p>
-<p>
-    Please visit <a href="${alertsUrl}/notification/myAlerts">My Alerts</a> to modify your alert configurations.
-</p>
+<body>
+    <a href="${grailsApplication.config.getProperty('homeUrl', String, 'https://www.ala.org.au')}" title="<g:message code='email.logo.title' />">
+        <img src="${grailsApplication.config.getProperty('homeLogoUrl', String, 'https://www.ala.org.au/app/uploads/2020/06/ALA_Logo_Inline_RGB-300x63.png')}"
+             alt="<g:message code='email.logo.alt' />" >
+    </a>
+
+    <div class="email-body">
+        <h3><g:message code="activate.account.success.header" /></h3>
+        <p><g:message code="email.greeting" /> ${userName}</p>
+        <p>
+            <g:message code="activate.account.success.alerts" />
+            ${activatedAlerts}
+        </p>
+        <p>
+            <g:message code="activate.account.success.alerts.config" args="[alertsUrl]" />
+        </p>
+    </div>
 </body>
 </html>

@@ -3,18 +3,18 @@
 <head>
     <meta name="layout" content="${grailsApplication.config.skin.layout}"/>
     <meta name="section" content="home"/>
-    <title>Please check your email</title>
+    <title><g:message code="start.password.reset.title" /></title>
     <asset:stylesheet src="application.css" />
 </head>
 <body>
 <div class="row">
-    <h1>Please check your email</h1>
+    <h1><g:message code="start.password.reset.header" /></h1>
     <div class="row">
         <div class="col-md-12">
             <p class="well">
-                We have sent you an email with a link to reset your password.
+                <g:message code="start.password.reset.description" args="[params.email]" />
                 <br/>
-                Please click the link in the email to start the process of providing a new password.
+                <g:message code="start.password.reset.description.click" />
             </p>
         </div>
    </div>

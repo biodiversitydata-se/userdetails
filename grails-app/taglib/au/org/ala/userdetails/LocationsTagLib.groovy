@@ -5,8 +5,8 @@ class LocationsTagLib {
     static namespace = "l"
 
     static defaultEncodeAs = [taglib:'html']
-    static encodeAsForTags = [states: [taglib:'none'], countries: [taglib:'none']]
-    static returnObjectForTags = ['states', 'countries']
+    static encodeAsForTags = [states: [taglib:'none'], countries: [taglib:'none'], affiliations: [taglib:'none']]
+    static returnObjectForTags = ['states', 'countries', 'affiliations']
 
     def locationService
 
@@ -17,5 +17,9 @@ class LocationsTagLib {
 
     def countries = { attrs, body ->
         locationService.getStatesAndCountries().countries
+    }
+
+    def affiliations = { attrs, body ->
+        return locationService.affiliationSurvey(request.locale)
     }
 }

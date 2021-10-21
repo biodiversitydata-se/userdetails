@@ -3,6 +3,8 @@ package au.org.ala.userdetails
 class UrlMappings {
 
     static mappings = {
+        name adminUserList: "/admin/user/list"(controller:'user', action: 'list')
+        name adminRoleList: "/admin/role/list"(controller:'role', action: 'list')
 
         "/my-profile/"(controller: 'profile')
         "/my-profile"(controller: 'profile')

@@ -26,13 +26,10 @@
 			<table class="table table-bordered table-striped table-condensed">
 				<thead>
 				<tr>
+					<g:sortableColumn property="role" title="${message(code: 'role.role.label', default: 'Role')}" mapping="adminRoleList"/>
+					<g:sortableColumn property="description" title="${message(code: 'role.description.label', default: 'Description')}" mapping="adminRoleList"/>
 
-					<g:sortableColumn property="role" title="${message(code: 'role.role.label', default: 'Role')}" />
-
-					<g:sortableColumn property="description" title="${message(code: 'role.description.label', default: 'Description')}" />
-
-					<th>Actions</th>
-
+					<th><g:message code="user.list.actions" /></th>
 				</tr>
 				</thead>
 				<tbody>

@@ -143,14 +143,13 @@
                 </g:each>
         </g:if>
         <g:else>
-            <p>No roles set for this user.</p>
+            <p><g:message code="user.show.no.roles" /></p>
         </g:else>
 
         <br/>
         <g:if test="${userInstance?.tempAuthKey}">
             <p>
-                Temp Auth Key points to the user reset password url.
-                This is useful in cases when the user didn't receive the reset password e-mail, usually because spam filters got in the way.
+                <g:message code="user.show.temp.auth.key" />
             </p>
         </g:if>
     </div>

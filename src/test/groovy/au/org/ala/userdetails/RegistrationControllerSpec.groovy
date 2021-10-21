@@ -8,6 +8,7 @@ import org.grails.web.servlet.mvc.SynchronizerTokensHolder
 import retrofit2.Response
 import retrofit2.mock.Calls
 
+
 //@Mock([User, Role, UserRole, UserProperty])
 class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUnitTest<RegistrationController>, DataTest {
 
@@ -15,6 +16,7 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
     def userService = Mock(UserService)
     def emailService = Mock(EmailService)
     def recaptchaClient = Mock(RecaptchaClient)
+
     void setup() {
         controller.passwordService = passwordService
         controller.userService = userService
@@ -216,4 +218,46 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
         0 * passwordService.resetPassword(_, _)
         0 * emailService.sendAccountActivation(_, _)
     }
+
+    void "A new email address must not be in use by others"() {
+        setup:
+        User currentUser = new User()
+        currentUser.email = 'currentUser@example.org'
+        userService.currentUser >> currentUser
+        params.email = 'in.use@example.org'
+
+        when:
+        controller.update()
+
+        then:
+        1 * userService.isEmailInUse(params.email, currentUser) >> true
+        model.msg.indexOf("A user is already registered") != -1
+        view == '/registration/accountError'
+    }
+
+    void "Account is updated when a valid new email address is supplied"() {
+        setup:
+        User currentUser = new User()
+        currentUser.email = 'currentUser@example.org'
+        userService.currentUser >> currentUser
+
+        params.email = 'test@example.org'
+        params.firstName = 'Test'
+        params.lastName = 'Test'
+        params['organisation'] = 'Org'
+        params.country = 'AU'
+        params.state = 'ACT'
+        params.city = 'Canberra'
+        params.password = 'password'
+        params.reenteredPassword = 'password'
+
+        when:
+        controller.update()
+
+        then:
+        1 * userService.updateUser(_, _) >> true
+        1 * userService.isEmailInUse(params.email, currentUser) >> false
+        response.redirectedUrl == '/profile'
+    }
+
 }

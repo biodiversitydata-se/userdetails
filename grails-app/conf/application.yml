@@ -123,6 +123,7 @@ security:
         realm: ALA User Details
         path:
           - /status/**
+
 # Spring Actuator Endpoints are Disabled by Default
 endpoints:
     enabled: false
@@ -167,6 +168,8 @@ bcrypt:
 attributes:
     states:
         path: classpath:states.json
+    affiliations:
+      enabled: false
 
 skin:
     layout: "ala-main"
@@ -206,8 +209,28 @@ biocache:
   search:
     baseUrl: https://biocache.ala.org.au/occurrences/search
 
+sightings:
+  url: https://biocollect.ala.org.au/spotter
+
+myData:
+  url: https://sandbox.ala.org.au/tempDataResource/myData
+
+supportEmail: support-local@ala.org.au
+homeUrl: https://www.ala.org.au
+homeLogoUrl: https://www.ala.org.au/app/uploads/2020/06/ALA_Logo_Inline_RGB-300x63.png
+mainTitle: Atlas of Living Australia (local)
+emailSenderTitle: Atlas of Living Australia
+emailSender: support@ala.org.au
+
 markdown:
     removeHtml: true
+
+# set to true to display more ALA registration messages
+registration:
+    showAlaMessage: false
+    resetPasswordArticle:
+    alertArticle:
+    activationArticle:
 
 recaptcha:
   baseUrl: https://www.google.com/recaptcha/api/

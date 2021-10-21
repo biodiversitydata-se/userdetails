@@ -17,7 +17,7 @@ plugins {
     id "com.gorylenko.gradle-git-properties" version "1.4.17"
 }
 
-version "2.3.0"
+version "2.4.0"
 group "au.org.ala"
 
 apply plugin:"eclipse"
@@ -77,9 +77,9 @@ dependencies {
 
     // Grails plugin dependencies
 
-    runtime "org.grails.plugins:ala-bootstrap3:3.2.1"
+    runtime "org.grails.plugins:ala-bootstrap3:3.2.4"
     compile "org.grails.plugins:ala-ws-plugin:2.0"
-    compile "org.grails.plugins:ala-auth:3.1.2"
+    compile "org.grails.plugins:ala-auth:3.1.3"
     compile "org.grails.plugins:ala-admin-plugin:2.1"
 
     compile 'org.grails.plugins:external-config:1.3.0'
@@ -97,7 +97,7 @@ dependencies {
     // regular JAR dependencies
 
     runtime 'com.zaxxer:HikariCP:3.3.1'
-    runtime 'mysql:mysql-connector-java:5.1.42'
+    runtime 'mysql:mysql-connector-java:8.0.25'
     testRuntime "com.h2database:h2"
     compile 'com.google.guava:guava:21.0'
     compile 'org.apache.httpcomponents:httpcore:4.3.3'
@@ -107,6 +107,8 @@ dependencies {
     compile 'commons-io:commons-io:2.6'
     compile 'commons-beanutils:commons-beanutils:1.8.3'
     compile 'org.mindrot:jbcrypt:0.4'
+    compile 'com.opencsv:opencsv:5.5.2'
+
 
     compile 'org.grails.plugins:spring-session-helper:1.1'
     compile 'org.springframework.boot:spring-boot-starter-data-redis'
@@ -154,4 +156,5 @@ tasks.withType(Test) {
 assets {
     minifyJs = true
     minifyCss = true
+    includes = ["fonts/*"]
 }

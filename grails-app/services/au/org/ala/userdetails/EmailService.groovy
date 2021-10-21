@@ -8,7 +8,9 @@ class EmailService {
 
     static transactional = false
 
-    def sendPasswordReset(user, authKey, emailSubject=null, emailTitle = null, emailBody=null, password=null) throws PasswordResetFailedException {
+    def sendPasswordReset(user, authKey, emailSubject = null, emailTitle = null, emailBody1 = null, password = null)
+            throws PasswordResetFailedException {
+        String emailBody2 = null
 
         if (!emailSubject) {
             emailSubject = "Reset your password"
@@ -17,8 +19,18 @@ class EmailService {
             emailTitle = "Reset your password"
         }
 
-        if (!emailBody) {
-            emailBody = "Please click the link below to reset your ALA password.  This will take you to a form where you can provide a new password for your account."
+        if (!emailBody1) {
+            // user requested password reset
+            if (!password) {
+                emailBody1 = "We have received a password reset request. You can reset your password by clicking the link below.  " +
+                        "This will take you to a form where you can provide a new password for your account."
+            } else { // bulk load users
+                emailBody1 = "Welcome to the ALA!"
+            }
+        }
+        if (!password) {
+            // only if user requested password reset, no temp password generated
+            emailBody2 = "If you did not request a new password, please let us know immediately by replying to this email."
         }
         try {
             sendMail {
@@ -27,7 +39,7 @@ class EmailService {
               to user.email
               body (view: '/email/resetPassword',
                     plugin:"email-confirmation",
-                    model:[link:getServerUrl() + "resetPassword/" +  user.id +  "/"  + authKey, emailTitle: emailTitle, emailBody: emailBody, password: password ]
+                    model:[userName: user.firstName, link: getServerUrl() + "resetPassword/" +  user.id +  "/"  + authKey, emailTitle: emailTitle, emailBody1: emailBody1, emailBody2: emailBody2, password: password ]
               )
             }
         } catch (Exception ex) {
@@ -35,39 +47,67 @@ class EmailService {
         }
     }
 
-    def sendAccountActivation(user, authKey){
-        sendMail {
-          from grailsApplication.config.emailSenderTitle+"<" + grailsApplication.config.emailSender + ">"
-          subject "Activate your account"
-          to user.email
-          body (view: '/email/activateAccount',
-                plugin:"email-confirmation",
-                model:[link:getServerUrl() + "activateAccount/" + user.id + "/"  + authKey, orgNameLong: grailsApplication.config.skin.orgNameLong ]
-          )
+    def sendAccountActivation(user, authKey) throws PasswordResetFailedException {
+        try {
+            sendMail {
+                from grailsApplication.config.emailSenderTitle + "<" + grailsApplication.config.emailSender + ">"
+                subject "Activate your account"
+                to user.email
+                body(view: '/email/activateAccount',
+                        plugin: "email-confirmation",
+                        model: [userName: user.firstName, link: getServerUrl() + "activateAccount/" + user.id + "/" + authKey, orgNameLong: grailsApplication.config.skin.orgNameLong]
+                )
+            }
+        } catch (Exception ex) {
+            throw new PasswordResetFailedException(ex)
         }
     }
 
-    def sendAccountActivationSuccess(def user, def activatedAlerts) {
-        sendMail {
-            from grailsApplication.config.emailSenderTitle+"<" + grailsApplication.config.emailSender + ">"
-            subject "Account activated successfully"
-            to user.email
-            body (view: '/email/activateAccountSuccess',
+    def sendAccountActivationSuccess(user, activatedAlerts) throws PasswordResetFailedException {
+        try {
+            sendMail {
+                from grailsApplication.config.emailSenderTitle + "<" + grailsApplication.config.emailSender + ">"
+                subject "Account activated successfully"
+                to user.email
+                body(view: '/email/activateAccountSuccess',
+                        plugin: "email-confirmation",
+                        model: [userName: user.firstName, activatedAlerts: activatedAlerts, alertsUrl: grailsApplication.config.alerts.url]
+                )
+            }
+        } catch (Exception ex) {
+            throw new PasswordResetFailedException(ex)
+        }
+    }
+
+    def sendUpdateProfileSuccess(User user, List<String> emailRecipients) throws PasswordResetFailedException {
+        try {
+            sendMail {
+                from grailsApplication.config.emailSenderTitle+"<" + grailsApplication.config.emailSender + ">"
+                subject "Account updated successfully"
+                to (emailRecipients.toArray())
+                body (view: '/email/updateAccountSuccess',
+                        plugin:"email-confirmation",
+                        model:[userName: user.firstName, support: grailsApplication.config.supportEmail]
+                )
+            }
+        } catch (Exception ex) {
+            throw new PasswordResetFailedException(ex)
+        }
+    }
+
+    def sendGeneratedPassword(user, generatedPassword) throws PasswordResetFailedException {
+        try {
+            sendMail {
+              from grailsApplication.config.emailSenderTitle+"<" + grailsApplication.config.emailSender + ">"
+              subject "Accessing your account"
+              to user.email
+              body (view: '/email/accessAccount',
                     plugin:"email-confirmation",
-                    model:[activatedAlerts: activatedAlerts, alertsUrl: grailsApplication.config.alerts.url]
-            )
-        }
-    }
-
-    def sendGeneratedPassword(user, generatedPassword){
-        sendMail {
-          from grailsApplication.config.emailSenderTitle+"<" + grailsApplication.config.emailSender + ">"
-          subject "Accessing your account"
-          to user.email
-          body (view: '/email/accessAccount',
-                plugin:"email-confirmation",
-                model:[link:getLoginUrl(user.email), generatedPassword: generatedPassword]
-          )
+                    model:[userName: user.firstName, link: getLoginUrl(user.email), generatedPassword: generatedPassword]
+              )
+            }
+        } catch (Exception ex) {
+            throw new PasswordResetFailedException(ex)
         }
     }
 
@@ -80,7 +120,6 @@ class EmailService {
     def getMyProfileUrl(){
             grailsApplication.config.grails.serverURL  +
                     "/myprofile/"
-
     }
 
     def getServerUrl(){

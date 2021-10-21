@@ -54,7 +54,6 @@ class RegistrationController {
     }
 
     def updatePassword(UpdatePasswordCommand cmd) {
-
         User user = User.get(cmd.userId)
         if (cmd.hasErrors()) {
             render(view: 'passwordReset', model: [user: user, authKey: cmd.authKey, errors:cmd.errors, passwordMatchFail: true])
@@ -113,15 +112,15 @@ class RegistrationController {
             if (user) {
                 try {
                     userService.resetAndSendTemporaryPassword(user, null, null, null)
-                    [:]
+                    render(view: 'startPasswordReset', model: [email: params.email])
                 } catch (Exception e) {
                     log.error("Problem starting password reset for email address: " + params.email)
                     log.error(e.getMessage(), e)
                     render(view: 'accountError', model: [msg: e.getMessage()])
                 }
             } else {
-                //send password reset link
-                render(view: 'forgottenPassword', model: [email: params.email, captchaInvalid: false, invalidEmail: true])
+                //invalid email address entered
+                log.warn("email address {} is not recognised.", params.email)
             }
         }
     }
@@ -150,13 +149,20 @@ class RegistrationController {
 
         if (user) {
             if (params.email != user.email) {
-                // email address has changed, and username and email address must be kept in sync
+                // email address has changed
+                if (userService.isEmailInUse(params.email, user)) {
+                    def msg = message(code: "update.account.failure.msg", default: "Failed to update user profile - A user is already registered with the email address.")
+                    render(view: "accountError", model: [msg: msg])
+                    return
+                }
+                // and username and email address must be kept in sync
                 params.userName = params.email
             }
 
             def success = userService.updateUser(user, params)
             if (success) {
                 redirect(controller: 'profile')
+                log.info("Account details updated for user: " + user.id + " username: " + user.userName)
             } else {
                 render(view: "accountError", model: [msg: "Failed to update user profile - unknown error"])
             }

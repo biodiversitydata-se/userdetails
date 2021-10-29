@@ -39,7 +39,6 @@ switch (Environment.current) {
         appender(TOMCAT_LOG, ConsoleAppender) {
             encoder(PatternLayoutEncoder) {
                 charset = Charset.forName('UTF-8')
-
                 pattern =
                         '%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} ' + // Date
                                 '%clr(%5p) ' + // Log level

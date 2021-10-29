@@ -164,6 +164,16 @@ password:
     encoder: bcrypt # or legacy
 bcrypt:
     strength: 10
+apiKey:
+  secretRegenerationTimeOutInMins: 15
+jwk:
+  filePath: /data/cas/keystore.jwks
+  url: https://nectar-auth-dev.ala.org.au/cas/oidc/jwks
+  keyId: nectar-auth-dev.ala.org.au
+jwt:
+  aud: oidc-test-client-id
+  expiryInMins: 30
+  notBeforeProcessingInMins: 30
 
 attributes:
     states:
@@ -173,11 +183,22 @@ attributes:
 
 skin:
     layout: "ala-main"
-    fluidLayout: false
+    fluidLayout: true
     orgNameLong: "Atlas of Living Australia"
     orgNameShort: "ALA"
 privacyPolicy: "https://www.ala.org.au/privacy-policy/"
 termsOfUse: "https://www.ala.org.au/terms-of-use/"
+
+logo:
+  biocollect: https://www.ala.org.au/app/uploads/2019/05/BioCollect-icon-1.png
+  spatialportal: https://www.ala.org.au/app/uploads/2019/06/19-0078_ALA_ICON_IconSuite_Spatial-Portal.svg
+  digivol: https://www.ala.org.au/app/uploads/2019/04/specimen-icon.png
+  specieslists: https://www.ala.org.au/app/uploads/2019/06/19-0078_ALA_ICON_IconSuite_Species-Lists.svg
+  api: https://www.ala.org.au/app/uploads/2019/06/19-0078_ALA_ICON_IconSuite_Web-service-APIs.svg
+  inaturalist: https://www.ala.org.au/app/uploads/2019/09/iNaturalist_logomark-alaBlack-icon.png
+  sandbox: https://www.ala.org.au/app/uploads/2019/06/19-0078_ALA_ICON_IconSuite_Sandbox-1.svg
+  downloads: https://www.ala.org.au/app/uploads/2019/06/19-0078_ALA_ICON_IconSuite_Download-Predefined-Datasets.svg
+  flickr: https://upload.wikimedia.org/wikipedia/commons/3/31/Flickr_font_awesome.svg
 
 oauth:
 #  debug: true
@@ -214,6 +235,9 @@ sightings:
 
 myData:
   url: https://sandbox.ala.org.au/tempDataResource/myData
+
+biocollect:
+  url: https://biocollect.ala.org.au/acsa/bioActivity/list?hub=acsa
 
 supportEmail: support-local@ala.org.au
 homeUrl: https://www.ala.org.au

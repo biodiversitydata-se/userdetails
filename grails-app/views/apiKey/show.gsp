@@ -38,7 +38,7 @@
                             </button>
                         </g:if>
                         <g:else>
-                            You recently generated the API Secret. You can regenerate in ${regenTime} minutes.
+                            You recently generated the API Secret. You can regenerate in ${regenTime}.
                         </g:else>
                     </td>
                 </tr>

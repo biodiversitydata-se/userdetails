@@ -23,7 +23,7 @@ class ApiKeyController {
             ApiKey apiKey = apiKeyService.getApiKeyForUser(user)
             use (groovy.time.TimeCategory) {
                 def props = user.propsAsMap()
-                boolean generateLinkEnabled = apiKey.lastUpdated < (new Date() - secretRegenerationTimeOutInMins.minutes)
+                boolean generateLinkEnabled = apiKey.apiSecret == null || apiKey.lastUpdated < (new Date() - secretRegenerationTimeOutInMins.minutes)
                 def regenTime = apiKey.lastUpdated + secretRegenerationTimeOutInMins.minutes - new Date()
                 render(view: 'show', model: [user: user, props: props, apiKey: apiKey.apiKey,
                                              generateLinkEnabled: generateLinkEnabled,

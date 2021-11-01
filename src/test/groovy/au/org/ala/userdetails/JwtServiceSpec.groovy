@@ -11,8 +11,4 @@ class JwtServiceSpec extends Specification implements ServiceUnitTest<JwtService
     def cleanup() {
     }
 
-    void "test something"() {
-        expect:"fix me"
-            true == false
-    }
 }

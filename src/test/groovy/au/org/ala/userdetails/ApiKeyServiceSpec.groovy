@@ -11,8 +11,4 @@ class ApiKeyServiceSpec extends Specification implements ServiceUnitTest<ApiKeyS
     def cleanup() {
     }
 
-    void "test something"() {
-        expect:"fix me"
-            true == false
-    }
 }

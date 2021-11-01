@@ -43,18 +43,64 @@ class ApiKeyService {
      * @param suppliedApiKeySecret
      * @return
      */
-    String generateToken(String suppliedApiKey, String suppliedApiKeySecret){
+    Map generateTokenApiKeySecret(String suppliedApiKey, String suppliedApiKeySecret){
         ApiKey apiKey = ApiKey.findByApiKey(suppliedApiKey)
         if (apiKey){
-            def encoder = new BcryptPasswordEncoder(bcryptStrength)
-            def encodedSecret = encoder.encode(suppliedApiKeySecret)
             if (BCrypt.checkpw(suppliedApiKeySecret, apiKey.apiSecret)){
-                jwtService.generateJwt(apiKey.user)
+                try {
+                    def jwt = jwtService.generateJwt(apiKey.user)
+                    [statusCode: 200, jwt: jwt]
+                } catch (Exception e){
+                    [statusCode: 500]
+                }
             } else {
-                null
+                [statusCode: 400]
             }
         } else {
-            null
+            [statusCode: 400]
         }
+    }
+
+    /**
+     * Check the validity of the Authorization header and generate a JWT if good.
+     *
+     * @param suppliedApiKey
+     * @param suppliedApiKeySecret
+     * @return
+     */
+    Map generateTokenBasicAuth(String authorizationHeader){
+
+        if (authorizationHeader.startsWith("Basic")){
+            String base64encoded = authorizationHeader.substring(6).trim()
+            String decoded = new String(Base64.getUrlDecoder().decode(base64encoded))
+            int indexOfSep = decoded.indexOf(":")
+            if (indexOfSep > 0){
+                String[] parts = decoded.split(":")
+                User user = User.findByEmail(parts[0])
+                if (user){
+                    def pw = Password.findByUser(user)
+                    if (pw) {
+                        if (BCrypt.checkpw(parts[1], pw.password)) {
+                            try {
+                                def jwt = jwtService.generateJwt(user)
+                                return [statusCode: 200, jwt: jwt]
+                            } catch (Exception e){
+                                log.error("Problem generating JWT")
+                                return [statusCode: 500]
+                            }
+                        }
+                    } else {
+                        log.info("Unable to find password for user ${user.id}")
+                    }
+                } else {
+                    log.debug("Unable to find user for ${parts[0]}")
+                }
+            } else {
+                log.debug("Badly formatted Authorization header")
+            }
+        } else {
+            log.debug("Badly formatted Authorization header - should start with Basic")
+        }
+        [statusCode: 400]
     }
 }

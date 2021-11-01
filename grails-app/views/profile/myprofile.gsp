@@ -44,6 +44,8 @@
                             <p><g:message code="userdetails.index.reset.password.desc" /></p>
                         </div>
                     </div>
+
+                    <g:if test="${grailsApplication.config.apiKey.showLink?:''.toBoolean()}">
                     <div class="d-flex">
                         <div class="image">
                             <img src="${grailsApplication.config.logo.api}"/>
@@ -51,12 +53,13 @@
                         <div class="content">
                             <h4 id="your-api-key">
                                 <g:link controller="apiKey">
-                                    <g:message code="myprofile.apikey" default="My API key" />
+                                    <g:message code="myprofile.apikey" />
                                 </g:link>
                             </h4>
                             <p><g:message code="myprofile.apikey.desc" />.</p>
                         </div>
                     </div>
+                    </g:if>
 
                     <g:if test="${isAdmin}">
                         <div class="d-flex">

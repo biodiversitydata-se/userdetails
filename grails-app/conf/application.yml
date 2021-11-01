@@ -165,6 +165,7 @@ password:
 bcrypt:
     strength: 10
 apiKey:
+  showLink: true
   secretRegenerationTimeOutInMins: 15
 jwk:
   filePath: /data/cas/keystore.jwks

@@ -68,7 +68,7 @@ class JwtService {
              "preferred_username": "oidc-test-client-id"
          }
      */
-    String generateJwt(User user){
+    String generateJwt(User user) throws Exception {
         try {
             JwkProvider provider = new UrlJwkProvider(new URL(jwkUrl));
             Jwk jwk = provider.get(keyId)
@@ -102,6 +102,7 @@ class JwtService {
             token
         } catch (JWTCreationException exception){
             //Invalid Signing configuration / Couldn't convert Claims.
+            throw new Exception(exception)
         }
     }
 

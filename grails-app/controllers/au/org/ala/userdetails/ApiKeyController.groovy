@@ -1,6 +1,7 @@
 package au.org.ala.userdetails
 
 import grails.converters.JSON
+import org.apache.http.HttpHeaders
 import org.springframework.beans.factory.annotation.Value
 
 class ApiKeyController {
@@ -82,8 +83,37 @@ class ApiKeyController {
     }
 
     def jwt() {
+
+        Map result = [:]
+
+        def authorizationHeader = request.getHeader(HttpHeaders.AUTHORIZATION)
+        if (authorizationHeader){
+            result = apiKeyService.generateTokenBasicAuth(authorizationHeader)
+        } else {
+            def apiKey = request.getHeader(X_API_KEY_HEADER)
+            def apiKeySecret = request.getHeader(X_API_SECRET)
+            if (apiKey && apiKeySecret) {
+                result = apiKeyService.generateTokenApiKeySecret(apiKey, apiKeySecret)
+            }
+        }
+        if (result) {
+            if (result.jwt) {
+                render(["token": result.jwt] as JSON)
+            } else {
+//                response.sendError(result.statusCode, "Authentication not successful")
+                render(["error": "Authentication not successful"] as JSON)
+            }
+        } else {
+//            response.sendError(500, "Unable to create JWT")
+            render(["error": "Unable to create JWT"] as JSON)
+        }
+    }
+
+    def basicAuth() {
         // http basic auth
-        def apiKey = request.getHeader(X_API_KEY_HEADER)
+        def authorizationHeader = request.getHeader(HttpHeaders.AUTHORIZATION)
+
+
         def apiKeySecret = request.getHeader(X_API_SECRET)
         def jwt = apiKeyService.generateToken(apiKey, apiKeySecret)
         if (jwt) {
@@ -92,4 +122,5 @@ class ApiKeyController {
             response.sendError(400, "Authentication not successful")
         }
     }
+
 }

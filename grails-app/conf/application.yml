@@ -165,16 +165,18 @@ password:
 bcrypt:
     strength: 10
 apiKey:
-  showLink: true
+  showLink: false
   secretRegenerationTimeOutInMins: 15
 jwk:
   filePath: /data/cas/keystore.jwks
-  url: https://nectar-auth-dev.ala.org.au/cas/oidc/jwks
-  keyId: nectar-auth-dev.ala.org.au
+  url: https://auth-test.ala.org.au/cas/oidc/jwks
+  keyId: auth-test.ala.org.au
 jwt:
-  aud: oidc-test-client-id
+  aud: auth-test-oidc-client-id
   expiryInMins: 30
   notBeforeProcessingInMins: 30
+
+
 
 attributes:
     states:

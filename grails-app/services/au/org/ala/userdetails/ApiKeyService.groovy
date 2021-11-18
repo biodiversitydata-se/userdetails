@@ -85,8 +85,7 @@ class ApiKeyService {
                                 def jwt = jwtService.generateJwt(user)
                                 return [statusCode: 200, jwt: jwt]
                             } catch (Exception e){
-                                log.error("Problem generating JWT - " + e.getMessage())
-                                log.debug(e.getMessage(), e)
+                                log.error("Problem generating JWT - check keystore - " + e.getMessage())
                                 if (log.isDebugEnabled()){
                                     log.debug(e.getMessage(), e)
                                 }

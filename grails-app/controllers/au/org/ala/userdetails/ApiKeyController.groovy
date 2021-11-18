@@ -100,27 +100,10 @@ class ApiKeyController {
             if (result.jwt) {
                 render(["token": result.jwt] as JSON)
             } else {
-//                response.sendError(result.statusCode, "Authentication not successful")
-                render(["error": "Authentication not successful"] as JSON)
+                response.sendError(result.statusCode, "Authentication not successful")
             }
         } else {
-//            response.sendError(500, "Unable to create JWT")
-            render(["error": "Unable to create JWT"] as JSON)
+            response.sendError(500, "Unable to create JWT")
         }
     }
-
-    def basicAuth() {
-        // http basic auth
-        def authorizationHeader = request.getHeader(HttpHeaders.AUTHORIZATION)
-
-
-        def apiKeySecret = request.getHeader(X_API_SECRET)
-        def jwt = apiKeyService.generateToken(apiKey, apiKeySecret)
-        if (jwt) {
-            render(["token": jwt] as JSON)
-        } else {
-            response.sendError(400, "Authentication not successful")
-        }
-    }
-
 }

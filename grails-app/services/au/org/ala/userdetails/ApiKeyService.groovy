@@ -77,6 +77,13 @@ class ApiKeyService {
             if (indexOfSep > 0){
                 String[] parts = decoded.split(":")
                 User user = User.findByEmail(parts[0])
+                if (!user.getActivated()){
+                    return [statusCode: 401, message: "Account not activated"]
+                }
+                if (user.getLocked()){
+                    return [statusCode: 401, message: "Account locked"]
+                }
+
                 if (user){
                     def pw = Password.findByUser(user)
                     if (pw) {

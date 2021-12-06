@@ -29,6 +29,7 @@
                     <td>Your API key</td>
                     <td id="apiKey">${apiKey}</td>
                 </tr>
+                <g:if test="${grailsApplication.config.apikey.showSecret}">
                 <tr>
                     <td>Your API secret</td>
                     <td id="generatedSecret">
@@ -42,6 +43,7 @@
                         </g:else>
                     </td>
                 </tr>
+                </g:if>
             </table>
         </div>
         <div class="col-lg-4 ">
@@ -60,6 +62,7 @@
             </div>
         </div>
     </div>
+    <g:if test="${grailsApplication.config.apikey.showSecret}">
     <div class="row" id="how-do-i" style="margin-top: 20px;">
         <div class="col-lg-12">
             <h2>How do I use a JSON Web Token (JWT) ?</h2>
@@ -103,7 +106,7 @@
             </p>
         </div>
     </div>
-
+    </g:if>
     <div class="row">
         <div class="col-lg-12">
             <h2>Services requiring further permissions</h2>

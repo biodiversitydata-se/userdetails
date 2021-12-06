@@ -56,6 +56,7 @@ class UrlMappings {
 
         "/ws/token"(controller: 'apiKey', action: 'jwt')
         "/ws/jwt"(controller: 'apiKey', action: 'jwt')
+        "/ws/apikey/$apiKey"(controller: 'apiKey', action: 'validate')
 
         "/logout/logout"(controller: "logout", action: 'logout')
         "/"(view:"/index")

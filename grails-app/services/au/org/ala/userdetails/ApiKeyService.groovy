@@ -26,6 +26,10 @@ class ApiKeyService {
         apiKey
     }
 
+    ApiKey getApiKey(String apiKey){
+        ApiKey.findByApiKey(apiKey)
+    }
+
     String resetSecretForApiKey(ApiKey apiKey){
         def encoder = new BcryptPasswordEncoder(bcryptStrength)
         String apiKeySecret = UUID.randomUUID().toString()

@@ -106,4 +106,18 @@ class ApiKeyController {
             response.sendError(500, "Unable to create JWT")
         }
     }
+
+    def validate(){
+
+        if (params.apiKey){
+            ApiKey apiKey = apiKeyService.getApiKey(params.apiKey)
+            if (apiKey){
+                render([valid:true] as JSON)
+            } else {
+                render([valid:false] as JSON)
+            }
+        } else {
+            render([valid:false] as JSON)
+        }
+    }
 }

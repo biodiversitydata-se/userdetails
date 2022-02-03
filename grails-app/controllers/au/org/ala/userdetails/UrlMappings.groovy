@@ -11,6 +11,7 @@ class UrlMappings {
         "/myprofile/"(controller: 'profile')
         "/myprofile"(controller: 'profile')
         "/profile/$action?"(controller: 'profile')
+        "/apiKey"(controller:'apiKey', action: 'index')
 
         "/external/flickr"(controller: 'externalSite', action: 'flickr')
         "/ws/flickr"(controller: 'externalSite', action: 'flickr')
@@ -50,6 +51,12 @@ class UrlMappings {
         "/admin/$controller/$action?/$id?"()
 
         "/admin/$controller/$action\\?"()
+
+
+
+        "/ws/token"(controller: 'apiKey', action: 'jwt')
+        "/ws/jwt"(controller: 'apiKey', action: 'jwt')
+        "/ws/apikey/$apiKey"(controller: 'apiKey', action: 'validate')
 
         "/logout/logout"(controller: "logout", action: 'logout')
         "/"(view:"/index")

@@ -39,10 +39,12 @@ spring:
           enabled: false
     session:
         store-type: none # Spring Session support disabled by default.
-        disable-redis-config-action: false
+#        disable-redis-config-action: false
         grails:
             mutableAttributes:
               - SYNCHRONIZER_TOKENS_HOLDER
+    jmx:
+      unique-names: true
 server:
   use-forward-headers: true
   tomcat:
@@ -125,22 +127,20 @@ security:
           - /status/**
 
 # Spring Actuator Endpoints are Disabled by Default
-endpoints:
-    enabled: false
-    sensitive: true
-    jmx:
-        enabled: true
-        unique-names: true
-    cors:
-        allow-credentials: true
-        allowed-methods:
-          - GET
-          - POST
-          - DELETE
-          - PUT
-        allowed-headers: "*"
-        allowed-origins: "*"
+
 management:
+    endpoints:
+        enabled-by-default: false
+        sensitive: true
+        cors:
+          allow-credentials: true
+          allowed-methods:
+            - GET
+            - POST
+            - DELETE
+            - PUT
+          allowed-headers: "*"
+          allowed-origins: "*"
     context-path: /status
     security:
         enabled: true
@@ -269,13 +269,13 @@ hibernate:
         queries: false
         use_second_level_cache: false
         use_query_cache: true
-#        region:
-#            factory_class: org.hibernate.cache.ehcache.SingletonEhCacheRegionFactory
+        region:
+            factory_class: org.hibernate.cache.jcache.internal.JCacheRegionFactory
 
 dataSource:
     pooled: true
     jmxExport: true
-    driverClassName: com.mysql.jdbc.Driver
+    driverClassName: com.mysql.cj.jdbc.Driver
     type: "com.zaxxer.hikari.HikariDataSource"
     username:
     password:

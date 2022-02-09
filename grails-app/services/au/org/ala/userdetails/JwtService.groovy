@@ -33,7 +33,7 @@ class JwtService {
     @Value('${jwk.keyId}')
     String keyId
 
-    @Value('${jwk.iss}')
+    @Value('${jwt.iss}')
     String iss
 
     @Value('${jwt.aud}')

@@ -174,8 +174,9 @@ jwk:
   keyId: auth-test.ala.org.au
 jwt:
   aud: auth-test-oidc-client-id
+  iss: https://auth-test.ala.org.au/cas/oidc
   expiryInMins: 30
-  notBeforeProcessingInMins: 30
+  notBeforeProcessingInMins: 0
 
 
 

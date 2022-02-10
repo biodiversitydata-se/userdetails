@@ -33,6 +33,9 @@ class JwtService {
     @Value('${jwk.keyId}')
     String keyId
 
+    @Value('${jwt.iss}')
+    String iss
+
     @Value('${jwt.aud}')
     String aud
 
@@ -79,7 +82,7 @@ class JwtService {
 
             Algorithm algorithm = Algorithm.RSA256((RSAPublicKey) jwk.getPublicKey(), getPrivateKey());
             String token = JWT.create()
-                    .withIssuer(keyId)
+                    .withIssuer(iss)
                     .withKeyId(keyId)
                     .withClaim("iat", Date.from(issuedAt))
                     .withClaim("exp", Date.from(expiration))

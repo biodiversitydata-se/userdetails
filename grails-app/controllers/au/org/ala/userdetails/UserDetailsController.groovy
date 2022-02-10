@@ -2,16 +2,69 @@ package au.org.ala.userdetails
 
 import au.org.ala.cas.encoding.CloseShieldWriter
 import au.org.ala.userdetails.marshaller.UserMarshaller
+import au.org.ala.web.UserDetails
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import grails.converters.JSON
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.enums.ParameterIn
+import io.swagger.v3.oas.annotations.media.ArraySchema
+import io.swagger.v3.oas.annotations.media.Content
+import io.swagger.v3.oas.annotations.media.Schema
+import io.swagger.v3.oas.annotations.parameters.RequestBody
+import io.swagger.v3.oas.annotations.responses.ApiResponse
 import org.hibernate.ScrollableResults
 
+import javax.ws.rs.Consumes
+import javax.ws.rs.Path
+import javax.ws.rs.Produces
+
+import static io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY
+
+@Path("userDetails")
 class UserDetailsController {
 
     static allowedMethods = [getUserDetails: "POST", getUserList: "POST", getUserListWithIds: "POST", getUserListFull: "POST", getUserDetailsFromIdList: "POST"]
 
     def index() {}
 
+    @Operation(
+            method = "GET",
+            tags = "users",
+            summary = "Search users",
+            operationId = "search",
+            description = "Search for users by username, email or display name.",
+            parameters = [
+                @Parameter(
+                        name = "q",
+                        in = QUERY,
+                        description = "Search query for the user's username, email or display name",
+                        required = true
+                ),
+                @Parameter(
+                        name = "max",
+                        in = QUERY,
+                        description = "Maximum number of results to return",
+                        required = false
+                )
+            ],
+            responses = [
+                    @ApiResponse(
+                        description = "Search results",
+                        responseCode = "200",
+                        content = [
+                                @Content(
+                                        mediaType = "application/json",
+                                        array = @ArraySchema(schema = @Schema(implementation = UserDetails))
+                                )
+                        ]
+                    )
+            ]
+    )
+    @Path("search")
+    @Produces("application/json")
     def search() {
+        g.createLink()
         def q = params['q']
         def max = params.int('max', 10)
         User.withStatelessSession { session ->
@@ -28,6 +81,46 @@ class UserDetailsController {
         }
     }
 
+    @Operation(
+            method = "GET",
+            tags = "users",
+            summary = "Get Users by Role",
+            description = "Get Users by Role",
+            parameters = [
+                    @Parameter(
+                            name = "role",
+                            in = QUERY,
+                            description = "The role to get users for",
+                            required = true
+                    ),
+                    @Parameter(
+                            name = "id",
+                            in = QUERY,
+                            description = "A list of user ids or usernames to limit the results to",
+                            required = false
+                    ),
+                    @Parameter(
+                            name = "includeProps",
+                            in = QUERY,
+                            description = "Whether to include additional user properties or not",
+                            required = false
+                    )
+            ],
+            responses = [
+                    @ApiResponse(
+                            description = "Search results",
+                            responseCode = "200",
+                            content = [
+                                    @Content(
+                                            mediaType = "application/json",
+                                            array = @ArraySchema(arraySchema = @Schema(implementation = UserDetails))
+                                    )
+                            ]
+                    )
+            ]
+    )
+    @Path("byRole")
+    @Produces("application/json")
     def byRole() {
         def ids = params.list('id')
         def roleName = params.get('role', 'ROLE_USER')
@@ -100,6 +193,40 @@ class UserDetailsController {
         response.flushBuffer()
     }
 
+    @Operation(
+            method = "POST",
+            tags = "users",
+            summary = "Get User Details",
+            description = "Get User Details",
+            parameters = [
+                    @Parameter(
+                            name = "userName",
+                            in = QUERY,
+                            description = "The username of the user",
+                            required = false
+                    ),
+                    @Parameter(
+                            name = "includeProps",
+                            in = QUERY,
+                            description = "Whether to include additional user properties or not",
+                            required = false
+                    )
+            ],
+            responses = [
+                    @ApiResponse(
+                            description = "User Details",
+                            responseCode = "200",
+                            content = [
+                                    @Content(
+                                            mediaType = "application/json",
+                                            schema = @Schema(implementation = UserDetails)
+                                    )
+                            ]
+                    )
+            ]
+    )
+    @Path('getUserDetails')
+    @Produces('application/json')
     def getUserDetails() {
 
         def user
@@ -132,18 +259,84 @@ class UserDetailsController {
 
     }
 
+    @Operation(
+            method = "POST",
+            tags = "users",
+            summary = "Get User List",
+            description = "Get a list of all users",
+            deprecated = true,
+            responses = [
+                    @ApiResponse(
+                            description = "Returns a map of user's email addresses to their names",
+                            responseCode = "200",
+                            content = [
+                                    @Content(
+                                            mediaType = "application/json",
+                                            schema = @Schema(implementation = Map<String, String>)
+                                    )
+                            ]
+                    )
+            ]
+    )
+    @Deprecated
+    @Path("getUserList")
+    @Produces("application/json")
     def getUserList() {
         def users = User.findNameAndEmailWhereEmailIsNotNull()
         def map = users.collectEntries { [(it[0].toLowerCase()): "${it[1]?:""} ${it[2]?:""}"]}
         render(map as JSON, contentType: "application/json")
     }
 
+    @Operation(
+            method = "POST",
+            tags = "users",
+            summary = "Get User List With Ids",
+            description = "Get a list of all users by their user id",
+            deprecated = true,
+            responses = [
+                    @ApiResponse(
+                            description = "Returns a map of user's ids to their names",
+                            responseCode = "200",
+                            content = [
+                                    @Content(
+                                            mediaType = "application/json",
+                                            schema = @Schema(implementation = Map<String, String>)
+                                    )
+                            ]
+                    )
+            ]
+    )
+    @Deprecated
+    @Path("getUserListWithIds")
+    @Produces("application/json")
     def getUserListWithIds() {
         def users = User.findIdFirstAndLastName()
         def map = users.collectEntries { [(it[0]), "${it[1]?:""} ${it[2]?:""}"] }
         render(map as JSON, contentType: "application/json")
     }
 
+    @Operation(
+            method = "POST",
+            tags = "users",
+            summary = "Get User List With Ids",
+            description = "Get a list of all users by their user id",
+            deprecated = true,
+            responses = [
+                    @ApiResponse(
+                            description = "User Details",
+                            responseCode = "200",
+                            content = [
+                                    @Content(
+                                            mediaType = "application/json",
+                                            array = @ArraySchema(schema = @Schema(implementation = UserDetails))
+                                    )
+                            ]
+                    )
+            ]
+    )
+    @Deprecated
+    @Path("getUserListFull")
+    @Produces("application/json")
     def getUserListFull() {
         def details = User.findUserDetails().collect {
             [id: it[0], firstName: it[1]?:"", lastName: it[2]?:"", userName: it[3]?:"", email: it[4]?:""]
@@ -151,6 +344,36 @@ class UserDetailsController {
         render(details as JSON, contentType: "application/json")
     }
 
+    @Operation(
+            method = "POST",
+            tags = "users",
+            operationId = "getUserDetailsFromIdList",
+            summary = "Get User Details by id list",
+            description = "Get a list of user details for a list of user ids",
+            requestBody = @RequestBody(
+                    description = "The list of user ids to request and whether to include extended properties",
+                    required = true,
+                    content = @Content(
+                            mediaType = 'application/json',
+                            schema = @Schema(implementation = GetUserDetailsFromIdListRequest)
+                    )
+            ),
+            responses = [
+                    @ApiResponse(
+                            description = "User Details",
+                            responseCode = "200",
+                            content = [
+                                    @Content(
+                                            mediaType = "application/json",
+                                            schema = @Schema(implementation = GetUserDetailsFromIdListResponse)
+                                    )
+                            ]
+                    )
+            ]
+    )
+    @Path("getUserDetailsFromIdList")
+    @Consumes("application/json")
+    @Produces("application/json")
     def getUserDetailsFromIdList() {
 
         def req = request.JSON
@@ -193,5 +416,20 @@ class UserDetailsController {
             render([success: false, message: "Body must contain JSON map payload with 'userIds' key that contains a list of user ids"] as JSON, contentType: "application/json")
         }
 
+    }
+
+    // classes used for the OpenAPI definition generator
+    @JsonIgnoreProperties('metaClass')
+    static class GetUserDetailsFromIdListRequest {
+        boolean includeProps = false
+        List<Long> userIds = []
+    }
+
+    @JsonIgnoreProperties('metaClass')
+    static class GetUserDetailsFromIdListResponse {
+        boolean success = false
+        Map<String,UserDetails> users
+        List<Long> invalidIds
+        String message
     }
 }

@@ -18,7 +18,7 @@ plugins {
     id "com.gorylenko.gradle-git-properties" version "2.3.2" // TODO
 }
 
-version "2.6.0-SNAPSHOT"
+version "3.0.0-SNAPSHOT"
 group "au.org.ala"
 
 apply plugin:"eclipse"
@@ -48,6 +48,12 @@ configurations {
         extendsFrom developmentOnly
     }
 }
+
+//grails {
+//    plugins {
+//        compile project(':openapi-plugin')
+//    }
+//}
 
 configurations.all {
     resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
@@ -155,6 +161,8 @@ dependencies {
         exclude module: 'jquery' // dependency from skin
         exclude module: 'bootstrap' // dependency from skin
     }
+
+    compile('au.org.ala.plugins:openapi:0.1.0-SNAPSHOT')
 
     testCompile('com.squareup.retrofit2:retrofit-mock:2.4.0')
 }

@@ -272,7 +272,7 @@ class UserDetailsController {
                             content = [
                                     @Content(
                                             mediaType = "application/json",
-                                            schema = @Schema(implementation = Map<String, String>)
+                                            schema = @Schema(implementation = Map) // TODO Annotation processor does not like generic parameters on types, create a type that realizes Map<String,String>
                                     )
                             ]
                     )
@@ -300,7 +300,7 @@ class UserDetailsController {
                             content = [
                                     @Content(
                                             mediaType = "application/json",
-                                            schema = @Schema(implementation = Map<String, String>)
+                                            schema = @Schema(implementation = Map)
                                     )
                             ]
                     )

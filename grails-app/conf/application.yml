@@ -38,11 +38,12 @@ spring:
         repositories:
           enabled: false
     session:
-        store-type: none # Spring Session support disabled by default.
+      enabled: false
+      store-type: none # Spring Session support disabled by default.
 #        disable-redis-config-action: false
-        grails:
-            mutableAttributes:
-              - SYNCHRONIZER_TOKENS_HOLDER
+      grails:
+        mutableAttributes:
+          - SYNCHRONIZER_TOKENS_HOLDER
     jmx:
       unique-names: true
 server:

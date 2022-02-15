@@ -143,10 +143,9 @@ dependencies {
     compile 'org.mindrot:jbcrypt:0.4'
     compile 'com.opencsv:opencsv:5.5.2'
 
-
-    compile 'org.grails.plugins:spring-session-helper:2.0.0-SNAPSHOT'
-    compile 'org.springframework.boot:spring-boot-starter-data-mongodb'
     compile 'org.springframework.session:spring-session-data-mongodb'
+    compile 'org.springframework.boot:spring-boot-starter-data-mongodb'
+    compile 'org.grails.plugins:spring-session-helper:2.0.0-SNAPSHOT'
 
     compile "com.auth0:java-jwt:3.18.2"
     compile "com.auth0:jwks-rsa:0.20.0"

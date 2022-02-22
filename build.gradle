@@ -106,8 +106,9 @@ dependencies {
 
     // Grails plugin dependencies
 
-    runtime "org.grails.plugins:ala-bootstrap3:3.2.4"
-    compile "org.grails.plugins:ala-ws-plugin:2.0"
+    runtime "org.grails.plugins:ala-bootstrap3:4.0.0-SNAPSHOT"
+    compile "org.grails.plugins:ala-ws-plugin:3.0.0-SNAPSHOT"
+    compile "org.grails.plugins:ala-ws-security-plugin:4.0.0-SNAPSHOT"
     compile "org.grails.plugins:ala-auth:5.0.0-SNAPSHOT"
     compile "org.grails.plugins:ala-admin-plugin:2.1"
 
@@ -183,11 +184,10 @@ bootRun {
     systemProperty springProfilesActive, System.getProperty(springProfilesActive)
 }
 
-//bootRepackage {
-//    enabled = true
-//    executable = true
-//    classifier = 'exec'
-//}
+bootWar {
+    launchScript()
+    classifier = 'exec'
+}
 
 tasks.withType(GroovyCompile) {
     configure(groovyOptions) {
@@ -221,30 +221,7 @@ publishing {
     }
     publications {
         mavenJar(MavenPublication) {
-//            pom.withXml {
-//                def pomNode = asNode()
-//                pomNode.dependencyManagement.replaceNode {}
-//
-//                // simply remove dependencies without a version
-//                // version-less dependencies are handled with dependencyManagement
-//                // see https://github.com/spring-gradle-plugins/dependency-management-plugin/issues/8 for more complete solutions
-//                pomNode.dependencies.dependency.findAll {
-//                    it.version.text().isEmpty()
-//                }.each {
-//                    it.replaceNode {}
-//                }
-//            }
-            from components.web
-//            if (bootRepackage && bootRepackage.enabled && bootRepackage.classifier) {
-//                def repackagedFile = file("$libsDir/$project.name-$project.version-${bootRepackage.classifier}.jar")
-//                if (repackagedFile.exists()) {
-//                    artifact(repackagedFile) {
-//                        classifier bootRepackage.classifier
-//                    }
-//                } else {
-//                    logger.quiet("Spring Boot repackage with classifier specified but file is not present!")
-//                }
-//            }
+            artifact bootWar
         }
     }
 }

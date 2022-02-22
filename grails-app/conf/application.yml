@@ -116,9 +116,13 @@ grails:
             reloadable: false
 
 security:
-    cas:
-        uriFilterPattern: '/admin/.*,/registration/editAccount,/my-profile,/my-profile/,/myprofile/,/myprofile,/profile/.*,/admin/,/admin,/registration/update,/registration/update/.*,/monitoring,/monitoring/*,/registration/disableAccount/.*,/registration/disableAccount,/admin/admin/downloadUsersCsvFile,/alaAdmin.*'
-        authenticateOnlyIfLoggedInFilterPattern: '/'
+    core:
+        uri-filter-pattern: ['/admin/*','/registration/editAccount','/my-profile','/my-profile/','/myprofile/','/myprofile','/profile/*','/admin/','/admin','/registration/update','/registration/update/*','/monitoring','/monitoring/*','/registration/disableAccount/*','/registration/disableAccount','/admin/admin/downloadUsersCsvFile','/alaAdmin/*']
+        optional-filter-pattern: ['/']
+    oidc:
+      allowUnsignedIdTokens: true
+    jwt:
+      fallbackToLegacyKeys: true # Reset to false once legacy api keys no longer supported
     filterOrder: 0
     basic:
         enabled: true
@@ -363,14 +367,3 @@ environments:
     production:
         dataSource:
             dbCreate: "validate"
----
-spring:
-    profiles: disable-redis
-#    autoconfigure:
-#        exclude:
-#        - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
-#        - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
-#    data:
-#        redis:
-#            repositories:
-#                enabled: false

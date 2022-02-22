@@ -3,7 +3,7 @@ package au.org.ala.userdetails
 import grails.testing.services.ServiceUnitTest
 import spock.lang.Specification
 
-class ApiKeyServiceSpec extends Specification implements ServiceUnitTest<ApiKeyService>{
+class UserApiKeyServiceSpec extends Specification implements ServiceUnitTest<UserApiKeyService>{
 
     def setup() {
     }

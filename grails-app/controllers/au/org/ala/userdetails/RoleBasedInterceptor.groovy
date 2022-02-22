@@ -24,9 +24,9 @@ class RoleBasedInterceptor {
 
         if (method && (controllerClass.isAnnotationPresent(PreAuthorise) || method.isAnnotationPresent(PreAuthorise))) {
             boolean result = true
+            PreAuthorise pa = method.getAnnotation(PreAuthorise) ?: controllerClass.getAnnotation(PreAuthorise)
             response.withFormat {
                 html {
-                    PreAuthorise pa = method.getAnnotation(PreAuthorise) ?: controllerClass.getAnnotation(PreAuthorise)
                     def requiredRole = pa.requiredRole()
                     def inRole = request?.isUserInRole(requiredRole)
 
@@ -39,7 +39,8 @@ class RoleBasedInterceptor {
                 }
 
                 json {
-                    if (!authorisedSystemService.isAuthorisedSystem(request)) {
+                    def legacyAuth = grailsApplication.config.getProperty('security.jwt.fallbackToLegacyKeys', Boolean, false)
+                    if (!authorisedSystemService.isAuthorisedRequest(request, response, legacyAuth, pa.requiredRole(), pa.requiredScope())) {
                         log.warn("Denying access to $actionName from remote addr: ${request.remoteAddr}, remote host: ${request.remoteHost}")
                         response.status = HttpStatus.SC_UNAUTHORIZED
                         render(['error': "Unauthorized"] as JSON)

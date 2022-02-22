@@ -18,5 +18,6 @@ public @interface PreAuthorise {
     String requiredRole() default "ROLE_ADMIN"
     String redirectController() default "userdetails"
     String redirectAction() default "index"
+    String requiredScope() default "read:userdetails"
 }
 

@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.parameters.RequestBody
 import io.swagger.v3.oas.annotations.responses.ApiResponse
+import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import org.hibernate.ScrollableResults
 
 import javax.ws.rs.Consumes
@@ -59,7 +60,8 @@ class UserDetailsController {
                                 )
                         ]
                     )
-            ]
+            ],
+            security = [@SecurityRequirement(scopes = ['read:userdetails'])]
     )
     @Path("search")
     @Produces("application/json")
@@ -117,7 +119,8 @@ class UserDetailsController {
                                     )
                             ]
                     )
-            ]
+            ],
+            security = [@SecurityRequirement(scopes = ['read:userdetails'])]
     )
     @Path("byRole")
     @Produces("application/json")
@@ -223,7 +226,8 @@ class UserDetailsController {
                                     )
                             ]
                     )
-            ]
+            ],
+            security = [@SecurityRequirement(scopes = ['read:userdetails'])]
     )
     @Path('getUserDetails')
     @Produces('application/json')
@@ -276,7 +280,8 @@ class UserDetailsController {
                                     )
                             ]
                     )
-            ]
+            ],
+            security = [@SecurityRequirement(scopes = ['read:userdetails'])]
     )
     @Deprecated
     @Path("getUserList")
@@ -304,7 +309,8 @@ class UserDetailsController {
                                     )
                             ]
                     )
-            ]
+            ],
+            security = [@SecurityRequirement(scopes = ['read:userdetails'])]
     )
     @Deprecated
     @Path("getUserListWithIds")
@@ -332,7 +338,8 @@ class UserDetailsController {
                                     )
                             ]
                     )
-            ]
+            ],
+            security = [@SecurityRequirement(scopes = ['read:userdetails'])]
     )
     @Deprecated
     @Path("getUserListFull")
@@ -369,7 +376,8 @@ class UserDetailsController {
                                     )
                             ]
                     )
-            ]
+            ],
+            security = [@SecurityRequirement(scopes = ['read:userdetails'])]
     )
     @Path("getUserDetailsFromIdList")
     @Consumes("application/json")

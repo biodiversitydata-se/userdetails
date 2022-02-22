@@ -6,7 +6,7 @@ import org.mindrot.jbcrypt.BCrypt
 import org.springframework.beans.factory.annotation.Value
 
 @Transactional
-class ApiKeyService {
+class UserApiKeyService {
 
     def jwtService
 

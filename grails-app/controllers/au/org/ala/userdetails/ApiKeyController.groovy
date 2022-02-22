@@ -10,7 +10,7 @@ class ApiKeyController {
     public static final String X_API_SECRET = "x-api-secret"
     def userService
     def emailService
-    def apiKeyService
+    def userApiKeyService
 
     @Value('${apiKey.secretRegenerationTimeOutInMins}')
     Integer secretRegenerationTimeOutInMins
@@ -20,7 +20,7 @@ class ApiKeyController {
         // show the API key for a user
         def user = userService.currentUser
         if (user) {
-            ApiKey apiKey = apiKeyService.getApiKeyForUser(user)
+            ApiKey apiKey = userApiKeyService.getApiKeyForUser(user)
             use (groovy.time.TimeCategory) {
                 def props = user.propsAsMap()
                 boolean generateLinkEnabled = apiKey.apiSecret == null || apiKey.lastUpdated < (new Date() - secretRegenerationTimeOutInMins.minutes)
@@ -47,7 +47,7 @@ class ApiKeyController {
         if (user) {
             def props = user.propsAsMap()
             // generate the secret, encrypt, persist it, render it
-            ApiKey apiKey = apiKeyService.getApiKeyForUser(user)
+            ApiKey apiKey = userApiKeyService.getApiKeyForUser(user)
             if (!apiKey){
                 render ([response:'Regenerated recently....'] as JSON)
             } else {
@@ -64,7 +64,7 @@ class ApiKeyController {
                         )
                         render ([response:'Regenerated recently....'] as JSON)
                     } else {
-                        String apikeySecret = apiKeyService.resetSecretForApiKey(apiKey)
+                        String apikeySecret = userApiKeyService.resetSecretForApiKey(apiKey)
                         render(view: 'secret', model: [
                                 user: user,
                                 props: props,
@@ -88,12 +88,12 @@ class ApiKeyController {
 
         def authorizationHeader = request.getHeader(HttpHeaders.AUTHORIZATION)
         if (authorizationHeader){
-            result = apiKeyService.generateTokenBasicAuth(authorizationHeader)
+            result = userApiKeyService.generateTokenBasicAuth(authorizationHeader)
         } else {
             def apiKey = request.getHeader(X_API_KEY_HEADER)
             def apiKeySecret = request.getHeader(X_API_SECRET)
             if (apiKey && apiKeySecret) {
-                result = apiKeyService.generateTokenApiKeySecret(apiKey, apiKeySecret)
+                result = userApiKeyService.generateTokenApiKeySecret(apiKey, apiKeySecret)
             }
         }
         if (result) {
@@ -110,7 +110,7 @@ class ApiKeyController {
     def validate(){
 
         if (params.apiKey){
-            ApiKey apiKey = apiKeyService.getApiKey(params.apiKey)
+            ApiKey apiKey = userApiKeyService.getApiKey(params.apiKey)
             if (apiKey){
                 render([valid:true] as JSON)
             } else {

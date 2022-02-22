@@ -1,9 +1,12 @@
 package au.org.ala.userdetails
 
+import au.org.ala.ws.security.JwtAuthenticator
 import grails.converters.JSON
 import grails.testing.gorm.DataTest
 import grails.testing.web.controllers.ControllerUnitTest
 import org.apache.http.HttpStatus
+import org.grails.spring.beans.factory.InstanceFactoryBean
+import org.pac4j.core.config.Config
 
 /**
  * Specification for the UserRoleController
@@ -13,10 +16,6 @@ import org.apache.http.HttpStatus
 //@Mock([AuthorisedSystemService, User, Role, UserRole, UserProperty])
 class UserRoleControllerSpec extends UserDetailsSpec implements ControllerUnitTest<UserRoleController>, DataTest {
 
-    Closure doWithSpring(){{ ->
-        authorisedSystemService(UserDetailsSpec.UnAuthorised)
-    }}
-
     private User user
 
     void setupSpec() {
@@ -24,6 +23,11 @@ class UserRoleControllerSpec extends UserDetailsSpec implements ControllerUnitTe
     }
 
     void setup() {
+        defineBeans {
+            config(InstanceFactoryBean, Stub(Config), Config)
+            jwtAuthenticator(InstanceFactoryBean, Stub(JwtAuthenticator), JwtAuthenticator)
+            authorisedSystemService(UserDetailsSpec.UnAuthorised)
+        }
         user = createUser()
     }
 

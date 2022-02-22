@@ -26,18 +26,6 @@ class RoleBasedInterceptor {
             boolean result = true
             PreAuthorise pa = method.getAnnotation(PreAuthorise) ?: controllerClass.getAnnotation(PreAuthorise)
             response.withFormat {
-                html {
-                    def requiredRole = pa.requiredRole()
-                    def inRole = request?.isUserInRole(requiredRole)
-
-                    if (!inRole) {
-                        log.warn("Denying access to $controllerName, $actionName to ${request?.userPrincipal?.name}")
-                        flash.message = "Access denied: User does not have required permission."
-                        redirect(uri: '/')
-                        result = false
-                    }
-                }
-
                 json {
                     def legacyAuth = grailsApplication.config.getProperty('security.jwt.fallbackToLegacyKeys', Boolean, false)
                     if (!authorisedSystemService.isAuthorisedRequest(request, response, legacyAuth, pa.requiredRole(), pa.requiredScope())) {
@@ -45,6 +33,17 @@ class RoleBasedInterceptor {
                         response.status = HttpStatus.SC_UNAUTHORIZED
                         render(['error': "Unauthorized"] as JSON)
 
+                        result = false
+                    }
+                }
+                '*' {
+                    def requiredRole = pa.requiredRole()
+                    def inRole = request?.isUserInRole(requiredRole)
+
+                    if (!inRole) {
+                        log.warn("Denying access to $controllerName, $actionName to ${request?.userPrincipal?.name}")
+                        flash.message = "Access denied: User does not have required permission."
+                        redirect(uri: '/')
                         result = false
                     }
                 }

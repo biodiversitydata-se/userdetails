@@ -1,8 +1,11 @@
 package au.org.ala.userdetails
 
+import au.org.ala.ws.security.JwtAuthenticator
 import grails.testing.web.interceptor.InterceptorUnitTest
 import org.apache.http.HttpStatus
+import org.grails.spring.beans.factory.InstanceFactoryBean
 import org.grails.web.util.GrailsApplicationAttributes
+import org.pac4j.core.config.Config
 import spock.lang.Specification
 
 /**
@@ -12,12 +15,17 @@ import spock.lang.Specification
 //@TestMixin([InterceptorUnitTestMixin, GrailsUnitTestMixin])
 class UserDetailsWebServicesInterceptorSpec extends Specification implements InterceptorUnitTest<UserDetailsWebServicesInterceptor> {
 
-    Closure doWithSpring(){{ ->
-        authorisedSystemService(UserDetailsSpec.UnAuthorised)
-    }}
+//    Closure doWithSpring(){{ ->
+//        authorisedSystemService(UserDetailsSpec.UnAuthorised)
+//    }}
+
 
     def setup() {
-
+        defineBeans {
+            config(InstanceFactoryBean, Stub(Config), Config)
+            jwtAuthenticator(InstanceFactoryBean, Stub(JwtAuthenticator), JwtAuthenticator)
+            authorisedSystemService(UserDetailsSpec.UnAuthorised)
+        }
     }
 
     def cleanup() {

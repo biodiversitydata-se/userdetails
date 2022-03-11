@@ -23,8 +23,11 @@ import com.github.scribejava.core.model.*
 import com.github.scribejava.core.oauth.OAuth20Service
 import com.github.scribejava.core.oauth.OAuthService
 import grails.converters.JSON
+import org.apache.http.HttpStatus
 import org.springframework.web.context.request.RequestContextHolder
 import uk.co.desirableobjects.oauth.scribe.OauthProvider
+
+import static org.apache.http.HttpStatus.SC_UNAUTHORIZED
 
 class ProfileController {
 
@@ -37,9 +40,7 @@ class ProfileController {
     static final List<String> FLICKR_ATTRS = [FLICKR_ID, FLICKR_USERNAME]
     static final List<String> INATURALIST_ATTRS = [INATURALIST_TOKEN, INATURALIST_ID, INATURALIST_USERNAME]
 
-    def authService
     def oauthService
-    def emailService
     def userService
 
     def index() {
@@ -48,13 +49,11 @@ class ProfileController {
 
         if (user) {
             def props = user.propsAsMap()
-            def isAdmin = RequestContextHolder.currentRequestAttributes()?.isUserInRole("ROLE_ADMIN")
+            def isAdmin = request.isUserInRole("ROLE_ADMIN")
             render(view: "myprofile", model: [user: user, props: props, isAdmin: isAdmin])
         } else {
-            String baseUrl = grailsApplication.config.security.cas.loginUrl
-            def separator = baseUrl.contains("?") ? "&" : "?"
-            def loginUrl = "${baseUrl}${separator}service=" + URLEncoder.encode(emailService.getMyProfileUrl(), "UTF-8")
-            redirect(url: loginUrl)
+            log.info('my-profile without a user?')
+            render(status: SC_UNAUTHORIZED)
         }
     }
 

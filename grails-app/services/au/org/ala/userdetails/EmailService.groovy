@@ -16,10 +16,13 @@
 package au.org.ala.userdetails
 
 import au.org.ala.auth.PasswordResetFailedException
+import grails.web.mapping.LinkGenerator
 
 class EmailService {
 
     def grailsApplication
+
+    LinkGenerator linkGenerator
 
     static transactional = false
 
@@ -118,18 +121,12 @@ class EmailService {
               to user.email
               body (view: '/email/accessAccount',
                     plugin:"email-confirmation",
-                    model:[userName: user.firstName, link: getLoginUrl(user.email), generatedPassword: generatedPassword]
+                    model:[userName: user.firstName, link: getMyProfileUrl(), generatedPassword: generatedPassword]
               )
             }
         } catch (Exception ex) {
             throw new PasswordResetFailedException(ex)
         }
-    }
-
-    def getLoginUrl(email){
-            grailsApplication.config.security.cas.loginUrl  +
-                    "?email=" + email +
-                    "&service=" + URLEncoder.encode(getMyProfileUrl(),"UTF-8")
     }
 
     def getMyProfileUrl(){

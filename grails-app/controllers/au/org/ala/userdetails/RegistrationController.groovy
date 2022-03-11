@@ -148,8 +148,7 @@ class RegistrationController {
             def success = userService.disableUser(user)
 
             if (success) {
-                redirect(controller: 'logout', action: 'logout', params: [casUrl: grailsApplication.config.security.cas.logoutUrl,
-                                                                          appUrl: grailsApplication.config.grails.serverURL + '/registration/accountDisabled'])
+                redirect(controller: 'logout', action: 'logout', params: [appUrl: grailsApplication.config.grails.serverURL + '/registration/accountDisabled'])
             } else {
                 render(view: "accountError", model: [msg: "Failed to disable user profile - unknown error"])
             }

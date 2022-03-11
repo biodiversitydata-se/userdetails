@@ -29,7 +29,7 @@
     <div class="row">
         <div class="col-md-12">
             <div class="well well-lg">
-                <g:message code="account.activated.successful.please.login" args="[grailsApplication.config.security.cas.loginUrl, user.email, grailsApplication.config.redirectAfterFirstLogin]" />
+                <g:message code="account.activated.successful.please.login" args="[g.createLink(controller: 'login', params: [path: grailsApplication.config.redirectAfterFirstLogin])]" />
             </div>
         </div>
     </div>

@@ -61,8 +61,7 @@
                     <p class="text-danger"><g:message code="create.account.already.registered" /> <strong>${params.email}</strong>.</p>
 
                     <p>
-                        <g:message code="create.account.login.with.username" /> <a
-                            href="${grailsApplication.config.security.cas.loginUrl}"><g:message code="create.account.click.here" /></a>.<br/>
+                        <g:message code="create.account.login.with.username" /> <g:link controller="login"><g:message code="create.account.click.here" /></g:link>.<br/>
                         <g:message code="create.account.resetting.your.password" /> <g:link controller="registration"
                                                                                  action="forgottenPassword"
                                                                                  params="${[email: params.email]}"><g:message code="create.account.click.here" /></g:link>.

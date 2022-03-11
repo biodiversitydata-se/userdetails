@@ -333,7 +333,7 @@ class UserService {
                 }
             }
         } else {
-            user = User.findByEmail(userId)
+            user = User.findByEmail(authService.getEmail())
         }
 
         return user

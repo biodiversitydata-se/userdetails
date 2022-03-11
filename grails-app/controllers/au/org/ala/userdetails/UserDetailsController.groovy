@@ -76,12 +76,11 @@ class UserDetailsController {
                         ]
                     )
             ],
-            security = [@SecurityRequirement(scopes = ['read:userdetails'])]
+            security = [@SecurityRequirement(name = 'openIdConnect', scopes = ['read:userdetails'])]
     )
     @Path("search")
     @Produces("application/json")
     def search() {
-        g.createLink()
         def q = params['q']
         def max = params.int('max', 10)
         User.withStatelessSession { session ->
@@ -135,7 +134,7 @@ class UserDetailsController {
                             ]
                     )
             ],
-            security = [@SecurityRequirement(scopes = ['read:userdetails'])]
+            security = [@SecurityRequirement(name = 'openIdConnect', scopes = ['read:userdetails'])]
     )
     @Path("byRole")
     @Produces("application/json")
@@ -242,7 +241,7 @@ class UserDetailsController {
                             ]
                     )
             ],
-            security = [@SecurityRequirement(scopes = ['read:userdetails'])]
+            security = [@SecurityRequirement(name = 'openIdConnect', scopes = ['read:userdetails'])]
     )
     @Path('getUserDetails')
     @Produces('application/json')
@@ -296,7 +295,7 @@ class UserDetailsController {
                             ]
                     )
             ],
-            security = [@SecurityRequirement(scopes = ['read:userdetails'])]
+            security = [@SecurityRequirement(name = 'openIdConnect', scopes = ['read:userdetails'])]
     )
     @Deprecated
     @Path("getUserList")
@@ -325,7 +324,7 @@ class UserDetailsController {
                             ]
                     )
             ],
-            security = [@SecurityRequirement(scopes = ['read:userdetails'])]
+            security = [@SecurityRequirement(name = 'openIdConnect', scopes = ['read:userdetails'])]
     )
     @Deprecated
     @Path("getUserListWithIds")
@@ -354,7 +353,7 @@ class UserDetailsController {
                             ]
                     )
             ],
-            security = [@SecurityRequirement(scopes = ['read:userdetails'])]
+            security = [@SecurityRequirement(name = 'openIdConnect', scopes = ['read:userdetails'])]
     )
     @Deprecated
     @Path("getUserListFull")
@@ -392,7 +391,7 @@ class UserDetailsController {
                             ]
                     )
             ],
-            security = [@SecurityRequirement(scopes = ['read:userdetails'])]
+            security = [@SecurityRequirement(name = 'openIdConnect', scopes = ['read:userdetails'])]
     )
     @Path("getUserDetailsFromIdList")
     @Consumes("application/json")

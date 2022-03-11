@@ -77,7 +77,7 @@ class PropertyController extends BaseController {
                             ]
                     )
             ],
-            security = [@SecurityRequirement(scopes = ['read:userdetails'])]
+            security = [@SecurityRequirement(name = 'openIdConnect', scopes = ['read:userdetails'])]
     )
     @Path("getProperty")
     @Produces("application/json")
@@ -147,7 +147,7 @@ class PropertyController extends BaseController {
                             content = [@Content(mediaType = "text/plain")]
                     ),
             ],
-            security = [@SecurityRequirement(scopes = ['write:userdetails'])]
+            security = [@SecurityRequirement(name = 'openIdConnect', scopes = ['write:userdetails'])]
     )
     @Path("saveProperty")
     @Produces("application/json")

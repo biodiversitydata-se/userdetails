@@ -56,7 +56,7 @@ class ExternalSiteController {
                             ]
                     )
             ],
-            security = [@SecurityRequirement(scopes = ['read:userdetails'])]
+            security = [@SecurityRequirement(name = 'openIdConnect', scopes = ['read:userdetails'])]
     )
     @Path("flickr")
     @Produces("application/json")

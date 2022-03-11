@@ -15,15 +15,13 @@
 
 package au.org.ala.userdetails
 
-import au.org.ala.auth.PreAuthorise
-import au.org.ala.ws.security.JwtAuthenticator
 import org.pac4j.core.config.Config
 import org.pac4j.core.context.JEEContextFactory
 import org.pac4j.core.context.WebContext
-import org.pac4j.core.credentials.extractor.BearerAuthExtractor
 import org.pac4j.core.profile.ProfileManager
 import org.pac4j.core.profile.UserProfile
 import org.pac4j.core.util.FindBest
+import org.pac4j.http.client.direct.DirectBearerAuthClient
 import org.springframework.beans.factory.annotation.Autowired
 
 import javax.servlet.http.HttpServletRequest
@@ -34,7 +32,7 @@ class AuthorisedSystemService {
     @Autowired
     Config config
     @Autowired
-    JwtAuthenticator jwtAuthenticator
+    DirectBearerAuthClient directBearerAuthClient
 
     def isAuthorisedSystem(HttpServletRequest request){
         def host = request.getRemoteAddr()
@@ -54,21 +52,21 @@ class AuthorisedSystemService {
      */
     def isAuthorisedRequest(HttpServletRequest request, HttpServletResponse response, boolean fallbackToLegacy, String role, String scope) {
         def result = false
+
         def context = context(request, response)
-        def bearerAuthExtractor = new BearerAuthExtractor()
-        def credentials = bearerAuthExtractor.extract(context, config.sessionStore)
+        ProfileManager profileManager = new ProfileManager(context, config.sessionStore)
+        profileManager.setConfig(config)
+
+        def credentials = directBearerAuthClient.getCredentials(context, config.sessionStore)
         if (credentials.isPresent()) {
-            ProfileManager profileManager = new ProfileManager(context, config.sessionStore)
-            profileManager.setConfig(config)
-            def creds = credentials.get()
-            try {
-                jwtAuthenticator.validate(creds, context, config.sessionStore)
-
-                def userProfile = creds.userProfile
-
-                if (userProfile) {
-                    profileManager.save(false, creds.userProfile, false)
-                }
+            def profile = directBearerAuthClient.getUserProfile(credentials.get(), context, config.sessionStore)
+            if (profile.isPresent()) {
+                def userProfile = profile.get()
+                profileManager.save(
+                        directBearerAuthClient.getSaveProfileInSession(context, userProfile),
+                        userProfile,
+                        directBearerAuthClient.isMultiProfile(context, userProfile)
+                )
 
                 result = true
                 if (role) {
@@ -78,14 +76,6 @@ class AuthorisedSystemService {
                 if (result && scope) {
                     result = userProfile.permissions.contains(scope) || profileHasScope(userProfile, scope)
                 }
-
-            } catch (e) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Couldn't validate JWT", e)
-                } else {
-                    log.info("Couldn't validate JWT: {}", e.message)
-                }
-                result = false
             }
         } else if (fallbackToLegacy) {
             result = isAuthorisedSystem(request)

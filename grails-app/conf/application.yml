@@ -119,9 +119,14 @@ security:
     core:
         uri-filter-pattern: ['/admin/*','/registration/editAccount','/my-profile','/my-profile/','/myprofile/','/myprofile','/profile/*','/admin/','/admin','/registration/update','/registration/update/*','/monitoring','/monitoring/*','/registration/disableAccount/*','/registration/disableAccount','/admin/admin/downloadUsersCsvFile','/alaAdmin/*']
         optional-filter-pattern: ['/']
+    cas:
+      enabled: false
     oidc:
+      enabled: true
+      scope: openid profile email ala roles
       allowUnsignedIdTokens: true # Disable once CAS no longer suggests the none algorithm
     jwt:
+      enabled: true
       fallbackToLegacyKeys: true # Reset to false once legacy api keys no longer supported
     filterOrder: 0
     basic:

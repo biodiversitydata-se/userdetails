@@ -76,10 +76,12 @@ class UserRoleController {
         def user = User.get(params.userId.toLong())
         def role = Role.findByRole(params.role.id)
 
-        UserRole ur = new UserRole()
-        ur.user = user
-        ur.role = role
-        ur.save(flush:true)
+        UserRole.withNewTransaction {
+            UserRole ur = new UserRole()
+            ur.user = user
+            ur.role = role
+            ur.save()
+        }
 
         redirect(action: "show", controller: 'user', id: user.id)
     }
@@ -89,21 +91,22 @@ class UserRoleController {
         def user = User.get(params.userId.toLong())
         def role = Role.get(params.role)
 
-        def userRoleInstance = UserRole.findByUserAndRole(user, role)
-        if (!userRoleInstance) {
-            flash.message = message(code: 'default.not.found.message', args: [message(code: 'userRole.label', default: 'UserRole'), role.role])
-            redirect(controller:"user", action: "edit", id:user.id)
-            return
-        }
-
-        try {
-            userRoleInstance.delete(flush: true)
-            flash.message = message(code: 'default.deleted.message', args: [message(code: 'userRole.label', default: 'UserRole'), role.role])
-            redirect(controller:"user", action: "edit", id:user.id)
-        }
-        catch (DataIntegrityViolationException e) {
-            flash.message = message(code: 'default.not.deleted.message', args: [message(code: 'userRole.label', default: 'UserRole'), role.role])
-            redirect(action: "show", id: id)
+        UserRole.withNewTransaction {
+            def userRoleInstance = UserRole.findByUserAndRole(user, role)
+            if (!userRoleInstance) {
+                flash.message = message(code: 'default.not.found.message', args: [message(code: 'userRole.label', default: 'UserRole'), role.role])
+                redirect(controller:"user", action: "edit", id:user.id)
+                return
+            }
+            try {
+                userRoleInstance.delete(flush: true)
+                flash.message = message(code: 'default.deleted.message', args: [message(code: 'userRole.label', default: 'UserRole'), role.role])
+                redirect(controller:"user", action: "edit", id:user.id)
+            }
+            catch (DataIntegrityViolationException e) {
+                flash.message = message(code: 'default.not.deleted.message', args: [message(code: 'userRole.label', default: 'UserRole'), role.role])
+                redirect(action: "show", id: id)
+            }
         }
     }
 }

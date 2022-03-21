@@ -22,6 +22,7 @@ import grails.testing.web.controllers.ControllerUnitTest
 import org.apache.http.HttpStatus
 import org.grails.spring.beans.factory.InstanceFactoryBean
 import org.pac4j.core.config.Config
+import org.pac4j.http.client.direct.DirectBearerAuthClient
 
 /**
  * Specification for the UserRoleController
@@ -40,7 +41,7 @@ class UserRoleControllerSpec extends UserDetailsSpec implements ControllerUnitTe
     void setup() {
         defineBeans {
             config(InstanceFactoryBean, Stub(Config), Config)
-            jwtAuthenticator(InstanceFactoryBean, Stub(JwtAuthenticator), JwtAuthenticator)
+            directBearerAuthClient(InstanceFactoryBean, Stub(DirectBearerAuthClient), DirectBearerAuthClient)
             authorisedSystemService(UserDetailsSpec.UnAuthorised)
         }
         user = createUser()

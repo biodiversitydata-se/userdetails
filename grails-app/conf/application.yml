@@ -303,19 +303,20 @@ environments:
     test:
         security:
             cas:
-                appServerName: "http://auth.ala.org.au"
+                appServerName: "https://auth.ala.org.au"
     production:
         grails:
-            serverURL: "http://auth.ala.org.au/userdetails"
+            serverURL: "https://auth.ala.org.au/userdetails"
             mail:
                 host: "localhost"
                 port: 25
         security:
             cas:
-                appServerName: "http://auth.ala.org.au"
+                appServerName: "https://auth.ala.org.au"
 
 ---
 hibernate:
+    allow_update_outside_transaction: true # Hibernate 5 made transactions required to flush changes, set to true for backwards compat but should be set to false and bugs fixed in the future
     show_sql: false
     cache:
         queries: false

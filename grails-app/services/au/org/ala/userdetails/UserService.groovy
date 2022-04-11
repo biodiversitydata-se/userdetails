@@ -96,6 +96,7 @@ class UserService {
         }
     }
 
+    @Transactional
     def activateAccount(User user) {
         Map resp = webService.post("${grailsApplication.config.alerts.url}/api/alerts/user/createAlerts", [:], [userId: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName])
         if (resp.statusCode == HttpStatus.SC_CREATED) {

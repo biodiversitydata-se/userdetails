@@ -104,6 +104,9 @@ dependencies {
     testRuntime "org.seleniumhq.selenium:selenium-chrome-driver:3.14.0"
     testRuntime "org.seleniumhq.selenium:selenium-firefox-driver:3.14.0"
 
+    // Groovy backwards compat
+    runtime 'org.codehaus.groovy:groovy-dateutil'
+
     // Grails plugin dependencies
 
     runtime "org.grails.plugins:ala-bootstrap3:4.0.0-SNAPSHOT"

@@ -16,6 +16,7 @@
 package au.org.ala.userdetails
 
 import au.org.ala.auth.PreAuthorise
+import grails.gorm.transactions.Transactional
 import org.springframework.dao.DataIntegrityViolationException
 
 @PreAuthorise
@@ -43,7 +44,7 @@ class UserController {
         [userInstance: new User(params)]
     }
 
-
+    @Transactional
     def save() {
         def userInstance = new User(params)
         if (params.locked == null) userInstance.locked = false
@@ -85,6 +86,7 @@ class UserController {
         [userInstance: userInstance, props:userInstance.propsAsMap()]
     }
 
+    @Transactional
     def update(Long id, Long version) {
         def userInstance = User.get(id)
         if (!userInstance) {

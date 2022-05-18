@@ -174,19 +174,6 @@ password:
     encoder: bcrypt # or legacy
 bcrypt:
     strength: 10
-apiKey:
-  showLink: false
-  showSecret: false
-  secretRegenerationTimeOutInMins: 15
-jwk:
-  filePath: /data/cas/keystore.jwks
-  url: https://auth-test.ala.org.au/cas/oidc/jwks
-  keyId: auth-test.ala.org.au
-jwt:
-  aud: auth-test-oidc-client-id
-  iss: https://auth-test.ala.org.au/cas/oidc
-  expiryInMins: 30
-  notBeforeProcessingInMins: 0
 
 
 

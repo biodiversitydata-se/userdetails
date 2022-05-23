@@ -31,7 +31,7 @@ class UserDetailsWebServicesInterceptor {
 
     boolean before() {
         def legacyAuth = grailsApplication.config.getProperty('security.jwt.fallbackToLegacyKeys', Boolean, false)
-        if (!authorisedSystemService.isAuthorisedRequest(request, response, legacyAuth, null, 'read:userdetails')) {
+        if (!authorisedSystemService.isAuthorisedRequest(request, response, legacyAuth, null, 'users:read')) {
             log.warn("Denying access to $actionName from remote addr: ${request.remoteAddr}, remote host: ${request.remoteHost}")
             response.sendError(HttpStatus.SC_UNAUTHORIZED)
 

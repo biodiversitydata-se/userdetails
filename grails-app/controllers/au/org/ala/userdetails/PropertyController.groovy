@@ -77,11 +77,11 @@ class PropertyController extends BaseController {
                             ]
                     )
             ],
-            security = [@SecurityRequirement(name = 'openIdConnect', scopes = ['read:userdetails'])]
+            security = [@SecurityRequirement(name = 'openIdConnect', scopes = ['users:read'])]
     )
     @Path("getProperty")
     @Produces("application/json")
-    @PreAuthorise(requiredScope = 'read:userdetails')
+    @PreAuthorise(requiredScope = 'users:read')
     def getProperty() {
         String name = params.name
         Long alaId = params.long('alaId')
@@ -147,11 +147,11 @@ class PropertyController extends BaseController {
                             content = [@Content(mediaType = "text/plain")]
                     ),
             ],
-            security = [@SecurityRequirement(name = 'openIdConnect', scopes = ['write:userdetails'])]
+            security = [@SecurityRequirement(name = 'openIdConnect', scopes = ['users:write'])]
     )
     @Path("saveProperty")
     @Produces("application/json")
-    @PreAuthorise(requiredScope = 'write:userdetails')
+    @PreAuthorise(requiredScope = 'users:write')
     def saveProperty(){
         String name = params.name;
         String value = params.value;

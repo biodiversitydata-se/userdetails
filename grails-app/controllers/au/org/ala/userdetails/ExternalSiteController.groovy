@@ -56,11 +56,11 @@ class ExternalSiteController {
                             ]
                     )
             ],
-            security = [@SecurityRequirement(name = 'openIdConnect', scopes = ['read:userdetails'])]
+            security = [@SecurityRequirement(name = 'openIdConnect', scopes = ['users:read'])]
     )
     @Path("flickr")
     @Produces("application/json")
-//    @PreAuthorise(requiredScope = 'read:userdetails') // TODO?
+//    @PreAuthorise(requiredScope = 'users:read') // TODO?
     def flickr() {
 
         def flickrIds = UserProperty.findAllByName("flickrId")

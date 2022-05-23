@@ -109,10 +109,10 @@ dependencies {
 
     // Grails plugin dependencies
 
-    runtime "org.grails.plugins:ala-bootstrap3:4.0.0-SNAPSHOT"
-    compile "org.grails.plugins:ala-ws-plugin:3.0.0-SNAPSHOT"
-    compile "org.grails.plugins:ala-ws-security-plugin:4.0.0-SNAPSHOT"
-    compile "org.grails.plugins:ala-auth:5.0.0-SNAPSHOT"
+    runtime "org.grails.plugins:ala-bootstrap3:4.0.0"
+    compile "org.grails.plugins:ala-ws-plugin:3.0.0"
+    compile "org.grails.plugins:ala-ws-security-plugin:4.0.0"
+    compile "org.grails.plugins:ala-auth:5.0.1"
     compile "org.grails.plugins:ala-admin-plugin:2.1"
 
     compile 'dk.glasius:external-config:2.0.1'
@@ -149,7 +149,7 @@ dependencies {
 
     compile 'org.springframework.session:spring-session-data-mongodb'
     compile 'org.springframework.boot:spring-boot-starter-data-mongodb'
-    compile 'org.grails.plugins:spring-session-helper:2.0.0-SNAPSHOT'
+    compile 'org.grails.plugins:spring-session-helper:2.0.0'
 
     compile "com.auth0:java-jwt:3.18.2"
     compile "com.auth0:jwks-rsa:0.20.0"
@@ -165,7 +165,7 @@ dependencies {
         exclude module: 'bootstrap' // dependency from skin
     }
 
-    compile('au.org.ala.plugins:openapi:0.1.0-SNAPSHOT')
+    compile('au.org.ala.plugins:openapi:1.0.0')
 
     testCompile('com.squareup.retrofit2:retrofit-mock:2.4.0')
 }

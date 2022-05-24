@@ -15,6 +15,7 @@
 
 package au.org.ala.userdetails
 
+import au.org.ala.ws.security.JwtProperties
 import org.pac4j.core.config.Config
 import org.pac4j.core.context.JEEContextFactory
 import org.pac4j.core.context.WebContext
@@ -30,8 +31,10 @@ import javax.servlet.http.HttpServletResponse
 class AuthorisedSystemService {
 
     @Autowired
+    JwtProperties jwtProperties
+    @Autowired(required = false)
     Config config
-    @Autowired
+    @Autowired(required = false)
     DirectBearerAuthClient directBearerAuthClient
 
     def isAuthorisedSystem(HttpServletRequest request){
@@ -50,34 +53,38 @@ class AuthorisedSystemService {
      * @param scope The JWT scope required for the request to be authorized
      * @return true
      */
-    def isAuthorisedRequest(HttpServletRequest request, HttpServletResponse response, boolean fallbackToLegacy, String role, String scope) {
+    def isAuthorisedRequest(HttpServletRequest request, HttpServletResponse response, String role, String scope) {
         def result = false
 
-        def context = context(request, response)
-        ProfileManager profileManager = new ProfileManager(context, config.sessionStore)
-        profileManager.setConfig(config)
+        if (jwtProperties.enabled) {
+            def context = context(request, response)
+            ProfileManager profileManager = new ProfileManager(context, config.sessionStore)
+            profileManager.setConfig(config)
 
-        def credentials = directBearerAuthClient.getCredentials(context, config.sessionStore)
-        if (credentials.isPresent()) {
-            def profile = directBearerAuthClient.getUserProfile(credentials.get(), context, config.sessionStore)
-            if (profile.isPresent()) {
-                def userProfile = profile.get()
-                profileManager.save(
-                        directBearerAuthClient.getSaveProfileInSession(context, userProfile),
-                        userProfile,
-                        directBearerAuthClient.isMultiProfile(context, userProfile)
-                )
+            def credentials = directBearerAuthClient.getCredentials(context, config.sessionStore)
+            if (credentials.isPresent()) {
+                def profile = directBearerAuthClient.getUserProfile(credentials.get(), context, config.sessionStore)
+                if (profile.isPresent()) {
+                    def userProfile = profile.get()
+                    profileManager.save(
+                            directBearerAuthClient.getSaveProfileInSession(context, userProfile),
+                            userProfile,
+                            directBearerAuthClient.isMultiProfile(context, userProfile)
+                    )
 
-                result = true
-                if (role) {
-                    result = userProfile.roles.contains(role)
+                    result = true
+                    if (role) {
+                        result = userProfile.roles.contains(role)
+                    }
+
+                    if (result && scope) {
+                        result = userProfile.permissions.contains(scope) || profileHasScope(userProfile, scope)
+                    }
                 }
-
-                if (result && scope) {
-                    result = userProfile.permissions.contains(scope) || profileHasScope(userProfile, scope)
-                }
+            } else if (jwtProperties.fallbackToLegacyBehaviour) {
+                result = isAuthorisedSystem(request)
             }
-        } else if (fallbackToLegacy) {
+        } else {
             result = isAuthorisedSystem(request)
         }
         return result

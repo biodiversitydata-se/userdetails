@@ -16,6 +16,7 @@
 package au.org.ala.userdetails
 
 import au.org.ala.ws.security.JwtAuthenticator
+import au.org.ala.ws.security.JwtProperties
 import grails.testing.web.interceptor.InterceptorUnitTest
 import org.apache.http.HttpStatus
 import org.grails.spring.beans.factory.InstanceFactoryBean
@@ -38,6 +39,10 @@ class UserDetailsWebServicesInterceptorSpec extends Specification implements Int
 
     def setup() {
         defineBeans {
+            jwtProperties(JwtProperties) {
+                enabled = true
+                fallbackToLegacyBehaviour = true
+            }
             config(InstanceFactoryBean, Stub(Config), Config)
             directBearerAuthClient(InstanceFactoryBean, Stub(DirectBearerAuthClient), DirectBearerAuthClient)
             authorisedSystemService(UserDetailsSpec.UnAuthorised)

@@ -16,6 +16,7 @@
 package au.org.ala.userdetails
 
 import au.org.ala.ws.security.JwtAuthenticator
+import au.org.ala.ws.security.JwtProperties
 import grails.converters.JSON
 import grails.testing.gorm.DataTest
 import grails.testing.web.controllers.ControllerUnitTest
@@ -40,6 +41,10 @@ class UserRoleControllerSpec extends UserDetailsSpec implements ControllerUnitTe
 
     void setup() {
         defineBeans {
+            jwtProperties(JwtProperties) {
+                enabled = true
+                fallbackToLegacyBehaviour = true
+            }
             config(InstanceFactoryBean, Stub(Config), Config)
             directBearerAuthClient(InstanceFactoryBean, Stub(DirectBearerAuthClient), DirectBearerAuthClient)
             authorisedSystemService(UserDetailsSpec.UnAuthorised)

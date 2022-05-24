@@ -58,7 +58,7 @@ class RoleBasedInterceptorSpec extends UserDetailsSpec implements InterceptorUni
     void "Unauthorized systems should not be able to access the user role web service"() {
 
         setup:
-        interceptor.authorisedSystemService.isAuthorisedRequest(_,_,_,_,_) >> false
+        interceptor.authorisedSystemService.isAuthorisedRequest(_,_,_,_) >> false
         response.format = 'json'
 
         when:

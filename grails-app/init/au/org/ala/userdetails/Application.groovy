@@ -76,59 +76,10 @@ class Application extends GrailsAutoConfiguration {
     @EnableConfigurationProperties(MongoProperties)
     static class MongoSessionConfig {
 
-//        @Bean
-//        @Qualifier("mongoOperations")
-//        @Primary
-//        MongoOperations mongoOperations(MongoDbFactory mongoDatabaseFactory) {
-//            return new MongoTemplate(mongoDatabaseFactory);
-//        }
-//
-//        @Bean
-//        MongoDbFactory mongoDatabaseFactory(MongoClient mongoClient, MongoProperties properties) {
-//            return new SimpleMongoClientDbFactory(mongoClient, properties.mongoClientDatabase)
-//        }
-
         @Bean
         JdkMongoSessionConverter jdkMongoSessionConverter() {
             return new JdkMongoSessionConverter(Duration.ofMinutes(15L));
         }
-
-//        @Bean
-//        @ConditionalOnMissingBean(MongoClient.class)
-//        MongoClient mongoClient(MongoProperties properties, Environment environment,
-//                                 ObjectProvider<MongoClientSettings> settings) {
-//            return new MongoClientFactory(properties, environment).createMongoClient(settings.getIfAvailable());
-//        }
-//
-//        @Bean
-//        @ConditionalOnMissingBean(MongoClientSettings.class)
-//        MongoClientSettings mongoClientSettings(ObjectProvider<MongoClientSettingsBuilderCustomizer> builderCustomizers)  {
-//            def builder = MongoClientSettings.builder()
-//            for (def customizer : builderCustomizers) {
-//                customizer.customize(builder)
-//            }
-//            return builder.build();
-//        }
-
-        // Spring Boot 2.5
-//    @Bean
-//    @ConditionalOnMissingBean(MongoClient.class)
-//    MongoClient mongo(
-//            ObjectProvider<MongoClientSettingsBuilderCustomizer> builderCustomizers,
-//            MongoClientSettings settings
-//    ) {
-//        return new MongoClientFactory(builderCustomizers.orderedStream().collect(Collectors.toList()))
-//                .createMongoClient(settings);
-//    }
-
-        // Spring Boot 2.5
-//    @Bean
-//    MongoPropertiesClientSettingsBuilderCustomizer mongoPropertiesCustomizer(
-//            MongoProperties properties,
-//            Environment environment
-//    ) {
-//        return MongoPropertiesClientSettingsBuilderCustomizer(properties, environment)
-//    }
     }
 
 }

@@ -15,10 +15,8 @@
 
 package au.org.ala.userdetails
 
-import au.org.ala.auth.PreAuthorise
 import grails.converters.JSON
 import io.swagger.v3.oas.annotations.Operation
-import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
@@ -55,12 +53,10 @@ class ExternalSiteController {
                                     )
                             ]
                     )
-            ],
-            security = [@SecurityRequirement(name = 'openIdConnect', scopes = ['users:read'])]
+            ]
     )
     @Path("flickr")
     @Produces("application/json")
-//    @PreAuthorise(requiredScope = 'users:read') // TODO?
     def flickr() {
 
         def flickrIds = UserProperty.findAllByName("flickrId")
@@ -98,7 +94,7 @@ class ExternalSiteController {
                     )
             ]
     )
-    @Path("getProperty")
+    @Path("getUserStats")
     @Produces("application/json")
     def getUserStats() {
         def stats = userService.getUsersCounts(request.locale)

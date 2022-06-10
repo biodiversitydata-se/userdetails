@@ -234,6 +234,8 @@ class RegistrationController {
                     render(view: "accountError", model: [msg: e.getMessage()])
                 }
             }
+        }.invalidToken {
+            redirect action: 'createAccount'
         }
     }
 

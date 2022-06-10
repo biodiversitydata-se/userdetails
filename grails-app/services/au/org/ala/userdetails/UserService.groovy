@@ -24,6 +24,7 @@ import grails.gorm.transactions.Transactional
 import grails.util.Environment
 import grails.web.servlet.mvc.GrailsParameterMap
 import org.apache.http.HttpStatus
+import org.grails.orm.hibernate.cfg.GrailsHibernateUtil
 import org.springframework.beans.factory.annotation.Value
 
 @Transactional
@@ -109,7 +110,7 @@ class UserService {
         user.save(flush:true)
     }
 
-    BulkUserLoadResults bulkRegisterUsersFromFile(InputStream stream, Boolean firstRowContainsFieldNames, String primaryUsage, String emailSubject, String emailTitle, String emailBody) {
+    BulkUserLoadResults bulkRegisterUsersFromFile(InputStream stream, Boolean firstRowContainsFieldNames, String affiliation, String emailSubject, String emailTitle, String emailBody) {
 
         def results = new BulkUserLoadResults()
 
@@ -143,11 +144,11 @@ class UserService {
                 def userInstance = User.findByEmail(emailAddress)
                 def isNewUser = true
 
-                def existingRoles = []
+                def existingRoles = [] as Set
                 if (userInstance) {
                     isNewUser = false
                     // keep track of their current roles
-                    existingRoles.addAll(UserRole.findAllByUser(userInstance)*.role)
+                    existingRoles.addAll(UserRole.findAllByUser(userInstance)*.role.collect { GrailsHibernateUtil.unwrapIfProxy(it) })
                 } else {
                     userInstance = new User(email: emailAddress, userName: emailAddress, firstName: tokens[1], lastName: tokens[2])
                     userInstance.activated = true
@@ -193,8 +194,7 @@ class UserService {
                     // User Properties
                     def userProps = [:]
 
-                    userProps['primaryUserType'] = primaryUsage ?: 'Not specified'
-                    userProps['secondaryUserType'] = 'Not specified'
+                    userProps['affiliation'] = affiliation ?: 'disinclinedToAcquiesce'
                     userProps['bulkCreatedOn'] = new Date().format("yyyy-MM-dd HH:mm:ss")
                     setUserPropertiesFromMap(userInstance, userProps)
 

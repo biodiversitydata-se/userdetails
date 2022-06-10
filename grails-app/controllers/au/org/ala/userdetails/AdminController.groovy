@@ -132,12 +132,12 @@ class AdminController {
                 }
 
                 def firstRow = (boolean) params.firstRowHasFieldNames
-                def primaryUsage = params.primaryUsage as String
+                def affiliation = params.affiliation as String
                 def subject = params.emailSubject as String
                 def title = params.emailTitle as String
                 def body = params.emailBody as String
 
-                def results = userService.bulkRegisterUsersFromFile(f.inputStream, firstRow, primaryUsage, subject, title, body)
+                def results = userService.bulkRegisterUsersFromFile(f.inputStream, firstRow, affiliation, subject, title, body)
                 render(view:'loadUsersResults', model:[results: results])
                 return
             } else {

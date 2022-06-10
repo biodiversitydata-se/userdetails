@@ -113,7 +113,7 @@ dependencies {
     compile 'dk.glasius:external-config:2.0.1'
     compile 'org.grails.plugins:http-builder-helper:1.1.0'
     compile "org.grails.plugins:csv:1.0.1"
-    compile 'org.grails.plugins:mail:2.0.0'
+    compile 'org.grails.plugins:mail:3.0.0'
 
     compile "org.grails.plugins:oauth:4.0.0"
     // transitive oauth plugin deps used in code

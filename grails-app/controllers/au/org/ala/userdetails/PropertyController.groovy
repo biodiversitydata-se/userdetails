@@ -29,6 +29,7 @@ import javax.ws.rs.Path
 import javax.ws.rs.Produces
 
 import static io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY
+import static io.swagger.v3.oas.annotations.enums.ParameterIn.HEADER
 
 @Path("property")
 class PropertyController extends BaseController {
@@ -63,6 +64,13 @@ class PropertyController extends BaseController {
                             in = QUERY,
                             description = "The name of the property to get",
                             required = true
+                    ),
+                    @Parameter(
+                            name = 'Accept',
+                            in = HEADER,
+                            description = "Must be application/json",
+                            required = true,
+                            schema = @Schema(allowableValues = ['application/json'])
                     )
             ],
             responses = [
@@ -128,6 +136,13 @@ class PropertyController extends BaseController {
                             in = QUERY,
                             description = "The value of the property to set.",
                             required = false
+                    ),
+                    @Parameter(
+                            name = 'Accept',
+                            in = HEADER,
+                            description = "Must be application/json",
+                            required = true,
+                            schema = @Schema(allowableValues = ['application/json'])
                     )
             ],
             responses = [

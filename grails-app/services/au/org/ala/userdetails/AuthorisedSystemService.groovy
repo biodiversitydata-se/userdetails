@@ -17,12 +17,12 @@ package au.org.ala.userdetails
 
 import au.org.ala.ws.security.JwtProperties
 import org.pac4j.core.config.Config
-import org.pac4j.core.context.JEEContextFactory
 import org.pac4j.core.context.WebContext
 import org.pac4j.core.profile.ProfileManager
 import org.pac4j.core.profile.UserProfile
 import org.pac4j.core.util.FindBest
 import org.pac4j.http.client.direct.DirectBearerAuthClient
+import org.pac4j.jee.context.JEEContextFactory
 import org.springframework.beans.factory.annotation.Autowired
 
 import javax.servlet.http.HttpServletRequest

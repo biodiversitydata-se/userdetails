@@ -76,10 +76,10 @@ class Application extends GrailsAutoConfiguration {
     @EnableConfigurationProperties(MongoProperties)
     static class MongoSessionConfig {
 
-        @Bean
-        JdkMongoSessionConverter jdkMongoSessionConverter() {
-            return new JdkMongoSessionConverter(Duration.ofMinutes(15L));
-        }
+//        @Bean
+//        JdkMongoSessionConverter jdkMongoSessionConverter() {
+//            return new JdkMongoSessionConverter(Duration.ofMinutes(15L));
+//        }
     }
 
 }

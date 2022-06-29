@@ -106,7 +106,7 @@ dependencies {
 
     runtime "org.grails.plugins:ala-bootstrap3:4.0.0"
     compile "org.grails.plugins:ala-ws-plugin:3.0.0"
-    compile "org.grails.plugins:ala-ws-security-plugin:4.0.0"
+    compile "org.grails.plugins:ala-ws-security-plugin:4.0.1-SNAPSHOT"
     compile "org.grails.plugins:ala-auth:5.0.2-SNAPSHOT"
     compile "org.grails.plugins:ala-admin-plugin:2.1"
 

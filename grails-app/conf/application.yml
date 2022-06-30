@@ -129,36 +129,36 @@ security:
       enabled: true
       fallbackToLegacyKeys: true # Reset to false once legacy api keys no longer supported
     filterOrder: 0
-    basic:
-        enabled: true
-        authorizeMode: role
-        realm: ALA User Details
-        path:
-          - /status/**
+#    basic:
+#        enabled: true
+#        authorizeMode: role
+#        realm: ALA User Details
+#        path:
+#          - /status/**
 
 # Spring Actuator Endpoints are Disabled by Default
-
 management:
-    endpoints:
-        enabled-by-default: false
-        sensitive: true
-        cors:
-          allow-credentials: true
-          allowed-methods:
-            - GET
-            - POST
-            - DELETE
-            - PUT
-          allowed-headers: "*"
-          allowed-origins: "*"
-    context-path: /status
-    security:
-        enabled: true
-        roles:
-          - ACTUATOR
+  endpoints:
+    enabled-by-default: false
+  endpoint:
+    info:
+      enabled: true
     health:
+      enabled: true
+      defaults:
+        enabled: true
+      jdbc:
+        enabled: true
       redis:
         enabled: false # set to true for HA environments
+      mongo:
+        enabled: false # set to true for HA environments
+    web:
+      base-path: "/actuator"
+      exposure:
+        include:
+        - health
+        - info
 spring:
     boot:
         admin:

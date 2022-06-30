@@ -26,6 +26,7 @@ import okhttp3.OkHttpClient
 import org.springframework.beans.factory.ObjectProvider
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.actuate.jdbc.DataSourceHealthIndicator
+import org.springframework.boot.actuate.mongo.MongoHealthIndicator
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration
@@ -80,6 +81,10 @@ class Application extends GrailsAutoConfiguration {
 //        JdkMongoSessionConverter jdkMongoSessionConverter() {
 //            return new JdkMongoSessionConverter(Duration.ofMinutes(15L));
 //        }
+        @Bean // TODO is this necessary?
+        MongoHealthIndicator mongoHealthIndicator(MongoTemplate mongoTemplate) {
+            new MongoHealthIndicator(mongoTemplate)
+        }
     }
 
 }

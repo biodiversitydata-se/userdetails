@@ -54,6 +54,20 @@
             </div>
         </div>
     </g:if>
+    <g:elseif test="${lockedUser}">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="well">
+                    <p class="text-danger"><g:message code="create.account.locked" args="[params.email]" />
+                    </p>
+
+                    <p>
+                        <g:message code="create.account.if.error" args="[grailsApplication.config.supportEmail]" />
+                    </p>
+                </div>
+            </div>
+        </div>
+    </g:elseif>
     <g:elseif test="${alreadyRegistered}">
         <div class="row">
             <div class="col-sm-12">
@@ -130,6 +144,14 @@
                     <input id="email" name="email" type="text" class="form-control" value="${user?.email}"
                            data-validation-engine="validate[required,custom[email]]"
                            data-errormessage-value-missing="${message(code:'create.account.email.is.required')}"
+                    />
+                </div>
+                <div class="form-group">
+                    <label for="confirm-email"><g:message code="create.account.confirm.email.address" /></label>
+                    <input id="confirm-email" name="confirm-email" type="text" class="form-control" value="${user?.email}"
+                           data-validation-engine="validate[required,custom[email],equals[email]]"
+                           data-errormessage-value-missing="${message(code:'create.account.confirm.email.is.required')}"
+                           data-errormessage-pattern-mismatch="${message(code:'create.account.confirm.email.mismatch')}"
                     />
                 </div>
 

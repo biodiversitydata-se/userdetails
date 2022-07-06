@@ -83,6 +83,12 @@ class UserService {
     }
 
     @Transactional(readOnly = true)
+    boolean isLocked(String email) {
+        def user = User.findByEmailOrUserName(email?.toLowerCase(), email?.toLowerCase())
+        return user?.locked ?: false
+    }
+
+    @Transactional(readOnly = true)
     boolean isEmailRegistered(String email) {
         return User.findByEmailOrUserName(email?.toLowerCase(), email?.toLowerCase()) != null
     }

@@ -212,7 +212,8 @@ class RegistrationController {
             //create user account...
             if (!params.email || userService.isEmailRegistered(params.email)) {
                 def inactiveUser = !userService.isActive(params.email)
-                render(view: 'createAccount', model: [edit: false, user: params, props: params, alreadyRegistered: true, inactiveUser: inactiveUser])
+                def lockedUser = userService.isLocked(params.email)
+                render(view: 'createAccount', model: [edit: false, user: params, props: params, alreadyRegistered: true, inactiveUser: inactiveUser, lockedUser: lockedUser])
             } else {
 
                 try {

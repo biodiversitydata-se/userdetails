@@ -135,6 +135,9 @@ security:
 #        realm: ALA User Details
 #        path:
 #          - /status/**
+webservice:
+  jwt: true
+  scope: "openid"
 
 # Spring Actuator Endpoints are Disabled by Default
 management:

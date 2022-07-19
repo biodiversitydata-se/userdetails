@@ -116,8 +116,8 @@ class ProfileController {
         FlickrApi flickrApi = FlickrApi.instance()
         OAuth1RequestToken token = session.getAt("flickr:oasRequestToken")
         OAuthService service = new ServiceBuilder().
-                apiKey(grailsApplication.config.oauth.providers.flickr.key).
-                apiSecret(grailsApplication.config.oauth.providers.flickr.secret).build(flickrApi)
+                apiKey(grailsApplication.config.getProperty('oauth.providers.flickr.key')).
+                apiSecret(grailsApplication.config.getProperty('oauth.providers.flickr.secret')).build(flickrApi)
 
         def accessToken = service.getAccessToken(token, params.oauth_verifier)
 

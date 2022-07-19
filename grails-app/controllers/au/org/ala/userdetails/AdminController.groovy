@@ -59,7 +59,7 @@ class AdminController {
 
         render(view: 'exportUsers',
                 model: [roles        : Role.list(),
-                        primaryFields: grailsApplication.config.admin.export.csv.primary.fields,
+                        primaryFields: grailsApplication.config.getProperty('admin.export.csv.primary.fields'),
                         extraFields  : extraFields])
     }
 
@@ -80,7 +80,7 @@ class AdminController {
             def userList = userService.findUsersForExport(roleList, params?.includeInactiveUsers)
 
             //2. Then prepare the format options
-            String primaryFieldsProperty = grailsApplication.config.admin.export.csv.primary.fields
+            String primaryFieldsProperty = grailsApplication.config.getProperty('admin.export.csv.primary.fields')
             def primaryFields = primaryFieldsProperty ? primaryFieldsProperty.split(',').collect { it as String } : []
             def fields = primaryFields
 

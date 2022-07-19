@@ -18,7 +18,7 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<meta name="layout" content="${grailsApplication.config.skin.layout}">
+		<meta name="layout" content="${grailsApplication.config.getProperty('skin.layout')}">
 		<g:set var="entityName" value="${message(code: 'userRole.label', default: 'UserRole')}" />
 		<title><g:message code="default.list.label" args="[entityName]" /></title>
 	</head>

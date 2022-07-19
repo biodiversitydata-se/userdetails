@@ -15,10 +15,10 @@
 <!doctype html>
 <html>
     <head>
-        <meta name="layout" content="${grailsApplication.config.skin.layout}"/>
+        <meta name="layout" content="${grailsApplication.config.getProperty('skin.layout')}"/>
         <meta name="section" content="home"/>
         <meta name="breadcrumbParent" content="${createLink(controller:'admin', action:'index')},User Details Administration" />
-        <g:set var="title">Bulk Load Users Results |  ${grailsApplication.config.skin.orgNameLong} </g:set>
+        <g:set var="title">Bulk Load Users Results |  ${grailsApplication.config.getProperty('skin.orgNameLong')} </g:set>
         <title>${title}</title>
         <asset:stylesheet src="application.css" />
     </head>

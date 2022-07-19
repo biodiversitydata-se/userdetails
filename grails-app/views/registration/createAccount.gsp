@@ -15,7 +15,7 @@
 <!doctype html>
 <html>
 <head>
-    <meta name="layout" content="${grailsApplication.config.skin.layout}"/>
+    <meta name="layout" content="${grailsApplication.config.getProperty('skin.layout')}"/>
     <meta name="section" content="home"/>
     <g:if test="${!alreadyRegistered && edit}">
         <g:set var="title"><g:message code="create.account.edit.account" /></g:set>
@@ -27,7 +27,7 @@
     <title>${title}</title>
     <asset:stylesheet src="application.css" />
     <asset:stylesheet src="createAccount.css" />
-    <g:if test="${grailsApplication.config.recaptcha.siteKey}">
+    <g:if test="${grailsApplication.config.getProperty('recaptcha.siteKey')}">
         <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     </g:if>
 </head>
@@ -48,7 +48,7 @@
                     </p>
 
                     <p>
-                        <g:message code="create.account.if.error" args="[grailsApplication.config.supportEmail]" />
+                        <g:message code="create.account.if.error" args="[grailsApplication.config.getProperty('supportEmail')]" />
                     </p>
                 </div>
             </div>
@@ -62,7 +62,7 @@
                     </p>
 
                     <p>
-                        <g:message code="create.account.if.error" args="[grailsApplication.config.supportEmail]" />
+                        <g:message code="create.account.if.error" args="[grailsApplication.config.getProperty('supportEmail')]" />
                     </p>
                 </div>
             </div>
@@ -103,28 +103,28 @@
                 </g:if>
                 <h2><g:message code="create.account.your.account.title" /></h2>
                 <p>
-                    <g:message code="create.account.your.email.will.be.your.account.login" args="[grailsApplication.config.skin.orgNameShort]" />
-                    <g:if test="${grailsApplication.config.registration.showAlaMessage}">
-                        <g:message code="create.account.your.email.will.be.your.account.login.ala" args="[grailsApplication.config.registration.resetPasswordArticle, grailsApplication.config.registration.alertArticle]" />
+                    <g:message code="create.account.your.email.will.be.your.account.login" args="[grailsApplication.config.getProperty('skin.orgNameShort')]" />
+                    <g:if test="${grailsApplication.config.getProperty('registration.showAlaMessage')}">
+                        <g:message code="create.account.your.email.will.be.your.account.login.ala" args="[grailsApplication.config.getProperty('registration.resetPasswordArticle'), grailsApplication.config.getProperty('registration.alertArticle')]" />
                     </g:if>
                 </p>
-                <g:if test="${grailsApplication.config.registration.showAlaMessage}">
+                <g:if test="${grailsApplication.config.getProperty('registration.showAlaMessage')}">
                     <p><b><g:message code="create.account.your.email.will.be.your.account.confirm.ala" /></b></p>
                 </g:if>
                 <g:if test="${!edit}">
                     <p><g:message code="create.account.activation.description" />
-                    <g:if test="${grailsApplication.config.registration.showAlaMessage}">
-                        <g:message code="create.account.activation.description.ala" args="[grailsApplication.config.registration.activationArticle]" />
+                    <g:if test="${grailsApplication.config.getProperty('registration.showAlaMessage')}">
+                        <g:message code="create.account.activation.description.ala" args="[grailsApplication.config.getProperty('registration.activationArticle')]" />
                     </g:if></p>
                 </g:if>
                 <h2><g:message code="create.account.policy.title" /></h2>
                 <p>
                     <g:message code="create.account.privacy.title" />
-                    <a href="${grailsApplication.config.privacyPolicy}"><g:message code="create.account.privacy.link" /></a>.
+                    <a href="${grailsApplication.config.getProperty('privacyPolicy')}"><g:message code="create.account.privacy.link" /></a>.
                 </p>
                 <h2><g:message code="create.account.tos.title" /></h2>
                 <p>
-                    <g:message code="create.account.tos.description" args="[grailsApplication.config.skin.orgNameShort, grailsApplication.config.termsOfUse]" />
+                    <g:message code="create.account.tos.description" args="[grailsApplication.config.getProperty('skin.orgNameShort'), grailsApplication.config.getProperty('termsOfUse')]" />
                 </p>
             </div>
         </div>
@@ -231,8 +231,8 @@
                     <button id="disableAccountSubmit" class="btn btn-danger"><g:message code="create.account.disable.account" /></button>
                 </g:if>
                 <g:else>
-                    <g:if test="${grailsApplication.config.recaptcha.siteKey}">
-                        <div class="g-recaptcha" data-sitekey="${grailsApplication.config.recaptcha.siteKey}"></div>
+                    <g:if test="${grailsApplication.config.getProperty('recaptcha.siteKey')}">
+                        <div class="g-recaptcha" data-sitekey="${grailsApplication.config.getProperty('recaptcha.siteKey')}"></div>
                         <br/>
                     </g:if>
                     <button id="updateAccountSubmit" class="btn btn-primary"><g:message code="create.account.btn" /></button>

@@ -15,9 +15,9 @@
 <!doctype html>
 <html>
 <head>
-    <meta name="layout" content="${grailsApplication.config.skin.layout}"/>
+    <meta name="layout" content="${grailsApplication.config.getProperty('skin.layout')}"/>
     <meta name="section" content="home"/>
-    <title><g:message code="account.activated.successful.title" /> | ${grailsApplication.config.skin.orgNameLong}</title>
+    <title><g:message code="account.activated.successful.title" /> | ${grailsApplication.config.getProperty('skin.orgNameLong')}</title>
     <asset:stylesheet src="application.css" />
 </head>
 <body>
@@ -29,7 +29,7 @@
     <div class="row">
         <div class="col-md-12">
             <div class="well well-lg">
-                <g:message code="account.activated.successful.please.login" args="[g.createLink(controller: 'login', params: [path: grailsApplication.config.redirectAfterFirstLogin])]" />
+                <g:message code="account.activated.successful.please.login" args="[g.createLink(controller: 'login', params: [path: grailsApplication.config.getProperty('redirectAfterFirstLogin')])]" />
             </div>
         </div>
     </div>

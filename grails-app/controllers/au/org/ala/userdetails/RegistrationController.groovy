@@ -108,11 +108,11 @@ class RegistrationController {
 
     /** Displayed as a result of a password update with a duplicate form submission. */
     def duplicateSubmit() {
-        [serverUrl: grailsApplication.config.grails.serverURL + '/myprofile']
+        [serverUrl: grailsApplication.config.getProperty('grails.serverURL') + '/myprofile']
     }
 
     def passwordResetSuccess() {
-        [serverUrl: grailsApplication.config.grails.serverURL + '/myprofile']
+        [serverUrl: grailsApplication.config.getProperty('grails.serverURL') + '/myprofile']
     }
 
     def startPasswordReset() {
@@ -148,7 +148,7 @@ class RegistrationController {
             def success = userService.disableUser(user)
 
             if (success) {
-                redirect(controller: 'logout', action: 'logout', params: [appUrl: grailsApplication.config.grails.serverURL + '/registration/accountDisabled'])
+                redirect(controller: 'logout', action: 'logout', params: [appUrl: grailsApplication.config.getProperty('grails.serverURL') + '/registration/accountDisabled'])
             } else {
                 render(view: "accountError", model: [msg: "Failed to disable user profile - unknown error"])
             }

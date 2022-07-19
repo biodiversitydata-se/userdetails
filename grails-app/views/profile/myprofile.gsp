@@ -17,9 +17,9 @@
 <!doctype html>
 <html>
 <head>
-    <meta name="layout" content="${grailsApplication.config.skin.layout}"/>
+    <meta name="layout" content="${grailsApplication.config.getProperty('skin.layout')}"/>
     <meta name="breadcrumb" content="${message(code:"my.profile")}" />
-    <title><g:message code="userdetails.my.profile" /> | ${grailsApplication.config.skin.orgNameLong}</title>
+    <title><g:message code="userdetails.my.profile" /> | ${grailsApplication.config.getProperty('skin.orgNameLong')}</title>
     <asset:stylesheet src="application.css" />
 </head>
 <body>
@@ -81,11 +81,11 @@
                 <div class="col-lg-4">
                     <div class="d-flex">
                         <div class="image">
-                                <img src="${grailsApplication.config.logo.downloads}" alt="">
+                                <img src="${grailsApplication.config.getProperty('logo.downloads')}" alt="">
                         </div>
                         <div class="content">
                             <h4 id="your-doi">
-                                <a href="${grailsApplication.config.biocache.myDownloads.url}">
+                                <a href="${grailsApplication.config.getProperty('biocache.myDownloads.url')}">
                                     <g:message code="myprofile.your.downloads" />
                                 </a>
                             </h4>
@@ -94,11 +94,11 @@
                     </div>
                     <div class="d-flex">
                         <div class="image">
-                            <img src="${grailsApplication.config.logo.specieslists}" alt="">
+                            <img src="${grailsApplication.config.getProperty('logo.specieslists')}" alt="">
                         </div>
                         <div class="content">
                             <h4 id="species-lists">
-                                <a href="${grailsApplication.config.lists.url}">
+                                <a href="${grailsApplication.config.getProperty('lists.url')}">
                                     <g:message code="myprofile.uploaded.species.lists" />
                                 </a>
                             </h4>
@@ -111,7 +111,7 @@
                         </div>
                         <div class="content">
                             <h4 id="records-annotated">
-                                <a href="${grailsApplication.config.biocache.search.url}%22${user.id}%22">
+                                <a href="${grailsApplication.config.getProperty('biocache.search.url')}%22${user.id}%22">
                                     <g:message code="myprofile.view.records.you.annotated" />
                                 </a>
                             </h4>
@@ -120,11 +120,11 @@
                     </div>
                     <div class="d-flex">
                         <div class="image">
-                            <img src="${grailsApplication.config.logo.sandbox}" alt="">
+                            <img src="${grailsApplication.config.getProperty('logo.sandbox')}" alt="">
                         </div>
                         <div class="content">
                             <h4 id="records-uploaded">
-                                <a href="${grailsApplication.config.myData.url}">
+                                <a href="${grailsApplication.config.getProperty('myData.url')}">
                                     <g:message code="myprofile.your.datasets" />
                                 </a>
                             </h4>
@@ -141,7 +141,7 @@
                         </div>
                         <div class="content">
                             <h4 id="my-alerts">
-                                <a href="${grailsApplication.config.alerts.url}">
+                                <a href="${grailsApplication.config.getProperty('alerts.url')}">
                                     <g:message code="myprofile.your.alerts" />
                                 </a>
                             </h4>
@@ -150,11 +150,11 @@
                     </div>
                     <div class="d-flex">
                         <div class="image">
-                            <img src="${grailsApplication.config.logo.biocollect}" alt="">
+                            <img src="${grailsApplication.config.getProperty('logo.biocollect')}" alt="">
                         </div>
                         <div class="content">
                             <h4 id="my-biocollect">
-                                <a href="${grailsApplication.config.biocollect.url}">
+                                <a href="${grailsApplication.config.getProperty('biocollect.url')}">
                                     <g:message code="myprofile.biocollect" />
                                 </a>
                             </h4>
@@ -163,11 +163,11 @@
                     </div>
                     <div class="d-flex">
                         <div class="image">
-                            <img src="${grailsApplication.config.logo.digivol}" alt="">
+                            <img src="${grailsApplication.config.getProperty('logo.digivol')}" alt="">
                         </div>
                         <div class="content">
                             <h4 id="record-a-sighting">
-                                <a href="${grailsApplication.config.volunteer.url}">
+                                <a href="${grailsApplication.config.getProperty('volunteer.url')}">
                                     <g:message code="myprofile.tasks.digivol" />
                                 </a>
                             </h4>

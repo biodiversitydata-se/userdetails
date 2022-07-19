@@ -15,7 +15,7 @@
 <!doctype html>
 <html>
 <head>
-    <meta name="layout" content="${grailsApplication.config.skin.layout}"/>
+    <meta name="layout" content="${grailsApplication.config.getProperty('skin.layout')}"/>
     <meta name="section" content="home"/>
     <title><g:message code="duplicate.submit.title" /></title>
     <asset:stylesheet src="application.css" />
@@ -37,7 +37,7 @@
                 If your new password doesn't work, please start the process again <g:link controller="registration" action="forgottenPassword">here</g:link>.
             </li>
             <li>
-                <g:message code="duplicate.submit.mailto" args="[grailsApplication.config.supportEmail]" />
+                <g:message code="duplicate.submit.mailto" args="[grailsApplication.config.getProperty('supportEmail')]" />
             </li>
         </ul>
 

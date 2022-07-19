@@ -52,7 +52,7 @@ class EmailService {
         }
         try {
             sendMail {
-              from grailsApplication.config.emailSenderTitle+"<" + grailsApplication.config.emailSender + ">"
+              from grailsApplication.config.getProperty('emailSenderTitle')+"<" + grailsApplication.config.getProperty('emailSender') + ">"
               subject emailSubject
               to user.email
               body (view: '/email/resetPassword',
@@ -68,12 +68,12 @@ class EmailService {
     def sendAccountActivation(user, authKey) throws PasswordResetFailedException {
         try {
             sendMail {
-                from grailsApplication.config.emailSenderTitle + "<" + grailsApplication.config.emailSender + ">"
+                from grailsApplication.config.getProperty('emailSenderTitle') + "<" + grailsApplication.config.getProperty('emailSender') + ">"
                 subject "Activate your account"
                 to user.email
                 body(view: '/email/activateAccount',
                         plugin: "email-confirmation",
-                        model: [userName: user.firstName, link: getServerUrl() + "activateAccount/" + user.id + "/" + authKey, orgNameLong: grailsApplication.config.skin.orgNameLong]
+                        model: [userName: user.firstName, link: getServerUrl() + "activateAccount/" + user.id + "/" + authKey, orgNameLong: grailsApplication.config.getProperty('skin.orgNameLong')]
                 )
             }
         } catch (Exception ex) {
@@ -84,12 +84,12 @@ class EmailService {
     def sendAccountActivationSuccess(user, activatedAlerts) throws PasswordResetFailedException {
         try {
             sendMail {
-                from grailsApplication.config.emailSenderTitle + "<" + grailsApplication.config.emailSender + ">"
+                from grailsApplication.config.getProperty('emailSenderTitle') + "<" + grailsApplication.config.getProperty('emailSender') + ">"
                 subject "Account activated successfully"
                 to user.email
                 body(view: '/email/activateAccountSuccess',
                         plugin: "email-confirmation",
-                        model: [userName: user.firstName, activatedAlerts: activatedAlerts, alertsUrl: grailsApplication.config.alerts.url]
+                        model: [userName: user.firstName, activatedAlerts: activatedAlerts, alertsUrl: grailsApplication.config.getProperty('alerts.url')]
                 )
             }
         } catch (Exception ex) {
@@ -100,12 +100,12 @@ class EmailService {
     def sendUpdateProfileSuccess(User user, List<String> emailRecipients) throws PasswordResetFailedException {
         try {
             sendMail {
-                from grailsApplication.config.emailSenderTitle+"<" + grailsApplication.config.emailSender + ">"
+                from grailsApplication.config.getProperty('emailSenderTitle')+"<" + grailsApplication.config.getProperty('emailSender') + ">"
                 subject "Account updated successfully"
                 to (emailRecipients.toArray())
                 body (view: '/email/updateAccountSuccess',
                         plugin:"email-confirmation",
-                        model:[userName: user.firstName, support: grailsApplication.config.supportEmail]
+                        model:[userName: user.firstName, support: grailsApplication.config.getProperty('supportEmail')]
                 )
             }
         } catch (Exception ex) {
@@ -116,7 +116,7 @@ class EmailService {
     def sendGeneratedPassword(user, generatedPassword) throws PasswordResetFailedException {
         try {
             sendMail {
-              from grailsApplication.config.emailSenderTitle+"<" + grailsApplication.config.emailSender + ">"
+              from grailsApplication.config.getProperty('emailSenderTitle')+"<" + grailsApplication.config.getProperty('emailSender') + ">"
               subject "Accessing your account"
               to user.email
               body (view: '/email/accessAccount',
@@ -130,12 +130,12 @@ class EmailService {
     }
 
     def getMyProfileUrl(){
-            grailsApplication.config.grails.serverURL  +
+            grailsApplication.config.getProperty('grails.serverURL')  +
                     "/myprofile/"
     }
 
     def getServerUrl(){
-        grailsApplication.config.grails.serverURL +
+        grailsApplication.config.getProperty('grails.serverURL') +
                     "/registration/"
     }
 }

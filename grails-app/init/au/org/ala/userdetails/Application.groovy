@@ -16,30 +16,19 @@
 package au.org.ala.userdetails
 
 import au.org.ala.recaptcha.RecaptchaClient
-import com.mongodb.MongoClientSettings
-//import com.mongodb.client.MongoClient // Switch out on upgrade
-import com.mongodb.MongoClient
 import grails.boot.GrailsApp
 import grails.boot.config.GrailsAutoConfiguration
 import groovy.util.logging.Slf4j
 import okhttp3.OkHttpClient
-import org.springframework.beans.factory.ObjectProvider
-import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.actuate.jdbc.DataSourceHealthIndicator
 import org.springframework.boot.actuate.mongo.MongoHealthIndicator
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration
-import org.springframework.boot.autoconfigure.mongo.MongoClientFactory
-import org.springframework.boot.autoconfigure.mongo.MongoClientSettingsBuilderCustomizer
 import org.springframework.boot.autoconfigure.mongo.MongoProperties
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
-import org.springframework.context.annotation.Primary
-import org.springframework.core.env.Environment
-import org.springframework.data.mongodb.MongoDbFactory
 import org.springframework.data.mongodb.core.MongoOperations
 import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.data.mongodb.core.SimpleMongoClientDbFactory

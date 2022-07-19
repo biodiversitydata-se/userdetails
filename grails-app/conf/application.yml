@@ -46,6 +46,15 @@ spring:
           - SYNCHRONIZER_TOKENS_HOLDER
     jmx:
       unique-names: true
+    devtools:
+      restart:
+        additional-exclude:
+          - '*.gsp'
+          - '**/*.gsp'
+          - '*.gson'
+          - '**/*.gson'
+          - 'logback.groovy'
+          - '*.properties'
 server:
   use-forward-headers: true
   tomcat:
@@ -54,7 +63,7 @@ server:
     protocol_header: x-forwarded-proto
     protocol-header-https-value: https
     # Add IPv6 localhost to default list
-    internal-proxies: 10\.\d{1,3}\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}|169\.254\.\d{1,3}\.\d{1,3}|127\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.1[6-9]{1}\.\d{1,3}\.\d{1,3}|172\.2[0-9]{1}\.\d{1,3}\.\d{1,3}|172\.3[0-1]{1}\.\d{1,3}\.\d{1,3}|0:0:0:0:0:0:0:1|::1
+    # internal-proxies: 10\.\d{1,3}\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}|169\.254\.\d{1,3}\.\d{1,3}|127\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.1[6-9]{1}\.\d{1,3}\.\d{1,3}|172\.2[0-9]{1}\.\d{1,3}\.\d{1,3}|172\.3[0-1]{1}\.\d{1,3}\.\d{1,3}|0:0:0:0:0:0:0:1|::1
 ---
 grails:
     mime:

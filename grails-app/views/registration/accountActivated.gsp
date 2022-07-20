@@ -15,9 +15,9 @@
 <!doctype html>
 <html>
 <head>
-    <meta name="layout" content="${grailsApplication.config.skin.layout}"/>
+    <meta name="layout" content="${grailsApplication.config.getProperty('skin.layout')}"/>
     <meta name="section" content="home"/>
-    <title><g:message code="account.activated.account.created" /> | ${grailsApplication.config.skin.orgNameLong}</title>
+    <title><g:message code="account.activated.account.created" /> | ${grailsApplication.config.getProperty('skin.orgNameLong')}</title>
     <asset:stylesheet src="application.css" />
 </head>
 <body>
@@ -29,9 +29,9 @@
     <div class="row">
         <div class="col-md-12">
             <div class="well well-lg">
-                <g:message code="account.activated.thank.you.for.registering" args="[grailsApplication.config.skin.orgNameLong]" />
+                <g:message code="account.activated.thank.you.for.registering" args="[grailsApplication.config.getProperty('skin.orgNameLong')]" />
                 <br/>
-                <g:message code="account.activated.if.you.have.any.problems" args="[grailsApplication.config.supportEmail]" />
+                <g:message code="account.activated.if.you.have.any.problems" args="[grailsApplication.config.getProperty('supportEmail')]" />
             </div>
         </div>
    </div>

@@ -17,7 +17,7 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<meta name="layout" content="${grailsApplication.config.skin.layout}">
+		<meta name="layout" content="${grailsApplication.config.getProperty('skin.layout')}">
 		<g:set var="entityName" value="${message(code: 'authorisedSystem.label', default: 'AuthorisedSystem')}" />
 		<title><g:message code="default.edit.label" args="[entityName]" /></title>
 		<meta name="breadcrumbParent" content="${g.createLink(action:"list")},${g.message(code:"default.list.label", args:[entityName])}" />

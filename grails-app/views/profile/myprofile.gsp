@@ -176,11 +176,11 @@
                     </div>
                     <div class="d-flex">
                         <div class="image">
-                            <img src="${grailsApplication.config.logo.spatialportal}" alt="">
+                            <img src="${grailsApplication.config.getProperty('logo.spatialportal')}" alt="">
                         </div>
                         <div class="content">
                             <h4 id="spatial-portal">
-                                <a href="${grailsApplication.config.spatial.url}">
+                                <a href="${grailsApplication.config.getProperty('spatial.url')}">
                                     <g:message code="myprofile.spatial.portal" />
                                 </a>
                             </h4>
@@ -200,23 +200,23 @@
                     <div class=" well well-small">
                         <div class="d-flex">
                             <div class="image">
-                                <img src="${grailsApplication.config.logo.inaturalist}">
+                                <img src="${grailsApplication.config.getProperty('logo.inaturalist')}">
                             </div>
                             <div class="content">
-                                <h4>${grailsApplication.config.inaturalist.name}</h4>
+                                <h4>${grailsApplication.config.getProperty('inaturalist.name')}</h4>
                                 <g:if test="${props.inaturalistId}">
-                                    <strong><g:message code="myprofile.inat.you.have.connected.with.user" args="[grailsApplication.config.inaturalist.name]" />
+                                    <strong><g:message code="myprofile.inat.you.have.connected.with.user" args="[grailsApplication.config.getProperty('inaturalist.name')]" />
                                     <u:link baseProperty="inaturalist.baseUrl" paths="['people', props.inaturalistId]">${props.inaturalistUsername}</u:link>
                                     </strong>
                                     <ul>
-                                        <li><u:link baseProperty="biocache.search.baseUrl" params='[q: grailsApplication.config.inaturalist.searchQuery, fq: "alau_user_id:${props.inaturalistUsername}"]'>View my iNaturalist observations in ${grailsApplication.config.skin.orgNameShort}</u:link></li>
-                                        <li><u:link baseProperty="biocache.search.baseUrl" params='[q: grailsApplication.config.inaturalist.searchQuery + " OR " + grailsApplication.config.inaturalist.sightingsSearchQuery, fq: "alau_user_id:${props.inaturalistUsername} OR alau_user_id:\"${user.id}\""]'>View my iNaturalist observations and my ${grailsApplication.config.skin.orgNameShort} Sightings in ${grailsApplication.config.skin.orgNameShort}</u:link></li>
+                                        <li><u:link baseProperty="biocache.search.baseUrl" params='[q: grailsApplication.config.getProperty("inaturalist.searchQuery"), fq: "alau_user_id:${props.inaturalistUsername}"]'>View my iNaturalist observations in ${grailsApplication.config.getProperty('skin.orgNameShort')}</u:link></li>
+                                        <li><u:link baseProperty="biocache.search.baseUrl" params='[q: grailsApplication.config.getProperty("inaturalist.searchQuery") + " OR " + grailsApplication.config.getProperty("inaturalist.sightingsSearchQuery"), fq: "alau_user_id:${props.inaturalistUsername} OR alau_user_id:\"${user.id}\""]'>View my iNaturalist observations and my ${grailsApplication.config.skin.orgNameShort} Sightings in ${grailsApplication.config.skin.orgNameShort}</u:link></li>
                                     </ul>
                                     <g:link controller="profile" class="btn btn-default" action="removeLink" params="[provider: 'inaturalist']"><g:message code="myprofile.remove.link.to.inaturalist" /></g:link>
                                 </g:if>
                                 <g:else>
                                     <p>
-                                        <g:message code="myprofile.inaturalists.link.description" args="[grailsApplication.config.skin.orgNameShort, grailsApplication.config.skin.orgNameShort]" />
+                                        <g:message code="myprofile.inaturalists.link.description" args="[grailsApplication.config.getProperty('skin.orgNameShort'), grailsApplication.config.getProperty('skin.orgNameShort')]" />
                                     </p>
 
                                     <span class="btn btn-default">
@@ -234,7 +234,7 @@
                     <div class=" well well-small">
                         <div class="d-flex">
                             <div class="image">
-                                <img src="${grailsApplication.config.logo.flickr}">
+                                <img src="${grailsApplication.config.getProperty('logo.flickr')}">
                             </div>
                             <div class="content">
                                 <h4><g:message code="myprofile.flickr.title" /></h4>

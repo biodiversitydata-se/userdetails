@@ -15,9 +15,9 @@
 <!doctype html>
 <html>
 <head>
-    <meta name="layout" content="${grailsApplication.config.skin.layout}"/>
+    <meta name="layout" content="${grailsApplication.config.getProperty('skin.layout')}"/>
     <meta name="section" content="home"/>
-    <title><g:message code="account.error.title" args="[grailsApplication.config.skin.orgNameShort]" /></title>
+    <title><g:message code="account.error.title" args="[grailsApplication.config.getProperty('skin.orgNameShort')]" /></title>
     <asset:stylesheet src="application.css" />
 </head>
 <body>
@@ -26,7 +26,7 @@
     <div class="row">
         <p>
             <g:message code="account.error.there.was.problem" /><br>
-            <g:message code="account.error.contact.mailto" args="[grailsApplication.config.supportEmail]" />
+            <g:message code="account.error.contact.mailto" args="[grailsApplication.config.getProperty('supportEmail')]" />
         </p>
         <g:if test="${msg}"><p><h4>Error:</h4> <pre>${msg}</pre></p></g:if>
    </div>

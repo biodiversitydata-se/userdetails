@@ -82,6 +82,9 @@ class UserDetailsController {
     @Produces("application/json")
     def search() {
         def q = params['q']
+        if (!q) {
+            render(status: 401, text: 'q parameter is required')
+        }
         def max = params.int('max', 10)
         User.withStatelessSession { session ->
             def c = User.createCriteria()

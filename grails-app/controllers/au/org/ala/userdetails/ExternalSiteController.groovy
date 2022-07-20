@@ -75,7 +75,7 @@ class ExternalSiteController {
             tags = "users",
             summary = "Get total count of users in the system",
             operationId = "getUserStats",
-            description = "Gets a count of all users in the system, including the number locked and activated.  In addition it also provides a count of users from one year ago.",
+            description = "Gets a count of all users in the system, excluding locked and non-activated accounts.  In addition it also provides a count of users from one year ago.",
             parameters = [
             // TODO Locale as a param
             ],

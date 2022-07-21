@@ -109,7 +109,7 @@ dependencies {
     implementation "org.grails.plugins:ala-ws-plugin:3.1.0-SNAPSHOT"
     implementation "org.grails.plugins:ala-ws-security-plugin:4.1.0-SNAPSHOT"
     implementation "org.grails.plugins:ala-auth:5.1.0-SNAPSHOT"
-    implementation "org.grails.plugins:ala-admin-plugin:2.1"
+    implementation "org.grails.plugins:ala-admin-plugin:2.3-SNAPSHOT"
 
     implementation 'dk.glasius:external-config:3.0.1'
     implementation 'org.grails.plugins:http-builder-helper:1.1.0'

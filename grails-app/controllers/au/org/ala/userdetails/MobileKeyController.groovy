@@ -34,7 +34,7 @@ class MobileKeyController {
         log.info("Authenticate request received for....." +params.userName)
         try {
             HttpClient http = new DefaultHttpClient()
-            HttpPost post = new HttpPost(grailsApplication.config.security.cas.casServerUrlPrefix + "/v1/tickets")
+            HttpPost post = new HttpPost(grailsApplication.config.getProperty('security.cas.casServerUrlPrefix') + "/v1/tickets")
             String userName = params.userName.toString().toLowerCase()
             List<NameValuePair> nvps = new ArrayList<NameValuePair>();
             nvps.add(new BasicNameValuePair("username", userName));

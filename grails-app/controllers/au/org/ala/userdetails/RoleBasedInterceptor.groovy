@@ -39,9 +39,18 @@ class RoleBasedInterceptor {
 
         if (method && (controllerClass.isAnnotationPresent(PreAuthorise) || method.isAnnotationPresent(PreAuthorise))) {
             boolean result = true
+            PreAuthorise pa = method.getAnnotation(PreAuthorise) ?: controllerClass.getAnnotation(PreAuthorise)
             response.withFormat {
-                html {
-                    PreAuthorise pa = method.getAnnotation(PreAuthorise) ?: controllerClass.getAnnotation(PreAuthorise)
+                json {
+                    if (!authorisedSystemService.isAuthorisedRequest(request, response, pa.requiredRole(), pa.requiredScope())) {
+                        log.warn("Denying access to $actionName from remote addr: ${request.remoteAddr}, remote host: ${request.remoteHost}")
+                        response.status = HttpStatus.SC_UNAUTHORIZED
+                        render(['error': "Unauthorized"] as JSON)
+
+                        result = false
+                    }
+                }
+                '*' {
                     def requiredRole = pa.requiredRole()
                     def inRole = request?.isUserInRole(requiredRole)
 
@@ -49,16 +58,6 @@ class RoleBasedInterceptor {
                         log.warn("Denying access to $controllerName, $actionName to ${request?.userPrincipal?.name}")
                         flash.message = "Access denied: User does not have required permission."
                         redirect(uri: '/')
-                        result = false
-                    }
-                }
-
-                json {
-                    if (!authorisedSystemService.isAuthorisedSystem(request)) {
-                        log.warn("Denying access to $actionName from remote addr: ${request.remoteAddr}, remote host: ${request.remoteHost}")
-                        response.status = HttpStatus.SC_UNAUTHORIZED
-                        render(['error': "Unauthorized"] as JSON)
-
                         result = false
                     }
                 }

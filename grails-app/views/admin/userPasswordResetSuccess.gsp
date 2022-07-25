@@ -15,9 +15,9 @@
 <!doctype html>
 <html>
 <head>
-    <meta name="layout" content="${grailsApplication.config.skin.layout}"/>
+    <meta name="layout" content="${grailsApplication.config.getProperty('skin.layout')}"/>
     <meta name="section" content="home"/>
-    <title>Please check your email | ${grailsApplication.config.skin.orgNameLong} </title>
+    <title>Please check your email | ${grailsApplication.config.getProperty('skin.orgNameLong')} </title>
     <asset:stylesheet src="application.css" />
 </head>
 <body>

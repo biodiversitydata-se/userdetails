@@ -17,7 +17,7 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<meta name="layout" content="${grailsApplication.config.skin.layout}">
+		<meta name="layout" content="${grailsApplication.config.getProperty('skin.layout')}">
 		<g:set var="entityName" value="${message(code: 'role.label', default: 'Role')}" />
 		<title><g:message code="default.create.label" args="[entityName]" /></title>
 		<asset:stylesheet src="jqueryValidationEngine.css" />

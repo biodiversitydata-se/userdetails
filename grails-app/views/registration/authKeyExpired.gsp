@@ -15,7 +15,7 @@
 <!doctype html>
 <html>
 <head>
-    <meta name="layout" content="${grailsApplication.config.skin.layout}"/>
+    <meta name="layout" content="${grailsApplication.config.getProperty('skin.layout')}"/>
     <meta name="section" content="home"/>
     <title><g:message code="auth.key.expired.title" /></title>
     <asset:stylesheet src="application.css" />
@@ -31,7 +31,7 @@
             Alternatively you can start the process again <g:link controller="registration" action="forgottenPassword">here</g:link>.
 
             <br/>
-            <g:message code="auth.key.expired.mailto" args="[grailsApplication.config.supportEmail]" />
+            <g:message code="auth.key.expired.mailto" args="[grailsApplication.config.getProperty('supportEmail')]" />
         </p>
    </div>
 </div>

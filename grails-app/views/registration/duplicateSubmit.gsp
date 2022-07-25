@@ -15,7 +15,7 @@
 <!doctype html>
 <html>
 <head>
-    <meta name="layout" content="${grailsApplication.config.skin.layout}"/>
+    <meta name="layout" content="${grailsApplication.config.getProperty('skin.layout')}"/>
     <meta name="section" content="home"/>
     <title><g:message code="duplicate.submit.title" /></title>
     <asset:stylesheet src="application.css" />
@@ -31,13 +31,13 @@
         <strong><g:message code="duplicate.submit.next.steps" /></strong>
         <ul class="userdetails-menu">
             <li>
-                <g:message code="duplicate.submit.reset.successfully" args="[grailsApplication.config.security.cas.loginUrl, java.net.URLEncoder.encode(serverUrl, 'UTF-8')]" />
+                <g:message code="duplicate.submit.reset.successfully" args="[g.createLink(controller: 'login')]" />
             </li>
             <li>
                 If your new password doesn't work, please start the process again <g:link controller="registration" action="forgottenPassword">here</g:link>.
             </li>
             <li>
-                <g:message code="duplicate.submit.mailto" args="[grailsApplication.config.supportEmail]" />
+                <g:message code="duplicate.submit.mailto" args="[grailsApplication.config.getProperty('supportEmail')]" />
             </li>
         </ul>
 

@@ -1,6 +1,11 @@
 /*
  *= require_self
  */
+
+body #main {
+    padding-left:60px;padding-right:100px;
+}
+
 .userdetails-menu {
     list-style: square;
 }
@@ -105,4 +110,34 @@
     url('../fonts/roboto-v18-latin_latin-ext-700.woff') format('woff'), /* Modern Browsers */
     url('../fonts/roboto-v18-latin_latin-ext-700.ttf') format('truetype'), /* Safari, Android, iOS */
     url('../fonts/roboto-v18-latin_latin-ext-700.svg#Roboto') format('svg'); /* Legacy iOS */
+}
+
+.image {
+    min-width: 50px;
+    margin-right: 20px;
+    display: block;
+}
+
+.image .glyphicon {
+    margin-top: 10px;
+    margin-bottom: 20px;
+    font-size: 35px;
+    padding-left: 10px;
+}
+
+.image img {
+    padding-top: 8px;
+    max-width: 50px;
+}
+
+.d-flex .content {
+    display:block;
+}
+.d-flex {
+    display: flex!important;
+    margin-top: 20px;
+}
+
+#external-linkages  .d-flex {
+    margin-top: 0px;
 }

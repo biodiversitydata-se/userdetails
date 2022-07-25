@@ -15,6 +15,7 @@
 
 package au.org.ala.userdetails
 
+import au.org.ala.ws.security.JwtProperties
 import grails.converters.JSON
 import grails.testing.gorm.DataTest
 import grails.testing.web.controllers.ControllerUnitTest
@@ -30,6 +31,10 @@ import org.grails.web.util.GrailsApplicationAttributes
 class UserDetailsControllerSpec extends UserDetailsSpec implements ControllerUnitTest<UserDetailsController>, DataTest {
 
     static doWithSpring = {
+        jwtProperties(JwtProperties) {
+            enabled = true
+            fallbackToLegacyBehaviour = true
+        }
         authorisedSystemService(UserDetailsSpec.Authorised)
     }
 

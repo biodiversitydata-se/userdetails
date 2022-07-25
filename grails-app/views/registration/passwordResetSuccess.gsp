@@ -15,7 +15,7 @@
 <!doctype html>
 <html>
 <head>
-    <meta name="layout" content="${grailsApplication.config.skin.layout}"/>
+    <meta name="layout" content="${grailsApplication.config.getProperty('skin.layout')}"/>
     <meta name="section" content="home"/>
     <title><g:message code="password.reset.success.title" /></title>
     <asset:stylesheet src="application.css" />
@@ -28,7 +28,7 @@
             <p class="well">
                 <g:message code="password.reset.success.description" />
             </p>
-            <a href="${grailsApplication.config.security.cas.loginUrl}?service=${java.net.URLEncoder.encode(serverUrl, 'UTF-8')}" class="btn btn-primary"><g:message code="password.reset.success.btn" /></a>
+            <g:link controller="login" class="btn btn-primary"><g:message code="password.reset.success.btn" /></g:link>
         </div>
    </div>
 </div>

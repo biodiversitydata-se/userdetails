@@ -108,11 +108,11 @@ class RegistrationController {
 
     /** Displayed as a result of a password update with a duplicate form submission. */
     def duplicateSubmit() {
-        [serverUrl: grailsApplication.config.grails.serverURL + '/myprofile']
+        [serverUrl: grailsApplication.config.getProperty('grails.serverURL') + '/myprofile']
     }
 
     def passwordResetSuccess() {
-        [serverUrl: grailsApplication.config.grails.serverURL + '/myprofile']
+        [serverUrl: grailsApplication.config.getProperty('grails.serverURL') + '/myprofile']
     }
 
     def startPasswordReset() {
@@ -148,8 +148,7 @@ class RegistrationController {
             def success = userService.disableUser(user)
 
             if (success) {
-                redirect(controller: 'logout', action: 'logout', params: [casUrl: grailsApplication.config.security.cas.logoutUrl,
-                                                                          appUrl: grailsApplication.config.grails.serverURL + '/registration/accountDisabled'])
+                redirect(controller: 'logout', action: 'logout', params: [appUrl: grailsApplication.config.getProperty('grails.serverURL') + '/registration/accountDisabled'])
             } else {
                 render(view: "accountError", model: [msg: "Failed to disable user profile - unknown error"])
             }
@@ -213,7 +212,8 @@ class RegistrationController {
             //create user account...
             if (!params.email || userService.isEmailRegistered(params.email)) {
                 def inactiveUser = !userService.isActive(params.email)
-                render(view: 'createAccount', model: [edit: false, user: params, props: params, alreadyRegistered: true, inactiveUser: inactiveUser])
+                def lockedUser = userService.isLocked(params.email)
+                render(view: 'createAccount', model: [edit: false, user: params, props: params, alreadyRegistered: true, inactiveUser: inactiveUser, lockedUser: lockedUser])
             } else {
 
                 try {
@@ -235,6 +235,8 @@ class RegistrationController {
                     render(view: "accountError", model: [msg: e.getMessage()])
                 }
             }
+        }.invalidToken {
+            redirect action: 'createAccount'
         }
     }
 

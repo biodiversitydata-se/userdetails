@@ -15,6 +15,9 @@
 
 package au.org.ala.userdetails
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+
+@JsonIgnoreProperties(['metaClass','errors'])
 class UserProperty implements Serializable {
 
     User user

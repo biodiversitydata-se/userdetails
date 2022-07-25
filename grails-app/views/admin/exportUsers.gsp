@@ -15,10 +15,10 @@
 <!doctype html>
 <html>
     <head>
-        <meta name="layout" content="${grailsApplication.config.skin.layout}"/>
+        <meta name="layout" content="${grailsApplication.config.getProperty('skin.layout')}"/>
         <meta name="section" content="home"/>
         <g:set var="title">Export Users to CSV</g:set>
-        <title>${title} | ${grailsApplication.config.skin.orgNameLong}</title>
+        <title>${title} | ${grailsApplication.config.getProperty('skin.orgNameLong')}</title>
         <asset:stylesheet src="application.css" />
     </head>
     <body>

@@ -85,11 +85,11 @@ class PropertyController extends BaseController {
                             ]
                     )
             ],
-            security = [@SecurityRequirement(name = 'openIdConnect', scopes = ['users:read'])]
+            security = [@SecurityRequirement(name = 'openIdConnect', scopes = ['users\\read'])]
     )
     @Path("getProperty")
     @Produces("application/json")
-    @PreAuthorise(requiredScope = 'users:read')
+    @PreAuthorise(requiredScope = 'users\\read')
     def getProperty() {
         String name = params.name
         Long alaId = params.long('alaId')

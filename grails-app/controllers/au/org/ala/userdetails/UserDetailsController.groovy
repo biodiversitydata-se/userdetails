@@ -76,7 +76,7 @@ class UserDetailsController {
                         ]
                     )
             ],
-            security = [@SecurityRequirement(name = 'openIdConnect', scopes = ['users:read'])]
+            security = [@SecurityRequirement(name = 'openIdConnect', scopes = ['users\\read'])]
     )
     @Path("search")
     @Produces("application/json")
@@ -137,7 +137,7 @@ class UserDetailsController {
                             ]
                     )
             ],
-            security = [@SecurityRequirement(name = 'openIdConnect', scopes = ['users:read'])]
+            security = [@SecurityRequirement(name = 'openIdConnect', scopes = ['users\\read'])]
     )
     @Path("byRole")
     @Produces("application/json")
@@ -244,7 +244,7 @@ class UserDetailsController {
                             ]
                     )
             ],
-            security = [@SecurityRequirement(name = 'openIdConnect', scopes = ['users:read'])]
+            security = [@SecurityRequirement(name = 'openIdConnect', scopes = ['users\\read'])]
     )
     @Path('getUserDetails')
     @Produces('application/json')
@@ -298,7 +298,7 @@ class UserDetailsController {
                             ]
                     )
             ],
-            security = [@SecurityRequirement(name = 'openIdConnect', scopes = ['users:read'])]
+            security = [@SecurityRequirement(name = 'openIdConnect', scopes = ['users\\read'])]
     )
     @Deprecated
     @Path("getUserList")
@@ -327,7 +327,7 @@ class UserDetailsController {
                             ]
                     )
             ],
-            security = [@SecurityRequirement(name = 'openIdConnect', scopes = ['users:read'])]
+            security = [@SecurityRequirement(name = 'openIdConnect', scopes = ['users\\read'])]
     )
     @Deprecated
     @Path("getUserListWithIds")
@@ -356,7 +356,7 @@ class UserDetailsController {
                             ]
                     )
             ],
-            security = [@SecurityRequirement(name = 'openIdConnect', scopes = ['users:read'])]
+            security = [@SecurityRequirement(name = 'openIdConnect', scopes = ['users\\read'])]
     )
     @Deprecated
     @Path("getUserListFull")
@@ -394,7 +394,7 @@ class UserDetailsController {
                             ]
                     )
             ],
-            security = [@SecurityRequirement(name = 'openIdConnect', scopes = ['users:read'])]
+            security = [@SecurityRequirement(name = 'openIdConnect', scopes = ['users\\read'])]
     )
     @Path("getUserDetailsFromIdList")
     @Consumes("application/json")

@@ -1,3 +1,18 @@
+/*
+ * Copyright (C) 2022 Atlas of Living Australia
+ * All Rights Reserved.
+ *
+ * The contents of this file are subject to the Mozilla Public
+ * License Version 1.1 (the "License"); you may not use this file
+ * except in compliance with the License. You may obtain a copy of
+ * the License at http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS
+ * IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+ * implied. See the License for the specific language governing
+ * rights and limitations under the License.
+ */
+
 package au.org.ala.userdetails
 
 import au.org.ala.oauth.apis.InaturalistApi
@@ -8,8 +23,11 @@ import com.github.scribejava.core.model.*
 import com.github.scribejava.core.oauth.OAuth20Service
 import com.github.scribejava.core.oauth.OAuthService
 import grails.converters.JSON
+import org.apache.http.HttpStatus
 import org.springframework.web.context.request.RequestContextHolder
 import uk.co.desirableobjects.oauth.scribe.OauthProvider
+
+import static org.apache.http.HttpStatus.SC_UNAUTHORIZED
 
 class ProfileController {
 
@@ -22,9 +40,7 @@ class ProfileController {
     static final List<String> FLICKR_ATTRS = [FLICKR_ID, FLICKR_USERNAME]
     static final List<String> INATURALIST_ATTRS = [INATURALIST_TOKEN, INATURALIST_ID, INATURALIST_USERNAME]
 
-    def authService
     def oauthService
-    def emailService
     def userService
 
     def index() {
@@ -33,13 +49,11 @@ class ProfileController {
 
         if (user) {
             def props = user.propsAsMap()
-            def isAdmin = RequestContextHolder.currentRequestAttributes()?.isUserInRole("ROLE_ADMIN")
+            def isAdmin = request.isUserInRole("ROLE_ADMIN")
             render(view: "myprofile", model: [user: user, props: props, isAdmin: isAdmin])
         } else {
-            String baseUrl = grailsApplication.config.security.cas.loginUrl
-            def separator = baseUrl.contains("?") ? "&" : "?"
-            def loginUrl = "${baseUrl}${separator}service=" + URLEncoder.encode(emailService.getMyProfileUrl(), "UTF-8")
-            redirect(url: loginUrl)
+            log.info('my-profile without a user?')
+            render(status: SC_UNAUTHORIZED)
         }
     }
 
@@ -102,8 +116,8 @@ class ProfileController {
         FlickrApi flickrApi = FlickrApi.instance()
         OAuth1RequestToken token = session.getAt("flickr:oasRequestToken")
         OAuthService service = new ServiceBuilder().
-                apiKey(grailsApplication.config.oauth.providers.flickr.key).
-                apiSecret(grailsApplication.config.oauth.providers.flickr.secret).build(flickrApi)
+                apiKey(grailsApplication.config.getProperty('oauth.providers.flickr.key')).
+                apiSecret(grailsApplication.config.getProperty('oauth.providers.flickr.secret')).build(flickrApi)
 
         def accessToken = service.getAccessToken(token, params.oauth_verifier)
 

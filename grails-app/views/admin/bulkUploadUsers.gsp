@@ -1,10 +1,24 @@
+%{--
+  - Copyright (C) 2022 Atlas of Living Australia
+  - All Rights Reserved.
+  -
+  - The contents of this file are subject to the Mozilla Public
+  - License Version 1.1 (the "License"); you may not use this file
+  - except in compliance with the License. You may obtain a copy of
+  - the License at http://www.mozilla.org/MPL/
+  -
+  - Software distributed under the License is distributed on an "AS
+  - IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+  - implied. See the License for the specific language governing
+  - rights and limitations under the License.
+  --}%
 <!doctype html>
 <html>
     <head>
-        <meta name="layout" content="${grailsApplication.config.skin.layout}"/>
+        <meta name="layout" content="${grailsApplication.config.getProperty('skin.layout')}"/>
         <meta name="section" content="home"/>
         <g:set var="title">Bulk Load Users</g:set>
-        <title>${title} | ${grailsApplication.config.skin.orgNameLong}</title>
+        <title>${title} | ${grailsApplication.config.getProperty('skin.orgNameLong')}</title>
         <asset:stylesheet src="application.css" />
     </head>
     <body>
@@ -49,12 +63,20 @@
                 </div>
             </div>
             <div class="form-group">
-                <label class="col-sm-2 control-label" for="primaryUsage">
-                    Primary usage (will default to 'Not Supplied')
+                <label class="col-sm-2 control-label" for="affiliation">
+                    Affiliation (will default to 'Not Supplied')
                 </label>
 
                 <div class="col-sm-10">
-                    <g:textField class="form-control" name="primaryUsage" />
+                    <g:select id="affiliation" name="affiliation"
+                              class="form-control"
+                              value=""
+                              from="${l.affiliations()}"
+                              optionKey="key"
+                              optionValue="value"
+                              noSelection="${['': message(code:'create.account.choose.affiliation', default: '-- Choose one --')]}"
+                              data-validation-engine="validate[required]"
+                    />
                 </div>
             </div>
 

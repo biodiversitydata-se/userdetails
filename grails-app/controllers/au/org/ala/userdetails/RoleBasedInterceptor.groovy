@@ -1,3 +1,18 @@
+/*
+ * Copyright (C) 2022 Atlas of Living Australia
+ * All Rights Reserved.
+ *
+ * The contents of this file are subject to the Mozilla Public
+ * License Version 1.1 (the "License"); you may not use this file
+ * except in compliance with the License. You may obtain a copy of
+ * the License at http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS
+ * IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+ * implied. See the License for the specific language governing
+ * rights and limitations under the License.
+ */
+
 package au.org.ala.userdetails
 
 import au.org.ala.auth.PreAuthorise
@@ -24,9 +39,18 @@ class RoleBasedInterceptor {
 
         if (method && (controllerClass.isAnnotationPresent(PreAuthorise) || method.isAnnotationPresent(PreAuthorise))) {
             boolean result = true
+            PreAuthorise pa = method.getAnnotation(PreAuthorise) ?: controllerClass.getAnnotation(PreAuthorise)
             response.withFormat {
-                html {
-                    PreAuthorise pa = method.getAnnotation(PreAuthorise) ?: controllerClass.getAnnotation(PreAuthorise)
+                json {
+                    if (!authorisedSystemService.isAuthorisedRequest(request, response, pa.requiredRole(), pa.requiredScope())) {
+                        log.warn("Denying access to $actionName from remote addr: ${request.remoteAddr}, remote host: ${request.remoteHost}")
+                        response.status = HttpStatus.SC_UNAUTHORIZED
+                        render(['error': "Unauthorized"] as JSON)
+
+                        result = false
+                    }
+                }
+                '*' {
                     def requiredRole = pa.requiredRole()
                     def inRole = request?.isUserInRole(requiredRole)
 
@@ -34,16 +58,6 @@ class RoleBasedInterceptor {
                         log.warn("Denying access to $controllerName, $actionName to ${request?.userPrincipal?.name}")
                         flash.message = "Access denied: User does not have required permission."
                         redirect(uri: '/')
-                        result = false
-                    }
-                }
-
-                json {
-                    if (!authorisedSystemService.isAuthorisedSystem(request)) {
-                        log.warn("Denying access to $actionName from remote addr: ${request.remoteAddr}, remote host: ${request.remoteHost}")
-                        response.status = HttpStatus.SC_UNAUTHORIZED
-                        render(['error': "Unauthorized"] as JSON)
-
                         result = false
                     }
                 }

@@ -1,3 +1,18 @@
+/*
+ * Copyright (C) 2022 Atlas of Living Australia
+ * All Rights Reserved.
+ *
+ * The contents of this file are subject to the Mozilla Public
+ * License Version 1.1 (the "License"); you may not use this file
+ * except in compliance with the License. You may obtain a copy of
+ * the License at http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS
+ * IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+ * implied. See the License for the specific language governing
+ * rights and limitations under the License.
+ */
+
 package au.org.ala.userdetails
 
 import au.org.ala.auth.UpdatePasswordCommand
@@ -93,11 +108,11 @@ class RegistrationController {
 
     /** Displayed as a result of a password update with a duplicate form submission. */
     def duplicateSubmit() {
-        [serverUrl: grailsApplication.config.grails.serverURL + '/myprofile']
+        [serverUrl: grailsApplication.config.getProperty('grails.serverURL') + '/myprofile']
     }
 
     def passwordResetSuccess() {
-        [serverUrl: grailsApplication.config.grails.serverURL + '/myprofile']
+        [serverUrl: grailsApplication.config.getProperty('grails.serverURL') + '/myprofile']
     }
 
     def startPasswordReset() {
@@ -133,8 +148,7 @@ class RegistrationController {
             def success = userService.disableUser(user)
 
             if (success) {
-                redirect(controller: 'logout', action: 'logout', params: [casUrl: grailsApplication.config.security.cas.logoutUrl,
-                                                                          appUrl: grailsApplication.config.grails.serverURL + '/registration/accountDisabled'])
+                redirect(controller: 'logout', action: 'logout', params: [appUrl: grailsApplication.config.getProperty('grails.serverURL') + '/registration/accountDisabled'])
             } else {
                 render(view: "accountError", model: [msg: "Failed to disable user profile - unknown error"])
             }
@@ -198,7 +212,8 @@ class RegistrationController {
             //create user account...
             if (!params.email || userService.isEmailRegistered(params.email)) {
                 def inactiveUser = !userService.isActive(params.email)
-                render(view: 'createAccount', model: [edit: false, user: params, props: params, alreadyRegistered: true, inactiveUser: inactiveUser])
+                def lockedUser = userService.isLocked(params.email)
+                render(view: 'createAccount', model: [edit: false, user: params, props: params, alreadyRegistered: true, inactiveUser: inactiveUser, lockedUser: lockedUser])
             } else {
 
                 try {
@@ -220,6 +235,8 @@ class RegistrationController {
                     render(view: "accountError", model: [msg: e.getMessage()])
                 }
             }
+        }.invalidToken {
+            redirect action: 'createAccount'
         }
     }
 

@@ -1,3 +1,18 @@
+/*
+ * Copyright (C) 2022 Atlas of Living Australia
+ * All Rights Reserved.
+ *
+ * The contents of this file are subject to the Mozilla Public
+ * License Version 1.1 (the "License"); you may not use this file
+ * except in compliance with the License. You may obtain a copy of
+ * the License at http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS
+ * IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+ * implied. See the License for the specific language governing
+ * rights and limitations under the License.
+ */
+
 package au.org.ala.userdetails
 
 import au.org.ala.auth.BulkUserLoadResults
@@ -9,6 +24,7 @@ import grails.gorm.transactions.Transactional
 import grails.util.Environment
 import grails.web.servlet.mvc.GrailsParameterMap
 import org.apache.http.HttpStatus
+import org.grails.orm.hibernate.cfg.GrailsHibernateUtil
 import org.springframework.beans.factory.annotation.Value
 
 @Transactional
@@ -48,7 +64,7 @@ class UserService {
         try {
             user.activated = false
             user.save(failOnError: true, flush: true)
-            Map resp = webService.post("${grailsApplication.config.alerts.url}/api/alerts/user/${user.id}/unsubscribe", [:])
+            Map resp = webService.post("${grailsApplication.config.getProperty('alerts.url')}/api/alerts/user/${user.id}/unsubscribe", [:])
             if (resp.statusCode != HttpStatus.SC_OK) {
                 log.error("Alerts returned ${resp} when trying to disable the user's alerts. " +
                         "The user has been disabled, but their alerts are still active.")
@@ -67,6 +83,12 @@ class UserService {
     }
 
     @Transactional(readOnly = true)
+    boolean isLocked(String email) {
+        def user = User.findByEmailOrUserName(email?.toLowerCase(), email?.toLowerCase())
+        return user?.locked ?: false
+    }
+
+    @Transactional(readOnly = true)
     boolean isEmailRegistered(String email) {
         return User.findByEmailOrUserName(email?.toLowerCase(), email?.toLowerCase()) != null
     }
@@ -81,8 +103,9 @@ class UserService {
         }
     }
 
+    @Transactional
     def activateAccount(User user) {
-        Map resp = webService.post("${grailsApplication.config.alerts.url}/api/alerts/user/createAlerts", [:], [userId: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName])
+        Map resp = webService.post("${grailsApplication.config.getProperty('alerts.url')}/api/alerts/user/createAlerts", [:], [userId: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName])
         if (resp.statusCode == HttpStatus.SC_CREATED) {
             emailService.sendAccountActivationSuccess(user, resp.resp)
         } else if (resp.statusCode != HttpStatus.SC_OK) {
@@ -93,7 +116,7 @@ class UserService {
         user.save(flush:true)
     }
 
-    BulkUserLoadResults bulkRegisterUsersFromFile(InputStream stream, Boolean firstRowContainsFieldNames, String primaryUsage, String emailSubject, String emailTitle, String emailBody) {
+    BulkUserLoadResults bulkRegisterUsersFromFile(InputStream stream, Boolean firstRowContainsFieldNames, String affiliation, String emailSubject, String emailTitle, String emailBody) {
 
         def results = new BulkUserLoadResults()
 
@@ -127,11 +150,11 @@ class UserService {
                 def userInstance = User.findByEmail(emailAddress)
                 def isNewUser = true
 
-                def existingRoles = []
+                def existingRoles = [] as Set
                 if (userInstance) {
                     isNewUser = false
                     // keep track of their current roles
-                    existingRoles.addAll(UserRole.findAllByUser(userInstance)*.role)
+                    existingRoles.addAll(UserRole.findAllByUser(userInstance)*.role.collect { GrailsHibernateUtil.unwrapIfProxy(it) })
                 } else {
                     userInstance = new User(email: emailAddress, userName: emailAddress, firstName: tokens[1], lastName: tokens[2])
                     userInstance.activated = true
@@ -177,8 +200,7 @@ class UserService {
                     // User Properties
                     def userProps = [:]
 
-                    userProps['primaryUserType'] = primaryUsage ?: 'Not specified'
-                    userProps['secondaryUserType'] = 'Not specified'
+                    userProps['affiliation'] = affiliation ?: 'disinclinedToAcquiesce'
                     userProps['bulkCreatedOn'] = new Date().format("yyyy-MM-dd HH:mm:ss")
                     setUserPropertiesFromMap(userInstance, userProps)
 
@@ -318,7 +340,7 @@ class UserService {
                 }
             }
         } else {
-            user = User.findByEmail(userId)
+            user = User.findByEmail(authService.getEmail())
         }
 
         return user

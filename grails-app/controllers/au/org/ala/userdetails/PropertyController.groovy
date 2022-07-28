@@ -50,7 +50,7 @@ class PropertyController extends BaseController {
             tags = "properties",
             summary = "Get Property",
             operationId = "getProperty",
-            description = "Get a property value for a user",
+            description = "Get a property value for a user.  Required scopes: 'users\\read'.",
             parameters = [
                     @Parameter(
                             name = "alaId",
@@ -116,7 +116,7 @@ class PropertyController extends BaseController {
             tags = "properties",
             summary = "Save a Property",
             operationId = "saveProperty",
-            description = "Saves a property value for a user",
+            description = "Saves a property value for a user.  Required scopes: 'users\\write'.",
             parameters = [
                     @Parameter(
                             name = "alaId",
@@ -162,11 +162,11 @@ class PropertyController extends BaseController {
                             content = [@Content(mediaType = "text/plain")]
                     ),
             ],
-            security = [@SecurityRequirement(name = 'openIdConnect', scopes = ['users:write'])]
+            security = [@SecurityRequirement(name = 'openIdConnect', scopes = ['users\\write'])]
     )
     @Path("saveProperty")
     @Produces("application/json")
-    @PreAuthorise(requiredScope = 'users:write')
+    @PreAuthorise(requiredScope = 'users\\write')
     def saveProperty(){
         String name = params.name;
         String value = params.value;

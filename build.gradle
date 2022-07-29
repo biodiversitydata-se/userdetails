@@ -17,7 +17,7 @@ plugins {
     id "com.gorylenko.gradle-git-properties" version "2.4.1" // TODO
 }
 
-version "3.0.0"
+version "3.0.1"
 group "au.org.ala"
 
 apply plugin:"eclipse"
@@ -162,7 +162,7 @@ dependencies {
         exclude module: 'bootstrap' // dependency from skin
     }
 
-    implementation('au.org.ala.plugins:openapi:1.0.0')
+    implementation('au.org.ala.plugins:openapi:1.1.0')
 
     testImplementation('com.squareup.retrofit2:retrofit-mock:2.9.0')
 }

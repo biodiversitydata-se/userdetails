@@ -50,7 +50,7 @@ class PropertyController extends BaseController {
             tags = "properties",
             summary = "Get Property",
             operationId = "getProperty",
-            description = "Get a property value for a user.  Required scopes: 'users\\read'.",
+            description = "Get a property value for a user.  Required scopes: 'users/read'.",
             parameters = [
                     @Parameter(
                             name = "alaId",
@@ -85,11 +85,11 @@ class PropertyController extends BaseController {
                             ]
                     )
             ],
-            security = [@SecurityRequirement(name = 'openIdConnect', scopes = ['users\\read'])]
+            security = [@SecurityRequirement(name = 'openIdConnect', scopes = ['users/read'])]
     )
     @Path("getProperty")
     @Produces("application/json")
-    @PreAuthorise(requiredScope = 'users\\read')
+    @PreAuthorise(requiredScope = 'users/read')
     def getProperty() {
         String name = params.name
         Long alaId = params.long('alaId')
@@ -116,7 +116,7 @@ class PropertyController extends BaseController {
             tags = "properties",
             summary = "Save a Property",
             operationId = "saveProperty",
-            description = "Saves a property value for a user.  Required scopes: 'users\\write'.",
+            description = "Saves a property value for a user.  Required scopes: 'users/write'.",
             parameters = [
                     @Parameter(
                             name = "alaId",
@@ -162,11 +162,11 @@ class PropertyController extends BaseController {
                             content = [@Content(mediaType = "text/plain")]
                     ),
             ],
-            security = [@SecurityRequirement(name = 'openIdConnect', scopes = ['users\\write'])]
+            security = [@SecurityRequirement(name = 'openIdConnect', scopes = ['users/write'])]
     )
     @Path("saveProperty")
     @Produces("application/json")
-    @PreAuthorise(requiredScope = 'users\\write')
+    @PreAuthorise(requiredScope = 'users/write')
     def saveProperty(){
         String name = params.name;
         String value = params.value;

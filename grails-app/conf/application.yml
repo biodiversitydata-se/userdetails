@@ -56,14 +56,14 @@ spring:
           - 'logback.groovy'
           - '*.properties'
 server:
-  use-forward-headers: true
+  forward-headers-strategy: native
   tomcat:
-    remote_ip_header: x-forwarded-for
-    port-header: x-forwarded-port
-    protocol_header: x-forwarded-proto
-    protocol-header-https-value: https
-    # Add IPv6 localhost to default list
-    # internal-proxies: 10\.\d{1,3}\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}|169\.254\.\d{1,3}\.\d{1,3}|127\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.1[6-9]{1}\.\d{1,3}\.\d{1,3}|172\.2[0-9]{1}\.\d{1,3}\.\d{1,3}|172\.3[0-1]{1}\.\d{1,3}\.\d{1,3}|0:0:0:0:0:0:0:1|::1
+    remoteip:
+      protocol-header: x-forwarded-proto
+      port-header: x-forwarded-port
+      remote-ip-header: x-forwarded-for
+      protocol-header-https-value: https
+
 ---
 grails:
     mime:
@@ -136,7 +136,7 @@ security:
       allowUnsignedIdTokens: true # Disable once CAS no longer suggests the none algorithm
     jwt:
       enabled: true
-      fallbackToLegacyKeys: true # Reset to false once legacy api keys no longer supported
+      fallbackToLegacyBehaviour: true # Reset to false once legacy api keys no longer supported
     filterOrder: 0
 #    basic:
 #        enabled: true
@@ -269,8 +269,8 @@ openapi:
     security:
       oauth2:
         scopes:
-          users\read: Read or list any or all user records
-          users\write: Write to a user's record, eg update a user's attributes.
+          users/read: Read or list any or all user records
+          users/write: Write to a user's record, eg update a user's attributes.
 
 supportEmail: support-local@ala.org.au
 homeUrl: https://www.ala.org.au

@@ -136,7 +136,7 @@ security:
       allowUnsignedIdTokens: true # Disable once CAS no longer suggests the none algorithm
     jwt:
       enabled: true
-      fallbackToLegacyKeys: true # Reset to false once legacy api keys no longer supported
+      fallbackToLegacyBehaviour: true # Reset to false once legacy api keys no longer supported
     filterOrder: 0
 #    basic:
 #        enabled: true

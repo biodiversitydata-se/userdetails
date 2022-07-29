@@ -49,7 +49,7 @@ class UserDetailsController {
             tags = "users",
             summary = "Search users",
             operationId = "search",
-            description = "Search for users by username, email or display name.  Required scopes: 'users\\read'.",
+            description = "Search for users by username, email or display name.  Required scopes: 'users/read'.",
             parameters = [
                 @Parameter(
                         name = "q",
@@ -76,7 +76,7 @@ class UserDetailsController {
                         ]
                     )
             ],
-            security = [@SecurityRequirement(name = 'openIdConnect', scopes = ['users\\read'])]
+            security = [@SecurityRequirement(name = 'openIdConnect', scopes = ['users/read'])]
     )
     @Path("search")
     @Produces("application/json")
@@ -104,7 +104,7 @@ class UserDetailsController {
             method = "GET",
             tags = "users",
             summary = "Get Users by Role",
-            description = "Get Users by Role.  Required scopes: 'users\\read'.",
+            description = "Get Users by Role.  Required scopes: 'users/read'.",
             parameters = [
                     @Parameter(
                             name = "role",
@@ -137,7 +137,7 @@ class UserDetailsController {
                             ]
                     )
             ],
-            security = [@SecurityRequirement(name = 'openIdConnect', scopes = ['users\\read'])]
+            security = [@SecurityRequirement(name = 'openIdConnect', scopes = ['users/read'])]
     )
     @Path("byRole")
     @Produces("application/json")
@@ -217,7 +217,7 @@ class UserDetailsController {
             method = "POST",
             tags = "users",
             summary = "Get User Details",
-            description = "Get User Details.  Required scopes: 'users\\read'.",
+            description = "Get User Details.  Required scopes: 'users/read'.",
             parameters = [
                     @Parameter(
                             name = "userName",
@@ -244,7 +244,7 @@ class UserDetailsController {
                             ]
                     )
             ],
-            security = [@SecurityRequirement(name = 'openIdConnect', scopes = ['users\\read'])]
+            security = [@SecurityRequirement(name = 'openIdConnect', scopes = ['users/read'])]
     )
     @Path('getUserDetails')
     @Produces('application/json')
@@ -284,7 +284,7 @@ class UserDetailsController {
             method = "POST",
             tags = "users",
             summary = "Get User List",
-            description = "Get a list of all users.  Required scopes: 'users\\read'.",
+            description = "Get a list of all users.  Required scopes: 'users/read'.",
             deprecated = true,
             responses = [
                     @ApiResponse(
@@ -298,7 +298,7 @@ class UserDetailsController {
                             ]
                     )
             ],
-            security = [@SecurityRequirement(name = 'openIdConnect', scopes = ['users\\read'])]
+            security = [@SecurityRequirement(name = 'openIdConnect', scopes = ['users/read'])]
     )
     @Deprecated
     @Path("getUserList")
@@ -313,7 +313,7 @@ class UserDetailsController {
             method = "POST",
             tags = "users",
             summary = "Get User List With Ids",
-            description = "Get a list of all users by their user id.  Required scopes: 'users\\read'.",
+            description = "Get a list of all users by their user id.  Required scopes: 'users/read'.",
             deprecated = true,
             responses = [
                     @ApiResponse(
@@ -327,7 +327,7 @@ class UserDetailsController {
                             ]
                     )
             ],
-            security = [@SecurityRequirement(name = 'openIdConnect', scopes = ['users\\read'])]
+            security = [@SecurityRequirement(name = 'openIdConnect', scopes = ['users/read'])]
     )
     @Deprecated
     @Path("getUserListWithIds")
@@ -342,7 +342,7 @@ class UserDetailsController {
             method = "POST",
             tags = "users",
             summary = "Get User List With Ids",
-            description = "Get a list of all users by their user id.  Required scopes: 'users\\read'.",
+            description = "Get a list of all users by their user id.  Required scopes: 'users/read'.",
             deprecated = true,
             responses = [
                     @ApiResponse(
@@ -356,7 +356,7 @@ class UserDetailsController {
                             ]
                     )
             ],
-            security = [@SecurityRequirement(name = 'openIdConnect', scopes = ['users\\read'])]
+            security = [@SecurityRequirement(name = 'openIdConnect', scopes = ['users/read'])]
     )
     @Deprecated
     @Path("getUserListFull")
@@ -373,7 +373,7 @@ class UserDetailsController {
             tags = "users",
             operationId = "getUserDetailsFromIdList",
             summary = "Get User Details by id list",
-            description = "Get a list of user details for a list of user ids.  Required scopes: 'users\\read'.",
+            description = "Get a list of user details for a list of user ids.  Required scopes: 'users/read'.",
             requestBody = @RequestBody(
                     description = "The list of user ids to request and whether to include extended properties",
                     required = true,
@@ -394,7 +394,7 @@ class UserDetailsController {
                             ]
                     )
             ],
-            security = [@SecurityRequirement(name = 'openIdConnect', scopes = ['users\\read'])]
+            security = [@SecurityRequirement(name = 'openIdConnect', scopes = ['users/read'])]
     )
     @Path("getUserDetailsFromIdList")
     @Consumes("application/json")

@@ -269,8 +269,8 @@ openapi:
     security:
       oauth2:
         scopes:
-          users\read: Read or list any or all user records
-          users\write: Write to a user's record, eg update a user's attributes.
+          users/read: Read or list any or all user records
+          users/write: Write to a user's record, eg update a user's attributes.
 
 supportEmail: support-local@ala.org.au
 homeUrl: https://www.ala.org.au

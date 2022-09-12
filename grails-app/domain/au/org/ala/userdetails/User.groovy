@@ -15,9 +15,12 @@
 
 package au.org.ala.userdetails
 
+import au.org.ala.userdetails.records.IUserRecord
+import au.org.ala.userdetails.records.UserRecord
+
 import java.sql.Timestamp
 
-class User implements Serializable {
+class User extends UserRecord implements Serializable {
 
     static hasMany =  [userRoles:UserRole, userProperties:UserProperty]
 
@@ -98,7 +101,7 @@ class User implements Serializable {
         }
     }
 
-    def propsAsMap(){
+    Map<String,String> propsAsMap(){
         def map = [:]
         this.getUserProperties().each {
             map.put(it.name, it.value)

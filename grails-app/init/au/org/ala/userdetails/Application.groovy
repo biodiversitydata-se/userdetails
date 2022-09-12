@@ -16,19 +16,35 @@
 package au.org.ala.userdetails
 
 import au.org.ala.recaptcha.RecaptchaClient
+import au.org.ala.web.AuthService
+import au.org.ala.web.IAuthService
+import au.org.ala.ws.service.WebService
+import com.amazonaws.auth.AWSCredentials
+import com.amazonaws.auth.AWSCredentialsProvider
+import com.amazonaws.auth.AWSStaticCredentialsProvider
+import com.amazonaws.auth.BasicAWSCredentials
+import com.amazonaws.auth.BasicSessionCredentials
+import com.amazonaws.services.cognitoidp.AWSCognitoIdentityProviderClient
+import com.amazonaws.services.cognitoidp.AWSCognitoIdentityProviderClientBuilder
 import grails.boot.GrailsApp
 import grails.boot.config.GrailsAutoConfiguration
+import grails.core.GrailsApplication
 import groovy.util.logging.Slf4j
 import okhttp3.OkHttpClient
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.actuate.jdbc.DataSourceHealthIndicator
 import org.springframework.boot.actuate.mongo.MongoHealthIndicator
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration
 import org.springframework.boot.autoconfigure.mongo.MongoProperties
 import org.springframework.boot.context.properties.EnableConfigurationProperties
+import org.springframework.context.MessageSource
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
+import org.springframework.context.annotation.Profile
 import org.springframework.data.mongodb.core.MongoOperations
 import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.data.mongodb.core.SimpleMongoClientDbFactory
@@ -75,5 +91,66 @@ class Application extends GrailsAutoConfiguration {
             new MongoHealthIndicator(mongoTemplate)
         }
     }
+
+//    @Configuration
+//    static class CognitoConfiguration {
+
+        // TODO replace with rotatable keys
+        @Value('${cognito.accessKey}')
+        String cognitoAccessKey
+        @Value('${cognito.secretKey}')
+        String cognitoSecretKey
+        @Value('${cognito.poolId}')
+        String poolId
+
+    @Profile('cognito')
+    @Bean
+    AWSCognitoIdentityProviderClient cognitoIdpClient() {
+        def backupAccessKey = grailsApplication.config.getProperty('cognito.accessKey')
+        def backupSecretKey = grailsApplication.config.getProperty('cognito.secretKey')
+        def sessionToken = grailsApplication.config.getProperty('cognito.sessionToken')
+        def region = grailsApplication.config.getProperty('cognito.region')
+
+        def accessKey = cognitoAccessKey ?: backupAccessKey
+        def secretKey = cognitoSecretKey ?: backupSecretKey
+
+        // TODO Talk to Joe/Matt about Credentials
+        AWSCredentials credentials
+        if (sessionToken) {
+            credentials = new BasicSessionCredentials(accessKey, secretKey, sessionToken)
+        } else {
+            credentials = new BasicAWSCredentials(accessKey, secretKey)
+        }
+        AWSCredentialsProvider credentialsProvider = new AWSStaticCredentialsProvider(credentials)
+
+
+        def cognitoIdp = AWSCognitoIdentityProviderClientBuilder.standard()
+                .withRegion(region)
+                .withCredentials(credentialsProvider)
+                .build()
+        return cognitoIdp
+    }
+
+        @Profile('cognito')
+        @Qualifier('userServiceImpl')
+        @Bean
+        IUserService cognitoUserService(AuthService authService, AWSCognitoIdentityProviderClient cognitoIdpClient) {
+            def backupPoolId = grailsApplication.config.getProperty('cognito.poolId')
+            new CognitoUserService(authService, cognitoIdpClient, poolId ?: backupPoolId)
+        }
+
+        @Profile('mysql')
+        @Qualifier('userServiceImpl')
+        @Bean
+        IUserService mysqlUserService(EmailService emailService, PasswordService passwordService, AuthService authService,
+                                      GrailsApplication grailsApplication, LocationService locationService, MessageSource messageSource,
+                                      WebService webService) {
+            new DbUserService(emailService, passwordService, authService,
+                    grailsApplication, locationService, messageSource,
+                    webService)
+        }
+//    }
+
+
 
 }

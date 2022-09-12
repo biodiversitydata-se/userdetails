@@ -64,7 +64,8 @@ class UserController {
     }
 
     def show(Long id) {
-        def userInstance = User.get(id)
+//        def userInstance = User.get(id)
+        def userInstance = userService.getUser(id)
         if (!userInstance) {
             flash.message = message(code: 'default.not.found.message', args: [message(code: 'user.label', default: 'User'), id])
             redirect(action: "list")
@@ -77,7 +78,8 @@ class UserController {
     }
 
     def edit(Long id) {
-        def userInstance = User.get(id)
+//        def userInstance = User.get(id)
+        def userInstance = userService.getUser(id)
         if (!userInstance) {
             flash.message = message(code: 'default.not.found.message', args: [message(code: 'user.label', default: 'User'), id])
             redirect(action: "list")
@@ -88,7 +90,8 @@ class UserController {
 
     @Transactional
     def update(Long id, Long version) {
-        def userInstance = User.get(id)
+//        def userInstance = User.get(id)
+        def userInstance = userService.getUser(id)
         if (!userInstance) {
             flash.message = message(code: 'default.not.found.message', args: [message(code: 'user.label', default: 'User'), id])
             redirect(action: "list")
@@ -124,7 +127,8 @@ class UserController {
 
     def delete(Long id) {
 
-        def userInstance = User.get(id)
+//        def userInstance = User.get(id)
+        def userInstance = userService.getUser(id)
 
         if (!userInstance) {
             flash.message = message(code: 'default.not.found.message', args: [message(code: 'user.label', default: 'User'), id])

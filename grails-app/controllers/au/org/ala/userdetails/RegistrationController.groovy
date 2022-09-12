@@ -17,13 +17,7 @@ package au.org.ala.userdetails
 
 import au.org.ala.auth.UpdatePasswordCommand
 import au.org.ala.recaptcha.RecaptchaClient
-import grails.converters.JSON
-import okhttp3.OkHttpClient
-import org.springframework.beans.factory.annotation.Autowired
-import retrofit2.Retrofit
-import retrofit2.converter.moshi.MoshiConverterFactory
-
-import javax.annotation.PostConstruct
+import au.org.ala.userdetails.records.UserRecord
 
 /**
  * Controller that handles the interactions with general public.
@@ -57,7 +51,8 @@ class RegistrationController {
     }
 
     def passwordReset() {
-        User user = User.get(params.userId?.toLong())
+//        User user = User.get(params.userId?.toLong())
+        UserRecord user = userService.getUser(params.userId)
         if (!user) {
             render(view: 'accountError', model: [msg: "User not found with ID ${params.userId}"])
         } else if (user.tempAuthKey == params.authKey) {
@@ -69,7 +64,8 @@ class RegistrationController {
     }
 
     def updatePassword(UpdatePasswordCommand cmd) {
-        User user = User.get(cmd.userId)
+//        User user = User.get(cmd.userId)
+        UserRecord user = userService.getUser(cmd.userId)
         if (cmd.hasErrors()) {
             render(view: 'passwordReset', model: [user: user, authKey: cmd.authKey, errors:cmd.errors, passwordMatchFail: true])
         }
@@ -241,14 +237,16 @@ class RegistrationController {
     }
 
     def accountCreated() {
-        def user = User.get(params.id)
+//        def user = User.get(params.id)
+        def user = userService.getUser(params.id)
         render(view: 'accountCreated', model: [user: user])
     }
 
     def forgottenPassword() {}
 
     def activateAccount() {
-        def user = User.get(params.userId)
+//        def user = User.get(params.userId)
+        def user = userService.getUser(params.userId)
         //check the activation key
         if (user.tempAuthKey == params.authKey) {
             userService.activateAccount(user)

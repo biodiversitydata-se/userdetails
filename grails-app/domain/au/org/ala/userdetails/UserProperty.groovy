@@ -15,10 +15,11 @@
 
 package au.org.ala.userdetails
 
+import au.org.ala.userdetails.records.UserPropertyRecord
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 
 @JsonIgnoreProperties(['metaClass','errors'])
-class UserProperty implements Serializable {
+class UserProperty extends UserPropertyRecord implements Serializable {
 
     User user
     String name
@@ -51,5 +52,26 @@ class UserProperty implements Serializable {
 
     String toString(){
         name + " : " + value
+    }
+
+    boolean equals(o) {
+        if (this.is(o)) return true
+        if (getClass() != o.class) return false
+
+        UserProperty that = (UserProperty) o
+
+        if (user?.id != that.user?.id) return false
+        if (name != that.name) return false
+        if (value != that.value) return false
+
+        return true
+    }
+
+    int hashCode() {
+        int result
+        result = (user != null ? user?.id?.hashCode() : 0)
+        result = 31 * result + (name != null ? name.hashCode() : 0)
+        result = 31 * result + (value != null ? value.hashCode() : 0)
+        return result
     }
 }

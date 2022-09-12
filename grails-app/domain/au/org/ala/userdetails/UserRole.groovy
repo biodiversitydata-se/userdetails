@@ -15,7 +15,9 @@
 
 package au.org.ala.userdetails
 
-class UserRole implements Serializable {
+import au.org.ala.userdetails.records.UserRoleRecord
+
+class UserRole extends UserRoleRecord implements Serializable {
 
     User user
     Role role

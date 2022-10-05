@@ -122,7 +122,7 @@ class RegistrationController {
             def user = User.findByEmail(params.email)
             if (user) {
                 try {
-                    userService.resetAndSendTemporaryPassword(user, null, null, null)
+                    userService.resetAndSendTemporaryPassword(user, null, null, null, null)
                     render(view: 'startPasswordReset', model: [email: params.email])
                 } catch (Exception e) {
                     log.error("Problem starting password reset for email address: " + params.email)

@@ -97,7 +97,7 @@ class EmailService {
         }
     }
 
-    def sendUpdateProfileSuccess(User user, List<String> emailRecipients) throws PasswordResetFailedException {
+    def sendUpdateProfileSuccess(def user, List<String> emailRecipients) throws PasswordResetFailedException {
         try {
             sendMail {
                 from grailsApplication.config.getProperty('emailSenderTitle')+"<" + grailsApplication.config.getProperty('emailSender') + ">"

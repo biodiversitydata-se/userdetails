@@ -119,7 +119,7 @@ class RegistrationController {
             render(view: 'forgottenPassword', model: [email: params.email, captchaInvalid: true])
         } else {
             log.info("Starting password reset for email address: " + params.email)
-            def user = User.findByEmail(params.email)
+            def user = userService.getUserByEmail(params.email)
             if (user) {
                 try {
                     userService.resetAndSendTemporaryPassword(user, null, null, null, null)

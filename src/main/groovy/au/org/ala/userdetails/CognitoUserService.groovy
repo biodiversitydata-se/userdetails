@@ -58,12 +58,12 @@ class CognitoUserService implements IUserService {
 
     @Override
     UserRecord getUser(Object id) {
-        return null
+        return getUserByUserId(id)
     }
 
     @Override
     UserRecord getUserByEmail(Object email) {
-        return null
+        return getUserByUserId(email)
     }
 
     @Override
@@ -248,7 +248,7 @@ class CognitoUserService implements IUserService {
     @Override
     def resetAndSendTemporaryPassword(UserRecord user, String emailSubject, String emailTitle, String emailBody, String password) throws PasswordResetFailedException {
         def request = new AdminResetUserPasswordRequest()
-        request.username = user.userName
+        request.username = user.email
         request.userPoolId = poolId
 
         cognitoIdp.adminResetUserPassword(request)
@@ -268,6 +268,10 @@ class CognitoUserService implements IUserService {
     @Override
     UserRecord getCurrentUser() {
         def userId = authService.getUserId()
+        getUserByUserId(userId)
+    }
+
+    UserRecord getUserByUserId(userId) {
         if (userId == null) {
             // Problem. This might mean an expired cookie, or it might mean that this service is not in the authorised system list
             log.debug("Attempt to get current user returned null. This might indicating that this machine is not the authorised system list")

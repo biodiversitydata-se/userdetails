@@ -13,13 +13,28 @@
  * rights and limitations under the License.
  */
 
-package au.org.ala.userdetails
+package au.org.ala.users
 
-class MobileUser {
+import au.org.ala.userdetails.Role
+import grails.gorm.annotation.Entity
+import groovy.transform.EqualsAndHashCode
 
-    String userName
-    static hasMany = [authkeys: AuthKey]
+@Entity
+@EqualsAndHashCode(includes = 'id')
+class UserRole implements Serializable {
+
+    User user
+    Role role
+
+    static mapping = {
+        id composite: ['user', 'role']
+        version false
+    }
 
     static constraints = {
     }
+    String toString(){
+        role
+    }
+
 }

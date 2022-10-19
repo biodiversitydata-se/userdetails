@@ -16,6 +16,8 @@
 package au.org.ala.userdetails
 
 import au.org.ala.auth.PreAuthorise
+import au.org.ala.users.User
+import au.org.ala.users.UserProperty
 import grails.converters.JSON
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
@@ -24,6 +26,8 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
 
 import javax.ws.rs.Path
 import javax.ws.rs.Produces
@@ -33,6 +37,10 @@ import static io.swagger.v3.oas.annotations.enums.ParameterIn.HEADER
 
 @Path("property")
 class PropertyController extends BaseController {
+
+    @Autowired
+    @Qualifier('userService')
+    IUserService userService
 
     def profileService
     def authorisedSystemService
@@ -96,7 +104,7 @@ class PropertyController extends BaseController {
         if (!name || !alaId) {
             badRequest "name and alaId must be provided";
         } else {
-            User user = User.findById(alaId);
+            User user = userService.getUserById(alaId);
             List props
             if (user) {
                 props = profileService.getUserProperty(user, name);
@@ -174,7 +182,7 @@ class PropertyController extends BaseController {
         if (!name || !alaId) {
             badRequest "name and alaId must be provided";
         } else {
-            User user = User.findById(alaId);
+            User user = userService.getUserById(alaId);
             UserProperty property
             if (user) {
                 property = profileService.saveUserProperty(user, name, value);

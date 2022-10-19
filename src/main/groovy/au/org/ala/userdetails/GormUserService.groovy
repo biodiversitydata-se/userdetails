@@ -17,36 +17,53 @@ package au.org.ala.userdetails
 
 import au.org.ala.auth.BulkUserLoadResults
 import au.org.ala.auth.PasswordResetFailedException
+import au.org.ala.users.Password
+import au.org.ala.users.User
+import au.org.ala.users.UserProperty
+import au.org.ala.users.UserRole
+import au.org.ala.web.AuthService
+import au.org.ala.ws.service.WebService
 import grails.converters.JSON
+import grails.core.GrailsApplication
 import grails.plugin.cache.Cacheable
 import grails.gorm.transactions.NotTransactional
 import grails.gorm.transactions.Transactional
 import grails.util.Environment
 import grails.web.servlet.mvc.GrailsParameterMap
+import groovy.util.logging.Slf4j
 import org.apache.http.HttpStatus
 import org.grails.orm.hibernate.cfg.GrailsHibernateUtil
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.context.MessageSource
 
+@Slf4j
 @Transactional
-class UserService {
+class GormUserService implements IUserService {
 
-    def emailService
-    def passwordService
-    def authService
-    def grailsApplication
-    def locationService
-    def messageSource
-    def webService
+    EmailService emailService
+    PasswordService passwordService
+    AuthService authService
+    GrailsApplication grailsApplication
+    LocationService locationService
+    MessageSource messageSource
+    WebService webService
 
     @Value('${attributes.affiliations.enabled:false}')
     boolean affiliationsEnabled = false
 
-    def updateUser(User user, GrailsParameterMap params) {
+    boolean updateUser(String userId, GrailsParameterMap params) {
+
+        User user = getUserById(userId)
+
         def emailRecipients = [user.email]
         if (params.email != user.email) {
             emailRecipients << params.email
         }
+
         try {
+            // and username and email address must be kept in sync
+            params.userName = params.email
+
             user.setProperties(params)
             user.activated = true
             user.locked = false
@@ -60,7 +77,7 @@ class UserService {
         }
     }
 
-    def disableUser(User user) {
+    boolean disableUser(User user) {
         try {
             user.activated = false
             user.save(failOnError: true, flush: true)
@@ -94,17 +111,12 @@ class UserService {
     }
 
     @Transactional(readOnly = true)
-    boolean isEmailInUse(String newEmail, User user) {
-        def userByEmail = User.findByEmailOrUserName(newEmail?.toLowerCase(), newEmail?.toLowerCase())
-        if (userByEmail == null) {
-            return false
-        } else {
-            return user.userName != userByEmail.userName
-        }
+    boolean isEmailInUse(String newEmail) {
+        return User.findByEmailOrUserName(newEmail?.toLowerCase(), newEmail?.toLowerCase())
     }
 
     @Transactional
-    def activateAccount(User user) {
+    void activateAccount(User user) {
         Map resp = webService.post("${grailsApplication.config.getProperty('alerts.url')}/api/alerts/user/createAlerts", [:], [userId: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName])
         if (resp.statusCode == HttpStatus.SC_CREATED) {
             emailService.sendAccountActivationSuccess(user, resp.resp)
@@ -114,6 +126,19 @@ class UserService {
 
         user.activated = true
         user.save(flush:true)
+    }
+
+    @Override
+    def listUsers(String query, int offset, int maxResults) {
+
+        if (query) {
+
+            String q = "%${query}%"
+
+            return User.findAllByEmailLikeOrLastNameLikeOrFirstNameLike(q, q, q, [ offset: offset, max: maxResults ])
+        }
+
+        return User.list([ offset: offset, max: maxResults ])
     }
 
     BulkUserLoadResults bulkRegisterUsersFromFile(InputStream stream, Boolean firstRowContainsFieldNames, String affiliation, String emailSubject, String emailTitle, String emailBody) {
@@ -263,7 +288,7 @@ class UserService {
         createdUser
     }
 
-    def updateProperties(User user, GrailsParameterMap params) {
+    void updateProperties(User user, GrailsParameterMap params) {
         ['city', 'organisation', 'state', 'country'].each { propName ->
             setUserProperty(user, propName, params.get(propName, ''))
         }
@@ -272,7 +297,7 @@ class UserService {
         }
     }
 
-    def deleteUser(User user) {
+    void deleteUser(User user) {
 
         if (user) {
             // First need to delete any user properties
@@ -298,7 +323,7 @@ class UserService {
 
     }
 
-    def resetAndSendTemporaryPassword(User user, String emailSubject, String emailTitle, String emailBody, String password = null) throws PasswordResetFailedException {
+    void resetAndSendTemporaryPassword(User user, String emailSubject, String emailTitle, String emailBody, String password = null) throws PasswordResetFailedException {
         if (user) {
             //set the temp auth key
             user.tempAuthKey = UUID.randomUUID().toString()
@@ -308,7 +333,7 @@ class UserService {
         }
     }
 
-    def clearTempAuthKey(User user) {
+    void clearTempAuthKey(User user) {
         if (user) {
             //set the temp auth key
             user.tempAuthKey = null
@@ -316,7 +341,16 @@ class UserService {
         }
     }
 
-    /**
+    @Override
+    User getUserById(String id) {
+        return User.get(id as Long)
+    }
+
+    @Override
+    User getUserByEmail(String email) {
+        return User.findByEmail(email)
+    }
+/**
      * This service method returns the User object for the current user.
      */
     @Transactional(readOnly = true)
@@ -354,7 +388,7 @@ class UserService {
     }
 
     @Transactional(readOnly = true)
-    def findUsersForExport(List usersInRoles, includeInactive) {
+    Collection<User> findUsersForExport(List usersInRoles, includeInactive) {
         def roles = usersInRoles? Role.findAllByRoleInList(usersInRoles) : []
         def criteria = User.createCriteria()
         def results

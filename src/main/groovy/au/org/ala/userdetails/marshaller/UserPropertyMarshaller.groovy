@@ -18,8 +18,8 @@
  */
 package au.org.ala.userdetails.marshaller
 
+import au.org.ala.users.UserProperty
 import grails.converters.JSON
-import au.org.ala.userdetails.*
 
 class UserPropertyMarshaller {
     void register(){

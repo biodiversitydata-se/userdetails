@@ -15,6 +15,9 @@
 
 package au.org.ala.userdetails
 
+import au.org.ala.users.User
+import au.org.ala.users.UserProperty
+
 class ProfileService {
 
     List getUserProperty(User user, String name) {

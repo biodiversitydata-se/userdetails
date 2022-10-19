@@ -13,7 +13,7 @@
   - rights and limitations under the License.
   --}%
 
-<%@ page import="au.org.ala.userdetails.User" %>
+<%@ page import="au.org.ala.users.User" %>
 <!DOCTYPE html>
 <html>
 <head>

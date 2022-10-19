@@ -13,22 +13,16 @@
  * rights and limitations under the License.
  */
 
-package au.org.ala.userdetails
+package au.org.ala.users
 
-class UserRole implements Serializable {
+class AuthKey {
 
-    User user
-    Role role
+    String key
+    MobileUser mobileUser
+
+    static constraints = {}
 
     static mapping = {
-        id composite: ['user', 'role']
-        version false
+        key column: "auth_key"
     }
-
-    static constraints = {
-    }
-    String toString(){
-        role
-    }
-
 }

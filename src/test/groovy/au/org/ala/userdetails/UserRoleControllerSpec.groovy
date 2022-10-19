@@ -15,7 +15,9 @@
 
 package au.org.ala.userdetails
 
-import au.org.ala.ws.security.JwtAuthenticator
+import au.org.ala.users.User
+import au.org.ala.users.UserProperty
+import au.org.ala.users.UserRole
 import au.org.ala.ws.security.JwtProperties
 import grails.converters.JSON
 import grails.testing.gorm.DataTest

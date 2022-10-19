@@ -1,12 +1,10 @@
-package au.org.ala.userdetails
-
-import java.sql.Timestamp
-
+package au.org.ala.users
 /**
  * API key implementation
  */
 class ApiKey implements Serializable {
     static belongsTo = [user: User]
+
     String apiKey // not encoded
     String apiSecret // encoded
     Date dateCreated

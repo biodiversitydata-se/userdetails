@@ -107,7 +107,7 @@ dependencies {
 
     implementation "org.grails.plugins:ala-bootstrap3:4.1.0"
     implementation "org.grails.plugins:ala-ws-plugin:3.1.1"
-    implementation "org.grails.plugins:ala-ws-security-plugin:4.1.1"
+    implementation "org.grails.plugins:ala-ws-security-plugin:4.3.3-SNAPSHOT"
     implementation "org.grails.plugins:ala-auth:5.1.1"
     implementation "org.grails.plugins:ala-admin-plugin:2.3.0"
 
@@ -131,9 +131,8 @@ dependencies {
     implementation 'mysql:mysql-connector-java:8.0.29'
     testRuntimeOnly "com.h2database:h2"
     implementation 'com.google.guava:guava:21.0'
-    implementation 'org.apache.httpcomponents:httpcore:4.3.3'
-    implementation 'org.apache.httpcomponents:httpclient:4.3.3'
-    implementation 'org.apache.httpcomponents:httpmime:4.3.3'
+    implementation 'org.apache.httpcomponents:httpclient:4.5.13'
+    implementation 'org.apache.httpcomponents:httpmime:4.5.13'
     implementation 'org.apache.commons:commons-lang3:3.12.0'
     implementation 'commons-io:commons-io:2.6'
     implementation 'commons-beanutils:commons-beanutils:1.8.3'
@@ -146,6 +145,11 @@ dependencies {
     implementation 'org.mongodb:mongodb-driver-sync:4.6.0' // versions mismatch as transitive deps for
     implementation 'org.mongodb:mongodb-driver-core:4.6.0'
     implementation 'org.mongodb:bson:4.6.0'
+
+
+    implementation 'com.amazonaws:aws-java-sdk-cognitoidentity:1.12.279'
+    implementation 'com.amazonaws:aws-java-sdk-cognitoidp:1.12.279'
+    implementation 'com.amazonaws:aws-java-sdk-cognitosync:1.12.279'
 
 //    implementation "com.auth0:java-jwt:3.18.2"
 //    implementation "com.auth0:jwks-rsa:0.20.0"

@@ -16,6 +16,7 @@
 package au.org.ala.userdetails
 
 import au.org.ala.auth.PasswordResetFailedException
+import au.org.ala.users.User
 import grails.web.mapping.LinkGenerator
 
 class EmailService {

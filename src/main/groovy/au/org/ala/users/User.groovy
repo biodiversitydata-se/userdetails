@@ -13,13 +13,22 @@
  * rights and limitations under the License.
  */
 
-package au.org.ala.userdetails
+package au.org.ala.users
+
+import grails.gorm.annotation.Entity
+import grails.web.databinding.WebDataBinding
+import groovy.transform.EqualsAndHashCode
 
 import java.sql.Timestamp
 
-class User implements Serializable {
+@Entity
+@EqualsAndHashCode(includes = 'id')
+class User implements WebDataBinding, Serializable {
 
-    static hasMany =  [userRoles:UserRole, userProperties:UserProperty]
+    static hasMany =  [
+            userRoles: UserRole,
+            userProperties:UserProperty
+    ]
 
     String firstName
     String lastName
@@ -40,6 +49,7 @@ class User implements Serializable {
     String displayName
 
     Collection<UserRole> userRoles
+    Collection<UserProperty> userProperties
 
     static mapping = {
         table 'users'
@@ -101,7 +111,7 @@ class User implements Serializable {
     def propsAsMap(){
         def map = [:]
         this.getUserProperties().each {
-            map.put(it.name, it.value)
+            map.put(it.name.startsWith('custom:') ? it.name.substring(7) : it.name,  it.value)
         }
         map
     }

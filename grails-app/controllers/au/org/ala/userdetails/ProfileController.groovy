@@ -16,6 +16,8 @@
 package au.org.ala.userdetails
 
 import au.org.ala.oauth.apis.InaturalistApi
+import au.org.ala.users.User
+import au.org.ala.users.UserProperty
 import com.github.scribejava.core.builder.ServiceBuilder
 import com.github.scribejava.apis.FlickrApi
 import com.github.scribejava.core.exceptions.OAuthException
@@ -23,8 +25,8 @@ import com.github.scribejava.core.model.*
 import com.github.scribejava.core.oauth.OAuth20Service
 import com.github.scribejava.core.oauth.OAuthService
 import grails.converters.JSON
-import org.apache.http.HttpStatus
-import org.springframework.web.context.request.RequestContextHolder
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
 import uk.co.desirableobjects.oauth.scribe.OauthProvider
 
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED
@@ -41,7 +43,10 @@ class ProfileController {
     static final List<String> INATURALIST_ATTRS = [INATURALIST_TOKEN, INATURALIST_ID, INATURALIST_USERNAME]
 
     def oauthService
-    def userService
+
+    @Autowired
+    @Qualifier('userService')
+    IUserService userService
 
     def index() {
 

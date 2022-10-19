@@ -16,27 +16,42 @@
 package au.org.ala.userdetails
 
 import au.org.ala.auth.PreAuthorise
+import au.org.ala.users.User
 import grails.gorm.transactions.Transactional
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.dao.DataIntegrityViolationException
 
 @PreAuthorise
 class UserController {
 
     static allowedMethods = [save: "POST", update: "POST", delete: "POST"]
-    def userService
+
+    @Autowired
+    @Qualifier('userService')
+    IUserService userService
 
     def index() {
         redirect(action: "list", params: params)
     }
 
     def list(Integer max) {
+
+        int offset = params.int('offset', 0)
+        int maxResults = Math.min(max ?: 20, 5000)
+
         if (params.q) {
-            def q = "%"+ params.q + "%"
-            def userList = User.findAllByEmailLikeOrLastNameLikeOrFirstNameLike(q,q,q)
-            [userInstanceList: userList, userInstanceTotal: userList.size(), q:params.q]
+
+            def userList = userService.listUsers(params.q, offset, maxResults)
+//            def userList = User.findAllByEmailLikeOrLastNameLikeOrFirstNameLike(q,q,q)
+            [userInstanceList: userList, userInstanceTotal: userList.size(), q: params.q]
+
         } else {
-            params.max = Math.min(max ?: 20, 5000)
-            [userInstanceList: User.list(params), userInstanceTotal: User.count()]
+
+            def userList = userService.listUsers(null, offset, maxResults)
+
+            [ userInstanceList: userList, userInstanceTotal: userList.size() ]
+//            [ userInstanceList: User.list(params), userInstanceTotal: User.count() ]
         }
     }
 
@@ -63,8 +78,10 @@ class UserController {
         redirect(action: "show", id: userInstance.id)
     }
 
-    def show(Long id) {
-        def userInstance = User.get(id)
+    def show(String id) {
+
+        def userInstance = userService.getUserById(String)
+
         if (!userInstance) {
             flash.message = message(code: 'default.not.found.message', args: [message(code: 'user.label', default: 'User'), id])
             redirect(action: "list")
@@ -77,7 +94,7 @@ class UserController {
     }
 
     def edit(Long id) {
-        def userInstance = User.get(id)
+        def userInstance = userService.getUserById(id as String)
         if (!userInstance) {
             flash.message = message(code: 'default.not.found.message', args: [message(code: 'user.label', default: 'User'), id])
             redirect(action: "list")
@@ -88,7 +105,7 @@ class UserController {
 
     @Transactional
     def update(Long id, Long version) {
-        def userInstance = User.get(id)
+        def userInstance= userService.getUserById(id as String)
         if (!userInstance) {
             flash.message = message(code: 'default.not.found.message', args: [message(code: 'user.label', default: 'User'), id])
             redirect(action: "list")
@@ -124,7 +141,7 @@ class UserController {
 
     def delete(Long id) {
 
-        def userInstance = User.get(id)
+        def userInstance = userService.getUserById(id as String)
 
         if (!userInstance) {
             flash.message = message(code: 'default.not.found.message', args: [message(code: 'user.label', default: 'User'), id])

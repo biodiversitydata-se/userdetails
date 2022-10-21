@@ -56,4 +56,8 @@ interface IUserService {
     Map getUsersCounts(Locale locale)
 
     List<String[]> countByProfileAttribute(String s, Date date, Locale locale)
+
+    boolean resetPassword(UserRecord user, String newPassword)
+
+    String getPasswordResetView()
 }

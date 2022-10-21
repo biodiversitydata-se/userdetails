@@ -444,5 +444,16 @@ class DbUserService implements IUserService {
             [affiliations[it[0]] ?: it[0], it[1].toString()].toArray(new String[0])
         }
     }
+
+    @Override
+    boolean resetPassword(UserRecord user, String newPassword) {
+        passwordService.resetPassword(user, newPassword)
+        return true
+    }
+
+    @Override
+    String getPasswordResetView() {
+        return "startPasswordReset"
+    }
 }
 

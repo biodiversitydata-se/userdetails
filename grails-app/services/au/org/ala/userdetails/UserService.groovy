@@ -137,4 +137,14 @@ class UserService implements IUserService {
     List<String[]> countByProfileAttribute(String s, Date date, Locale locale) {
         return delegate.countByProfileAttribute(s, date, locale)
     }
+
+    @Override
+    boolean resetPassword(UserRecord user, String newPassword) {
+        return delegate.resetPassword(user, newPassword)
+    }
+
+    @Override
+    String getPasswordResetView() {
+        return delegate.getPasswordResetView()
+    }
 }

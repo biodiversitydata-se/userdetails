@@ -48,12 +48,13 @@ class CognitoUserService implements IUserService {
 
     final String poolId
 
-    CognitoUserService(AuthService authService, AWSCognitoIdentityProvider cognitoIdp, String poolId) {
+    CognitoUserService(AuthService authService, AWSCognitoIdentityProvider cognitoIdp, String poolId, EmailService emailService) {
         this.authService = authService
 
         this.cognitoIdp = cognitoIdp
 
         this.poolId = poolId
+        this.emailService = emailService
     }
 
     @Override
@@ -251,8 +252,8 @@ class CognitoUserService implements IUserService {
         request.username = user.email
         request.userPoolId = poolId
 
-        cognitoIdp.adminResetUserPassword(request)
-        return null
+        def response = cognitoIdp.adminResetUserPassword(request)
+        return response.getSdkHttpMetadata().httpStatusCode == 200
     }
 
     @Override
@@ -330,5 +331,22 @@ class CognitoUserService implements IUserService {
     @Override
     List<String[]> countByProfileAttribute(String s, Date date, Locale locale) {
         return null
+    }
+
+    @Override
+    boolean resetPassword(UserRecord user, String newPassword) {
+        def request = new AdminSetUserPasswordRequest()
+        request.username = user.email
+        request.userPoolId = poolId
+        request.password = newPassword
+        request.permanent = false
+
+        def response = cognitoIdp.adminSetUserPassword(request)
+        return response.getSdkHttpMetadata().httpStatusCode == 200
+    }
+
+    @Override
+    String getPasswordResetView() {
+        return "passwordResetCognito"
     }
 }

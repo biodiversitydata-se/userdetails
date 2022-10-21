@@ -15,6 +15,7 @@
 
 package au.org.ala.userdetails
 
+import au.org.ala.auth.UpdateCognitoPasswordCommand
 import au.org.ala.auth.UpdatePasswordCommand
 import au.org.ala.recaptcha.RecaptchaClient
 import au.org.ala.userdetails.records.UserRecord
@@ -74,7 +75,7 @@ class RegistrationController {
                 if (user.tempAuthKey == params.authKey) {
                     //update the password
                     try {
-                        passwordService.resetPassword(user, cmd.password)
+                        userService.resetPassword(user, cmd.password)
                         userService.clearTempAuthKey(user)
                         redirect(controller: 'registration', action: 'passwordResetSuccess')
                         log.info("Password successfully reset for user: " + cmd.userId)
@@ -90,6 +91,31 @@ class RegistrationController {
             .invalidToken {
                 redirect(action: 'duplicateSubmit', model: [msg: ""])
             }
+        }
+
+    }
+
+    def updateCognitoPassword(UpdateCognitoPasswordCommand cmd) {
+        UserRecord user = userService.getUser(cmd.email)
+        if (cmd.hasErrors()) {
+            render(view: 'passwordResetCognito', model: [email: cmd.email, code: cmd.code, errors:cmd.errors, passwordMatchFail: true])
+        }
+        else {
+            withForm {
+                //update the password
+                try {
+                    userService.resetPassword(user, cmd.password)
+                    //userService.clearTempAuthKey(user) //TODO do we need this?
+                    redirect(controller: 'registration', action: 'passwordResetSuccess')
+                    log.info("Password successfully reset for user: " + cmd.email)
+                } catch (e) {
+                    log.error("Couldn't reset password", e)
+                    render(view: 'accountError', model: [msg: "Failed to reset password"])
+                }
+            }
+                    .invalidToken {
+                        redirect(action: 'duplicateSubmit', model: [msg: ""])
+                    }
         }
 
     }
@@ -123,7 +149,7 @@ class RegistrationController {
             if (user) {
                 try {
                     userService.resetAndSendTemporaryPassword(user, null, null, null, null)
-                    render(view: 'startPasswordReset', model: [email: params.email])
+                    render(view: userService.getPasswordResetView(), model: [email: params.email])
                 } catch (Exception e) {
                     log.error("Problem starting password reset for email address: " + params.email)
                     log.error(e.getMessage(), e)

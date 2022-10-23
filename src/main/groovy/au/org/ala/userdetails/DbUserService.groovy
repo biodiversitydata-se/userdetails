@@ -17,14 +17,10 @@ package au.org.ala.userdetails
 
 import au.org.ala.auth.BulkUserLoadResults
 import au.org.ala.auth.PasswordResetFailedException
-import au.org.ala.users.Password
-import au.org.ala.users.User
-import au.org.ala.users.UserProperty
-import au.org.ala.users.UserRole
-import au.org.ala.web.AuthService
-import au.org.ala.ws.service.WebService
 import au.org.ala.userdetails.records.IUserRecord
 import au.org.ala.userdetails.records.UserRecord
+import au.org.ala.web.AuthService
+import au.org.ala.ws.service.WebService
 import grails.converters.JSON
 import grails.core.GrailsApplication
 import grails.plugin.cache.Cacheable
@@ -38,34 +34,49 @@ import org.grails.orm.hibernate.cfg.GrailsHibernateUtil
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.MessageSource
 
-@Slf4j
 @Transactional
-class GormUserService implements IUserService {
+@Slf4j
+class DbUserService implements IUserService {
 
-    EmailService emailService
-    PasswordService passwordService
-    AuthService authService
-    GrailsApplication grailsApplication
-    LocationService locationService
-    MessageSource messageSource
-    WebService webService
+    def emailService
+    def passwordService
+    def authService
+    def grailsApplication
+    def locationService
+    def messageSource
+    def webService
+
+    DbUserService(EmailService emailService, PasswordService passwordService, AuthService authService,
+                  GrailsApplication grailsApplication, LocationService locationService, MessageSource messageSource,
+                  WebService webService) {
+        this.emailService = emailService
+        this.passwordService = passwordService
+        this.authService = authService
+        this.grailsApplication = grailsApplication
+        this.locationService = locationService
+        this.messageSource = messageSource
+        this.webService = webService
+    }
 
     @Value('${attributes.affiliations.enabled:false}')
     boolean affiliationsEnabled = false
 
-    boolean updateUser(String userId, GrailsParameterMap params) {
+    @Override
+    UserRecord getUser(Object id) {
+        return User.get(id)
+    }
 
-        User user = getUserById(userId)
+    @Override
+    UserRecord getUserByEmail(Object email) {
+        return User.findByEmail(email)
+    }
 
+    def updateUser(UserRecord user, GrailsParameterMap params) {
         def emailRecipients = [user.email]
         if (params.email != user.email) {
             emailRecipients << params.email
         }
-
         try {
-            // and username and email address must be kept in sync
-            params.userName = params.email
-
             user.setProperties(params)
             user.activated = true
             user.locked = false
@@ -79,7 +90,7 @@ class GormUserService implements IUserService {
         }
     }
 
-    boolean disableUser(User user) {
+    def disableUser(UserRecord user) {
         try {
             user.activated = false
             user.save(failOnError: true, flush: true)
@@ -113,12 +124,17 @@ class GormUserService implements IUserService {
     }
 
     @Transactional(readOnly = true)
-    boolean isEmailInUse(String newEmail) {
-        return User.findByEmailOrUserName(newEmail?.toLowerCase(), newEmail?.toLowerCase())
+    boolean isEmailInUse(String newEmail, UserRecord user) {
+        def userByEmail = User.findByEmailOrUserName(newEmail?.toLowerCase(), newEmail?.toLowerCase())
+        if (userByEmail == null) {
+            return false
+        } else {
+            return user.userName != userByEmail.userName
+        }
     }
 
     @Transactional
-    void activateAccount(User user) {
+    def activateAccount(UserRecord user) {
         Map resp = webService.post("${grailsApplication.config.getProperty('alerts.url')}/api/alerts/user/createAlerts", [:], [userId: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName])
         if (resp.statusCode == HttpStatus.SC_CREATED) {
             emailService.sendAccountActivationSuccess(user, resp.resp)
@@ -128,19 +144,6 @@ class GormUserService implements IUserService {
 
         user.activated = true
         user.save(flush:true)
-    }
-
-    @Override
-    def listUsers(String query, int offset, int maxResults) {
-
-        if (query) {
-
-            String q = "%${query}%"
-
-            return User.findAllByEmailLikeOrLastNameLikeOrFirstNameLike(q, q, q, [ offset: offset, max: maxResults ])
-        }
-
-        return User.list([ offset: offset, max: maxResults ])
     }
 
     BulkUserLoadResults bulkRegisterUsersFromFile(InputStream stream, Boolean firstRowContainsFieldNames, String affiliation, String emailSubject, String emailTitle, String emailBody) {
@@ -257,19 +260,10 @@ class GormUserService implements IUserService {
             def propValue = properties[propName] ?: ''
             setUserProperty(user, propName, propValue)
         }
+
     }
 
-    @Override
-    def resetAndSendTemporaryPassword(UserRecord user, String emailSubject, String emailTitle, String emailBody, String password) throws PasswordResetFailedException {
-        return delegate.resetAndSendTemporaryPassword(user, emailSubject, emailTitle, emailBody, password)
-    }
-
-    @Override
-    def clearTempAuthKey(UserRecord user) {
-        return delegate.clearTempAuthKey(user)
-    }
-
-    private setUserProperty(User user, String propName, String propValue) {
+    private setUserProperty(UserRecord user, String propName, String propValue) {
         def existingProperty = UserProperty.findByUserAndName(user, propName)
         if (existingProperty) {
             existingProperty.value = propValue
@@ -280,12 +274,7 @@ class GormUserService implements IUserService {
         }
     }
 
-    @Override
-    String getResetPasswordUrl(UserRecord user) {
-        return delegate.getResetPasswordUrl(user)
-    }
-
-    User registerUser(GrailsParameterMap params) throws Exception {
+    UserRecord registerUser(GrailsParameterMap params) throws Exception {
 
         //does a user with the supplied email address exist
         def user = new User(params)
@@ -304,7 +293,7 @@ class GormUserService implements IUserService {
         createdUser
     }
 
-    void updateProperties(User user, GrailsParameterMap params) {
+    def updateProperties(UserRecord user, GrailsParameterMap params) {
         ['city', 'organisation', 'state', 'country'].each { propName ->
             setUserProperty(user, propName, params.get(propName, ''))
         }
@@ -313,7 +302,7 @@ class GormUserService implements IUserService {
         }
     }
 
-    void deleteUser(User user) {
+    def deleteUser(UserRecord user) {
 
         if (user) {
             // First need to delete any user properties
@@ -339,7 +328,7 @@ class GormUserService implements IUserService {
 
     }
 
-    void resetAndSendTemporaryPassword(User user, String emailSubject, String emailTitle, String emailBody, String password = null) throws PasswordResetFailedException {
+    def resetAndSendTemporaryPassword(UserRecord user, String emailSubject, String emailTitle, String emailBody, String password = null) throws PasswordResetFailedException {
         if (user) {
             //set the temp auth key
             user.tempAuthKey = UUID.randomUUID().toString()
@@ -349,7 +338,7 @@ class GormUserService implements IUserService {
         }
     }
 
-    void clearTempAuthKey(User user) {
+    def clearTempAuthKey(UserRecord user) {
         if (user) {
             //set the temp auth key
             user.tempAuthKey = null
@@ -357,20 +346,11 @@ class GormUserService implements IUserService {
         }
     }
 
-    @Override
-    User getUserById(String id) {
-        return User.get(id as Long)
-    }
-
-    @Override
-    User getUserByEmail(String email) {
-        return User.findByEmail(email)
-    }
-/**
+    /**
      * This service method returns the User object for the current user.
      */
     @Transactional(readOnly = true)
-    User getCurrentUser() {
+    UserRecord getCurrentUser() {
 
         def userId = authService.getUserId()
         if (userId == null) {
@@ -393,33 +373,34 @@ class GormUserService implements IUserService {
             user = User.findByEmail(authService.getEmail())
         }
 
+        user.propsAsMap()
         return user
     }
 
     @NotTransactional
-    String getResetPasswordUrl(User user) {
+    String getResetPasswordUrl(UserRecord user) {
         if(user.tempAuthKey){
             emailService.getServerUrl() + "resetPassword/" +  user.id +  "/"  + user.tempAuthKey
         }
     }
 
     @Transactional(readOnly = true)
-    Collection<User> findUsersForExport(List usersInRoles, includeInactive) {
+    def findUsersForExport(List usersInRoles, includeInactive) {
         def roles = usersInRoles? Role.findAllByRoleInList(usersInRoles) : []
         def criteria = User.createCriteria()
         def results
-            results = criteria.listDistinct {
-                and {
-                    if(roles) {
-                        userRoles {
-                            'in'('role', roles)
-                        }
-                    }
-                    if(!includeInactive) {
-                        eq('activated', true)
+        results = criteria.listDistinct {
+            and {
+                if(roles) {
+                    userRoles {
+                        'in'('role', roles)
                     }
                 }
+                if(!includeInactive) {
+                    eq('activated', true)
+                }
             }
+        }
         results
     }
 
@@ -466,11 +447,13 @@ class GormUserService implements IUserService {
 
     @Override
     boolean resetPassword(UserRecord user, String newPassword) {
-        return delegate.resetPassword(user, newPassword)
+        passwordService.resetPassword(user, newPassword)
+        return true
     }
 
     @Override
     String getPasswordResetView() {
-        return delegate.getPasswordResetView()
+        return "startPasswordReset"
     }
 }
+

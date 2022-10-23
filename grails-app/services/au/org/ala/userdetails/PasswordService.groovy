@@ -19,6 +19,7 @@ import au.org.ala.cas.encoding.BcryptPasswordEncoder
 import au.org.ala.cas.encoding.LegacyPasswordEncoder
 import au.org.ala.users.Password
 import au.org.ala.users.User
+import au.org.ala.userdetails.records.UserRecord
 import grails.gorm.transactions.Transactional
 import org.apache.commons.lang3.RandomStringUtils
 import org.springframework.beans.factory.annotation.Value
@@ -37,6 +38,8 @@ class PasswordService {
     String legacyAlgorithm
     @Value('${encoding.salt}')
     String legacySalt
+
+    UserService userService
 
     /**
      * Trigger a password reset
@@ -67,11 +70,11 @@ class PasswordService {
        password.save(failOnError: true)
     }
 
-    String generatePassword(User user) {
+    String generatePassword(UserRecord user) {
        //generate a new password
-       def newPassword = RandomStringUtils.randomAlphanumeric(10)
+       def newPassword = RandomStringUtils.randomAlphanumeric(10) + RandomStringUtils.randomAscii(58, 65) //TODO need to change this
 
-       resetPassword(user, newPassword)
+       userService.resetPassword(user, newPassword)
        return newPassword
     }
 }

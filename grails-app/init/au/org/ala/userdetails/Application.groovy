@@ -30,7 +30,6 @@ import com.amazonaws.services.cognitoidp.AWSCognitoIdentityProvider
 import com.amazonaws.services.cognitoidp.AWSCognitoIdentityProviderClientBuilder
 import grails.boot.GrailsApp
 import grails.boot.config.GrailsAutoConfiguration
-import grails.core.GrailsApplication
 import groovy.util.logging.Slf4j
 import okhttp3.OkHttpClient
 import org.grails.core.artefact.DomainClassArtefactHandler

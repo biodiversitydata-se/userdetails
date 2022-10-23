@@ -8,6 +8,7 @@ import au.org.ala.web.AuthService
 import com.amazonaws.services.cognitoidp.AWSCognitoIdentityProvider
 import com.amazonaws.services.cognitoidp.model.AdminGetUserRequest
 import com.amazonaws.services.cognitoidp.model.AdminGetUserResult
+import com.amazonaws.services.cognitoidp.model.AdminResetUserPasswordRequest
 import com.amazonaws.services.cognitoidp.model.AdminUpdateUserAttributesRequest
 import com.amazonaws.services.cognitoidp.model.AttributeType
 import com.amazonaws.services.cognitoidp.model.GetUserRequest
@@ -193,6 +194,26 @@ class CognitoUserService implements IUserService {
     }
 
     @Override
+    def resetAndSendTemporaryPassword(UserRecord user, String emailSubject, String emailTitle, String emailBody, String password) throws PasswordResetFailedException {
+        def request = new AdminResetUserPasswordRequest()
+        request.username = user.email
+        request.userPoolId = poolId
+
+        def response = cognitoIdp.adminResetUserPassword(request)
+        return response.getSdkHttpMetadata().httpStatusCode == 200
+    }
+
+    @Override
+    def clearTempAuthKey(UserRecord user) {
+        def request = new AdminUpdateUserAttributesRequest()
+                .withUsername(user.userName)
+                .withUserPoolId(poolId)
+                .withUserAttributes(new AttributeType().withName(TEMP_AUTH_KEY).withValue(null))
+        cognitoIdp.adminUpdateUserAttributes(request)
+        return null
+    }
+
+    @Override
     void updateProperties(User user, GrailsParameterMap params) {
 
     }
@@ -285,5 +306,22 @@ class CognitoUserService implements IUserService {
     @Override
     List<String[]> countByProfileAttribute(String s, Date date, Locale locale) {
         return null
+    }
+
+    @Override
+    boolean resetPassword(UserRecord user, String newPassword) {
+        def request = new AdminSetUserPasswordRequest()
+        request.username = user.email
+        request.userPoolId = poolId
+        request.password = newPassword
+        request.permanent = false
+
+        def response = cognitoIdp.adminSetUserPassword(request)
+        return response.getSdkHttpMetadata().httpStatusCode == 200
+    }
+
+    @Override
+    String getPasswordResetView() {
+        return "passwordResetCognito"
     }
 }

@@ -18,6 +18,8 @@ package au.org.ala.userdetails
 import au.org.ala.auth.BulkUserLoadResults
 import au.org.ala.auth.PasswordResetFailedException
 import au.org.ala.users.User
+import au.org.ala.userdetails.records.IUserRecord
+import au.org.ala.userdetails.records.UserRecord
 import grails.web.servlet.mvc.GrailsParameterMap
 
 interface IUserService {
@@ -72,4 +74,8 @@ interface IUserService {
     Map getUsersCounts(Locale locale)
 
     List<String[]> countByProfileAttribute(String s, Date date, Locale locale)
+
+    boolean resetPassword(UserRecord user, String newPassword)
+
+    String getPasswordResetView()
 }

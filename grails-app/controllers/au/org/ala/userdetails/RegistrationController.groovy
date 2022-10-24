@@ -77,7 +77,7 @@ class RegistrationController {
                 if (user.tempAuthKey == params.authKey) {
                     //update the password
                     try {
-                        userService.resetPassword(user, cmd.password)
+                        userService.resetPassword(user, cmd.password, true)
                         userService.clearTempAuthKey(user)
                         redirect(controller: 'registration', action: 'passwordResetSuccess')
                         log.info("Password successfully reset for user: " + cmd.userId)
@@ -98,7 +98,7 @@ class RegistrationController {
     }
 
     def updateCognitoPassword(UpdateCognitoPasswordCommand cmd) {
-        UserRecord user = userService.getUser(cmd.email)
+        User user = userService.getUserByEmail(cmd.email)
         if (cmd.hasErrors()) {
             render(view: 'passwordResetCognito', model: [email: cmd.email, code: cmd.code, errors:cmd.errors, passwordMatchFail: true])
         }
@@ -106,7 +106,7 @@ class RegistrationController {
             withForm {
                 //update the password
                 try {
-                    userService.resetPassword(user, cmd.password)
+                    userService.resetPassword(user, cmd.password, true)
                     //userService.clearTempAuthKey(user) //TODO do we need this?
                     redirect(controller: 'registration', action: 'passwordResetSuccess')
                     log.info("Password successfully reset for user: " + cmd.email)
@@ -147,7 +147,7 @@ class RegistrationController {
             render(view: 'forgottenPassword', model: [email: params.email, captchaInvalid: true])
         } else {
             log.info("Starting password reset for email address: " + params.email)
-            def user = userService.getUserByEmail(params.email)
+            def user = userService.getUserById(params.email)
             if (user) {
                 try {
                     userService.resetAndSendTemporaryPassword(user, null, null, null, null)

@@ -22,6 +22,8 @@ import au.org.ala.users.User
 import au.org.ala.userdetails.records.UserRecord
 import grails.gorm.transactions.Transactional
 import org.apache.commons.lang3.RandomStringUtils
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 
 @Transactional
@@ -39,7 +41,9 @@ class PasswordService {
     @Value('${encoding.salt}')
     String legacySalt
 
-    UserService userService
+    @Autowired
+    @Qualifier('userService')
+    IUserService userService
 
     /**
      * Trigger a password reset
@@ -70,11 +74,11 @@ class PasswordService {
        password.save(failOnError: true)
     }
 
-    String generatePassword(UserRecord user) {
+    String generatePassword(User user) {
        //generate a new password
        def newPassword = RandomStringUtils.randomAlphanumeric(10) + RandomStringUtils.randomAscii(58, 65) //TODO need to change this
 
-       userService.resetPassword(user, newPassword)
+       userService.resetPassword(user, newPassword, false)
        return newPassword
     }
 }

@@ -1,8 +1,10 @@
 package au.org.ala.userdetails.records
 
+import au.org.ala.users.User
+
 class UserPropertyRecord implements Serializable {
 
-    UserRecord user
+    User user
     String name
     String value
 }

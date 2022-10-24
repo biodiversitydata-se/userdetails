@@ -9,6 +9,7 @@ import com.amazonaws.services.cognitoidp.AWSCognitoIdentityProvider
 import com.amazonaws.services.cognitoidp.model.AdminGetUserRequest
 import com.amazonaws.services.cognitoidp.model.AdminGetUserResult
 import com.amazonaws.services.cognitoidp.model.AdminResetUserPasswordRequest
+import com.amazonaws.services.cognitoidp.model.AdminSetUserPasswordRequest
 import com.amazonaws.services.cognitoidp.model.AdminUpdateUserAttributesRequest
 import com.amazonaws.services.cognitoidp.model.AttributeType
 import com.amazonaws.services.cognitoidp.model.GetUserRequest
@@ -37,6 +38,7 @@ class CognitoUserService implements IUserService {
 
     @Value('${attributes.affiliations.enabled:false}')
     boolean affiliationsEnabled = false
+    public static final String TEMP_AUTH_KEY = 'tempAuthKey'
 
     @Override
     boolean updateUser(String userId, GrailsParameterMap params) {
@@ -194,23 +196,21 @@ class CognitoUserService implements IUserService {
     }
 
     @Override
-    def resetAndSendTemporaryPassword(UserRecord user, String emailSubject, String emailTitle, String emailBody, String password) throws PasswordResetFailedException {
+    void resetAndSendTemporaryPassword(User user, String emailSubject, String emailTitle, String emailBody, String password) throws PasswordResetFailedException {
         def request = new AdminResetUserPasswordRequest()
         request.username = user.email
         request.userPoolId = poolId
 
-        def response = cognitoIdp.adminResetUserPassword(request)
-        return response.getSdkHttpMetadata().httpStatusCode == 200
+        cognitoIdp.adminResetUserPassword(request)
     }
 
     @Override
-    def clearTempAuthKey(UserRecord user) {
+    void clearTempAuthKey(User user) {
         def request = new AdminUpdateUserAttributesRequest()
                 .withUsername(user.userName)
                 .withUserPoolId(poolId)
                 .withUserAttributes(new AttributeType().withName(TEMP_AUTH_KEY).withValue(null))
         cognitoIdp.adminUpdateUserAttributes(request)
-        return null
     }
 
     @Override
@@ -220,16 +220,6 @@ class CognitoUserService implements IUserService {
 
     @Override
     void deleteUser(User user) {
-
-    }
-
-    @Override
-    void resetAndSendTemporaryPassword(User user, String emailSubject, String emailTitle, String emailBody, String password) throws PasswordResetFailedException {
-
-    }
-
-    @Override
-    void clearTempAuthKey(User user) {
 
     }
 
@@ -280,7 +270,7 @@ class CognitoUserService implements IUserService {
 
     @Override
     User getUserByEmail(String email) {
-        return null
+        return getUserById(email)
     }
 
     @Override
@@ -309,12 +299,12 @@ class CognitoUserService implements IUserService {
     }
 
     @Override
-    boolean resetPassword(UserRecord user, String newPassword) {
+    boolean resetPassword(User user, String newPassword, boolean isPermanent) {
         def request = new AdminSetUserPasswordRequest()
         request.username = user.email
         request.userPoolId = poolId
         request.password = newPassword
-        request.permanent = false
+        request.permanent = isPermanent
 
         def response = cognitoIdp.adminSetUserPassword(request)
         return response.getSdkHttpMetadata().httpStatusCode == 200

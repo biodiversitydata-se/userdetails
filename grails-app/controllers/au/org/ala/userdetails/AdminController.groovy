@@ -39,7 +39,7 @@ class AdminController {
 
     def sendPasswordResetEmail(){
 
-        def user = userService.getUserByEmail(params.email)
+        def user = userService.getUserById(params.email)
         if (user) {
             def password = passwordService.generatePassword(user)
             //email to user

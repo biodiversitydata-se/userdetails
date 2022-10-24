@@ -75,7 +75,7 @@ interface IUserService {
 
     List<String[]> countByProfileAttribute(String s, Date date, Locale locale)
 
-    boolean resetPassword(UserRecord user, String newPassword)
+    boolean resetPassword(User user, String newPassword, boolean isPermanent)
 
     String getPasswordResetView()
 }

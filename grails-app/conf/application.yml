@@ -136,6 +136,10 @@ security:
       enabled: true
       scope: openid profile email ala roles
       allowUnsignedIdTokens: true # Disable once CAS no longer suggests the none algorithm
+      discoveryUri: https://cognito-idp.ap-southeast-2.amazonaws.com/ap-southeast-2_dqIVUS9bF/.well-known/openid-configuration
+      client-id: 51kfriifqedtq7k0f68spcguu8
+      secret: 1k3espusr4oqd912oms7n8uv9m2p1rqlo5ss1sejp7lrdvvft51o
+
     jwt:
       enabled: true
       fallbackToLegacyBehaviour: true # Reset to false once legacy api keys no longer supported
@@ -322,9 +326,6 @@ environments:
                 appServerName: "https://auth.ala.org.au"
 
 ---
-spring:
-  profile: mysql
-
 hibernate:
     allow_update_outside_transaction: true # Hibernate 5 made transactions required to flush changes, set to true for backwards compat but should be set to false and bugs fixed in the future
     show_sql: false
@@ -388,18 +389,3 @@ environments:
 spring:
   profile: cognito
 
-hibernate:
-  cache:
-    queries: false
-    use_second_level_cache: false
-    use_query_cache: false
-
-dataSource:
-  dbCreate: none
-  pooled: false
-  jmxExport: true
-  driverClassName: org.h2.Driver
-  url: jdbc:h2:./prodDb;MVCC=TRUE;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE
-  username:
-  password:
-  properties:

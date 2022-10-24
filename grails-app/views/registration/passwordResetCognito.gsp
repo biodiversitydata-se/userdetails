@@ -55,7 +55,7 @@
             </div>
 
             <div class="form-group">
-                <label for="password">Your new password</label>
+                <label for="password">Your new password (Password must contain at least 8 characters and must contain a lower case letter, an upper case letter, a special character and a number)</label>
                 <input id="password" type="password" class="form-control" name="password" value=""/>
             </div>
 

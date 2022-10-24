@@ -260,13 +260,12 @@ class GormUserService implements IUserService {
     }
 
     @Override
-    def resetAndSendTemporaryPassword(UserRecord user, String emailSubject, String emailTitle, String emailBody, String password) throws PasswordResetFailedException {
-        return delegate.resetAndSendTemporaryPassword(user, emailSubject, emailTitle, emailBody, password)
-    }
-
-    @Override
-    def clearTempAuthKey(UserRecord user) {
-        return delegate.clearTempAuthKey(user)
+    void clearTempAuthKey(User user) {
+        if (user) {
+            //set the temp auth key
+            user.tempAuthKey = null
+            user.save(flush: true)
+        }
     }
 
     private setUserProperty(User user, String propName, String propValue) {
@@ -278,11 +277,6 @@ class GormUserService implements IUserService {
             def newProperty = new UserProperty(user: user, name: propName, value: propValue)
             newProperty.save(failOnError: true)
         }
-    }
-
-    @Override
-    String getResetPasswordUrl(UserRecord user) {
-        return delegate.getResetPasswordUrl(user)
     }
 
     User registerUser(GrailsParameterMap params) throws Exception {
@@ -339,6 +333,7 @@ class GormUserService implements IUserService {
 
     }
 
+    @Override
     void resetAndSendTemporaryPassword(User user, String emailSubject, String emailTitle, String emailBody, String password = null) throws PasswordResetFailedException {
         if (user) {
             //set the temp auth key
@@ -346,14 +341,6 @@ class GormUserService implements IUserService {
             user.save(flush: true)
             //send the email
             emailService.sendPasswordReset(user, user.tempAuthKey, emailSubject, emailTitle, emailBody, password)
-        }
-    }
-
-    void clearTempAuthKey(User user) {
-        if (user) {
-            //set the temp auth key
-            user.tempAuthKey = null
-            user.save(flush: true)
         }
     }
 
@@ -397,6 +384,7 @@ class GormUserService implements IUserService {
     }
 
     @NotTransactional
+    @Override
     String getResetPasswordUrl(User user) {
         if(user.tempAuthKey){
             emailService.getServerUrl() + "resetPassword/" +  user.id +  "/"  + user.tempAuthKey
@@ -465,12 +453,13 @@ class GormUserService implements IUserService {
     }
 
     @Override
-    boolean resetPassword(UserRecord user, String newPassword) {
-        return delegate.resetPassword(user, newPassword)
+    boolean resetPassword(User user, String newPassword, boolean isPermanent) {
+        passwordService.resetPassword(user, newPassword)
+        return true
     }
 
     @Override
     String getPasswordResetView() {
-        return delegate.getPasswordResetView()
+        return "startPasswordReset"
     }
 }

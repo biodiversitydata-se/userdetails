@@ -28,6 +28,7 @@ class UserProperty extends UserPropertyRecord implements Serializable {
     User user
     String name
     String value
+    String id
 
     static def addOrUpdateProperty(user, name, value){
 

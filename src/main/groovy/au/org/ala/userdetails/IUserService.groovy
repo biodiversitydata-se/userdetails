@@ -36,7 +36,7 @@ interface IUserService {
 
     boolean isEmailInUse(String newEmail)
 
-    void activateAccount(User user)
+    boolean activateAccount(User user, GrailsParameterMap params)
 
     def listUsers(String query, int offset, int maxResults)
 
@@ -78,4 +78,6 @@ interface IUserService {
     boolean resetPassword(User user, String newPassword, boolean isPermanent)
 
     String getPasswordResetView()
+
+    def sendAccountActivation(User user)
 }

@@ -245,15 +245,21 @@ class RegistrationController {
                     //does a user with the supplied email address exist
                     def user = userService.registerUser(params)
 
-                    //store the password
-                    try {
-                        passwordService.resetPassword(user, params.password)
+                    if(user) {
                         //store the password
-                        emailService.sendAccountActivation(user, user.tempAuthKey)
-                        redirect(action: 'accountCreated', id: user.id)
-                    } catch (e) {
-                        log.error("Couldn't reset password", e)
-                        render(view: "accountError", model: [msg: "Failed to reset password"])
+                        try {
+                            userService.resetPassword(user, params.password, true)
+                            //store the password
+                            userService.sendAccountActivation(user)
+                            redirect(action: 'accountCreated', id: user.id)
+                        } catch (e) {
+                            log.error("Couldn't reset password", e)
+                            render(view: "accountError", model: [msg: "Failed to reset password"])
+                        }
+                    }
+                    else{
+                        log.error('Couldn\'t create user')
+                        render(view: "accountError", model: [msg: 'Couldn\'t create user'])
                     }
                 } catch (Exception e) {
                     log.error(e.getMessage(), e)
@@ -274,12 +280,11 @@ class RegistrationController {
 
     def activateAccount() {
         def user= userService.getUserById(params.userId)
-        //check the activation key
-        if (user.tempAuthKey == params.authKey) {
-            userService.activateAccount(user)
+        boolean isSuccess = userService.activateAccount(user, params)
+
+        if (isSuccess) {
             render(view: 'accountActivatedSuccessful', model: [user: user])
         } else {
-            log.error('Auth keys did not match for user : ' + params.userId + ", supplied: " + params.authKey + ", stored: " + user.tempAuthKey)
             render(view: "accountError")
         }
     }

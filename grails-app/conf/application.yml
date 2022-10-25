@@ -136,10 +136,6 @@ security:
       enabled: true
       scope: openid profile email ala roles
       allowUnsignedIdTokens: true # Disable once CAS no longer suggests the none algorithm
-      discoveryUri: https://cognito-idp.ap-southeast-2.amazonaws.com/ap-southeast-2_dqIVUS9bF/.well-known/openid-configuration
-      client-id: 51kfriifqedtq7k0f68spcguu8
-      secret: 1k3espusr4oqd912oms7n8uv9m2p1rqlo5ss1sejp7lrdvvft51o
-
     jwt:
       enabled: true
       fallbackToLegacyBehaviour: true # Reset to false once legacy api keys no longer supported

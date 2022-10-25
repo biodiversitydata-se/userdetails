@@ -4,8 +4,12 @@ import au.org.ala.auth.BulkUserLoadResults
 import au.org.ala.auth.PasswordResetFailedException
 import au.org.ala.users.User
 import au.org.ala.users.UserProperty
+import au.org.ala.users.UserRole
 import au.org.ala.web.AuthService
 import com.amazonaws.services.cognitoidp.AWSCognitoIdentityProvider
+import com.amazonaws.services.cognitoidp.model.AdminCreateUserRequest
+import com.amazonaws.services.cognitoidp.model.AdminDisableUserRequest
+import com.amazonaws.services.cognitoidp.model.AdminEnableUserRequest
 import com.amazonaws.services.cognitoidp.model.AdminGetUserRequest
 import com.amazonaws.services.cognitoidp.model.AdminGetUserResult
 import com.amazonaws.services.cognitoidp.model.AdminResetUserPasswordRequest
@@ -96,22 +100,25 @@ class CognitoUserService implements IUserService {
 
     @Override
     boolean disableUser(User user) {
-        return false
+        def response = cognitoIdp.adminDisableUser(new AdminDisableUserRequest().withUsername(user.email).withUserPoolId(poolId))
+        return response.sdkHttpMetadata.httpStatusCode == 200
     }
 
     @Override
     boolean isActive(String email) {
-        return false
+        def user = getUserByEmail(email)
+        return user?.getActivated()
     }
 
     @Override
     boolean isLocked(String email) {
-        return false
+        def user = getUserByEmail(email)
+        return user?.getLocked()
     }
 
     @Override
     boolean isEmailRegistered(String email) {
-        return false
+        return isEmailInUse(email)
     }
 
     @Override
@@ -126,8 +133,11 @@ class CognitoUserService implements IUserService {
     }
 
     @Override
-    void activateAccount(User user) {
-
+    boolean activateAccount(User user, GrailsParameterMap params) {
+        def request = new AdminEnableUserRequest().withUsername(user.email).withUserPoolId(poolId)
+        def response = cognitoIdp.adminEnableUser(request)
+        //TODO update custom activated field
+        return response.getSdkHttpMetadata().httpStatusCode == 200
     }
 
     @Override
@@ -192,6 +202,69 @@ class CognitoUserService implements IUserService {
 
     @Override
     User registerUser(GrailsParameterMap params) throws Exception {
+        def request = new AdminCreateUserRequest()
+        request.username = params.email
+        request.userPoolId = poolId
+        request.desiredDeliveryMediums = ["EMAIL"]
+
+        Collection<AttributeType> userAttributes = new ArrayList<>()
+
+        userAttributes.add(new AttributeType().withName('email').withValue(params.email))
+        userAttributes.add(new AttributeType().withName('given_name').withValue(params.firstName))
+        userAttributes.add(new AttributeType().withName('family_name').withValue(params.lastName))
+        userAttributes.add(new AttributeType().withName('email_verified').withValue('false'))
+
+        params.findAll {customAttrs.contains(it.key) }
+                .each {userAttributes.add(new AttributeType().withName("custom:${it.key}").withValue(it.value as String)) }
+
+        userAttributes.add(new AttributeType().withName('custom:activated').withValue("0"))
+        userAttributes.add(new AttributeType().withName('custom:disabled').withValue("0"))
+        userAttributes.add(new AttributeType().withName('custom:authority').withValue("ROLE_USER"))
+        userAttributes.add(new AttributeType().withName('custom:role').withValue("ROLE_USER"))
+        userAttributes.add(new AttributeType().withName('custom:expired').withValue("0"))
+
+        request.userAttributes = userAttributes
+
+        def userResponse = cognitoIdp.adminCreateUser(request)
+
+        if(userResponse.user) {
+
+            Map<String, String> attributes = userResponse.user.attributes.collectEntries { [(it.name): it.value] }
+            Collection<UserProperty> userProperties = attributes
+                    .findAll { !mainAttrs.contains(it.key) }
+                    .collect {
+                        if (it.key.startsWith('custom:')) {
+                            new UserProperty(name: it.key.substring(7), value: it.value)
+                        } else {
+                            new UserProperty(name: it.key, value: it.value)
+                        }
+                    }
+
+            User user = new User(
+                    dateCreated: userResponse.user.userCreateDate,
+                    lastUpdated: userResponse.user.userLastModifiedDate,
+                    activated: userProperties.find { it.name == 'activated' }.value == "1",
+                    locked: userProperties.find { it.name == 'disabled' }.value == "1",
+                    firstName: attributes.find { it.key == 'given_name' }.value,
+                    lastName: attributes.find { it.key == 'family_name' }.value,
+                    email: attributes.find { it.key == 'email' }.value,
+                    userName: userResponse.user.username,
+                    userProperties: userProperties
+            )
+
+            Collection<UserRole> userRoles = attributes
+                    .find {it.key == "custom:role" }.value.split(",")
+                    .collect {
+                        new UserRole(user: user, role: new Role(role: it, description: it))
+                    }
+
+            user.userRoles = userRoles
+
+            //disable user
+            disableUser(user)
+
+            return user
+        }
         return null
     }
 
@@ -313,5 +386,10 @@ class CognitoUserService implements IUserService {
     @Override
     String getPasswordResetView() {
         return "passwordResetCognito"
+    }
+
+    @Override
+    def sendAccountActivation(User user) {
+        emailService.sendCognitoAccountActivation(user)
     }
 }

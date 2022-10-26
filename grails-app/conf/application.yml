@@ -385,3 +385,5 @@ environments:
 spring:
   profile: cognito
 
+headerAndFooter:
+  baseURL: https://www-test.ala.org.au/commonui-bs3-2019

@@ -19,6 +19,7 @@ import com.amazonaws.services.cognitoidp.model.AttributeType
 import com.amazonaws.services.cognitoidp.model.GetUserRequest
 import com.amazonaws.services.cognitoidp.model.ListUsersRequest
 import com.amazonaws.services.cognitoidp.model.ListUsersResult
+import com.amazonaws.services.cognitoidp.model.UserNotFoundException
 import com.amazonaws.services.cognitoidp.model.UserType
 import grails.web.servlet.mvc.GrailsParameterMap
 import groovy.util.logging.Slf4j
@@ -299,7 +300,7 @@ class CognitoUserService implements IUserService {
     @Override
     User getUserById(String userId) {
 
-        if (userId == null) {
+        if (userId == null || userId == "") {
             // Problem. This might mean an expired cookie, or it might mean that this service is not in the authorised system list
             log.debug("Attempt to get current user returned null. This might indicating that this machine is not the authorised system list")
             return null
@@ -310,35 +311,40 @@ class CognitoUserService implements IUserService {
 
         AdminGetUserResult userResponse
 
-        if (accessToken) {
-            userResponse = cognitoIdp.getUser(new GetUserRequest().withAccessToken(accessToken))
-        } else {
+        try {
+            if (accessToken) {
+                userResponse = cognitoIdp.getUser(new GetUserRequest().withAccessToken(accessToken))
+            } else {
 //            final mainAttrs = ['given_name', 'family_name', 'email', 'username', 'roles'] as Set
-            userResponse = cognitoIdp.adminGetUser(new AdminGetUserRequest().withUsername(userId).withUserPoolId(poolId))
-        }
+                userResponse = cognitoIdp.adminGetUser(new AdminGetUserRequest().withUsername(userId).withUserPoolId(poolId))
+            }
 
 
-        Map<String, String> attributes = userResponse.userAttributes.collectEntries { [ (it.name): it.value ] }
-        Collection<UserProperty> userProperties = userResponse.userAttributes
-                .findAll {!mainAttrs.contains(it.name) }
-                .collect {
+            Map<String, String> attributes = userResponse.userAttributes.collectEntries { [(it.name): it.value] }
+            Collection<UserProperty> userProperties = userResponse.userAttributes
+                    .findAll { !mainAttrs.contains(it.name) }
+                    .collect {
 //                    if (it.name.startsWith('custom:')) {
 //                        new UserProperty(name: it.name.substring(7), value: it.value)
 //                    } else {
                         new UserProperty(name: it.name, value: it.value)
 //                    }
-                }
+                    }
 
 
-        User user = new User(
-                dateCreated: userResponse.userCreateDate, lastUpdated: userResponse.userLastModifiedDate,
-                activated: userResponse.userStatus == "CONFIRMED", locked: !userResponse.enabled,
-                firstName: attributes['given_name'], lastName: attributes['family_name'],
-                email: attributes['email'], userName: userResponse.username,
-                userRoles: attributes['custom:roles']?.split(','), userProperties: userProperties
-        )
+            User user = new User(
+                    dateCreated: userResponse.userCreateDate, lastUpdated: userResponse.userLastModifiedDate,
+                    activated: userResponse.userStatus == "CONFIRMED", locked: !userResponse.enabled,
+                    firstName: attributes['given_name'], lastName: attributes['family_name'],
+                    email: attributes['email'], userName: userResponse.username,
+                    userRoles: attributes['custom:roles']?.split(','), userProperties: userProperties
+            )
 
-        return user
+            return user
+        }
+        catch (UserNotFoundException e) {
+            return null
+        }
     }
 
     @Override
@@ -373,6 +379,9 @@ class CognitoUserService implements IUserService {
 
     @Override
     boolean resetPassword(User user, String newPassword, boolean isPermanent) {
+        if(!user || !newPassword) {
+            return false
+        }
         def request = new AdminSetUserPasswordRequest()
         request.username = user.email
         request.userPoolId = poolId

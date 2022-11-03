@@ -33,6 +33,12 @@
             </p>
             </g:if>
 
+            <g:if test="${emailInvalid}">
+                <p class="well text-danger">
+                    <g:message code="forgotten.password.don.t.recognise.email" />
+                </p>
+            </g:if>
+
             <g:form action="startPasswordReset" method="POST" onsubmit="submitResetBtn.disabled = true; return true;">
                 <div class="form-group">
                     <label for="email"><g:message code="forgotten.password.email" /></label>

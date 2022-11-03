@@ -20,7 +20,6 @@ import au.org.ala.auth.UpdatePasswordCommand
 import au.org.ala.recaptcha.RecaptchaClient
 import au.org.ala.users.User
 import org.springframework.beans.factory.annotation.Qualifier
-import au.org.ala.userdetails.records.UserRecord
 
 /**
  * Controller that handles the interactions with general public.
@@ -104,6 +103,10 @@ class RegistrationController {
         }
         else {
             withForm {
+                if(!user) {
+                    log.error "Invalid email ${cmd.email}"
+                    render(view: 'accountError', model: [msg: "Invalid email ${cmd.email}"])
+                }
                 //update the password
                 try {
                     userService.resetPassword(user, cmd.password, true)
@@ -160,6 +163,7 @@ class RegistrationController {
             } else {
                 //invalid email address entered
                 log.warn("email address {} is not recognised.", params.email)
+                render(view: 'forgottenPassword', model: [email: params.email, emailInvalid: true])
             }
         }
     }

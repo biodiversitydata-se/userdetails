@@ -16,6 +16,7 @@
 package au.org.ala.userdetails
 
 import au.org.ala.cas.encoding.CloseShieldWriter
+import au.org.ala.users.Role
 import au.org.ala.users.User
 import au.org.ala.userdetails.marshaller.UserMarshaller
 import au.org.ala.web.UserDetails

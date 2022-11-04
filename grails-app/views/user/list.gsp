@@ -76,10 +76,10 @@
             <tr class="${(i % 2) == 0 ? 'even' : 'odd'}">
 
                 <td><g:link action="show"
-                            id="${userInstance.id}">${userInstance.id}</g:link></td>
+                            id="${userInstance.userId}">${userInstance.userId}</g:link></td>
 
                 <td><g:link action="show"
-                            id="${userInstance.id}">${fieldValue(bean: userInstance, field: "email")}</g:link></td>
+                            id="${userInstance.userId}">${fieldValue(bean: userInstance, field: "email")}</g:link></td>
 
                 <td>${fieldValue(bean: userInstance, field: "firstName")}</td>
 
@@ -98,7 +98,7 @@
 
     <g:if test="${!q}">
         <div class="text-center">
-            <hf:paginate total="${userInstanceTotal}" params="[q:q]"/>
+            <hf:paginate total="${userInstanceTotal}" maxsteps="0" omitLast="false" params="[ q: q ]"/>
         </div>
     </g:if>
         </div>

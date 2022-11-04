@@ -155,7 +155,9 @@ class RegistrationController {
     }
 
     def update() {
+
         def user = userService.currentUser
+
         log.debug("Updating account for " + user)
 
         if (user) {
@@ -170,7 +172,7 @@ class RegistrationController {
 //                params.userName = params.email
             }
 
-            def success = userService.updateUser(authService.userId, params)
+            def success = userService.updateUser(user.userId, params)
 
             if (success) {
                 redirect(controller: 'profile')

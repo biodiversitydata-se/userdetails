@@ -27,8 +27,10 @@ class User implements WebDataBinding, Serializable {
 
     static hasMany =  [
             userRoles: UserRole,
-            userProperties:UserProperty
+            userProperties: UserProperty
     ]
+
+    String userId
 
     String firstName
     String lastName
@@ -51,9 +53,14 @@ class User implements WebDataBinding, Serializable {
     Collection<UserRole> userRoles
     Collection<UserProperty> userProperties
 
+
+
     static mapping = {
         table 'users'
+
         id (generator:'identity', column:'userid', type:'long')
+        userId column:'userid', updatable: false, insertable: false, type: 'string'
+
         userName column:  'username'
         firstName column:  'firstname'
         lastName column:  'lastname'

@@ -17,6 +17,7 @@ package au.org.ala.userdetails
 
 import au.org.ala.recaptcha.RecaptchaClient
 import au.org.ala.recaptcha.RecaptchaResponse
+import au.org.ala.users.Role
 import au.org.ala.users.User
 import au.org.ala.users.UserProperty
 import au.org.ala.users.UserRole

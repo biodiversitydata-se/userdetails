@@ -18,6 +18,7 @@ package au.org.ala.userdetails
 import au.org.ala.auth.BulkUserLoadResults
 import au.org.ala.auth.PasswordResetFailedException
 import au.org.ala.users.Password
+import au.org.ala.users.Role
 import au.org.ala.users.User
 import au.org.ala.users.UserProperty
 import au.org.ala.users.UserRole
@@ -50,6 +51,11 @@ class GormUserService implements IUserService {
 
     @Value('${attributes.affiliations.enabled:false}')
     boolean affiliationsEnabled = false
+
+    @Override
+    boolean updateUser(GrailsParameterMap params) {
+
+    }
 
     boolean updateUser(String userId, GrailsParameterMap params) {
 
@@ -342,8 +348,8 @@ class GormUserService implements IUserService {
     }
 
     @Override
-    User getUserById(String id) {
-        return User.get(id as Long)
+    User getUserById(String userId) {
+        return User.get(userId as Long)
     }
 
     @Override
@@ -446,5 +452,26 @@ class GormUserService implements IUserService {
         return results.collect {
             [affiliations[it[0]] ?: it[0], it[1].toString()].toArray(new String[0])
         }
+    }
+
+    @Override
+    Collection<Role> listRoles(int offset, int maxResults) {
+        Role.list([ offset: offset, max: maxResults ])
+    }
+
+    Role createRole(GrailsParameterMap params) {
+
+
+    }
+
+    @Override
+    boolean addUserRole(User user, Role role) {
+
+         new UserRole(user: user, role: role).save()
+    }
+
+    @Override
+    boolean removeUserRole(User user, Role role) {
+        return false
     }
 }

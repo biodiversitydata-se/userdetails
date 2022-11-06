@@ -135,16 +135,16 @@ class GormUserService implements IUserService {
     }
 
     @Override
-    def listUsers(String query, int offset, int maxResults) {
+    def listUsers(String query, String paginationToken, int maxResults) {
 
         if (query) {
 
             String q = "%${query}%"
 
-            return User.findAllByEmailLikeOrLastNameLikeOrFirstNameLike(q, q, q, [ offset: offset, max: maxResults ])
+            return User.findAllByEmailLikeOrLastNameLikeOrFirstNameLike(q, q, q, [ offset: paginationToken as int, max: maxResults ])
         }
 
-        return User.list([ offset: offset, max: maxResults ])
+        return User.list([ offset: paginationToken as int, max: maxResults ])
     }
 
     BulkUserLoadResults bulkRegisterUsersFromFile(InputStream stream, Boolean firstRowContainsFieldNames, String affiliation, String emailSubject, String emailTitle, String emailBody) {
@@ -455,8 +455,8 @@ class GormUserService implements IUserService {
     }
 
     @Override
-    Collection<Role> listRoles(int offset, int maxResults) {
-        Role.list([ offset: offset, max: maxResults ])
+    Collection<Role> listRoles(String paginationToken, int maxResults) {
+        Role.list([ offset: paginationToken as int, max: maxResults ])
     }
 
     Role createRole(GrailsParameterMap params) {

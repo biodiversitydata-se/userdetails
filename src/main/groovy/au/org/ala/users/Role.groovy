@@ -13,7 +13,7 @@
  * rights and limitations under the License.
  */
 
-package au.org.ala.userdetails
+package au.org.ala.users
 
 import au.org.ala.userdetails.records.RoleRecord
 

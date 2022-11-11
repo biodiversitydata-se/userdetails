@@ -16,9 +16,12 @@
 package au.org.ala.userdetails
 
 import au.org.ala.auth.PreAuthorise
+import au.org.ala.users.Role
 import au.org.ala.users.User
 import au.org.ala.users.UserRole
 import grails.converters.JSON
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.dao.DataIntegrityViolationException
 
 @PreAuthorise
@@ -26,13 +29,19 @@ class UserRoleController {
 
     static allowedMethods = [save: "POST", update: "POST", delete: "POST"]
 
+    @Autowired
+    @Qualifier('userService')
+    IUserService userService
+
     def index() {
         redirect(action: "list", params: params)
     }
 
     def create() {
-        User user = User.get(params['user.id'].toLong())
-        def roles = au.org.ala.userdetails.Role.list()
+
+        User user = userService.getUserById(params['user.id'])
+
+        def roles = Role.list()
 
         //remove existing roles this user has
         def usersRoles = user.getUserRoles()
@@ -73,19 +82,14 @@ class UserRoleController {
 
     def addRole() {
 
-        log.debug(params.userId.toLong() + " - " + params.role.id)
+        log.debug(params.userId + " - " + params.role.id)
 
-        def user = User.get(params.userId.toLong())
+        def user = userService.getUserById(params['user.id'])
         def role = Role.findByRole(params.role.id)
 
-        UserRole.withNewTransaction {
-            UserRole ur = new UserRole()
-            ur.user = user
-            ur.role = role
-            ur.save()
-        }
+        userService.addUserRole(user, role)
 
-        redirect(action: "show", controller: 'user', id: user.id)
+        redirect(action: "show", controller: 'user', id: user.userId)
     }
 
     def deleteRole() {

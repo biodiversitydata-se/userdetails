@@ -37,18 +37,18 @@ class UserController {
 
     def list(Integer max) {
 
-        int offset = params.int('offset', 0)
+        String paginationToken = params.paginationToken
         int maxResults = Math.min(max ?: 20, 5000)
 
         if (params.q) {
 
-            def userList = userService.listUsers(params.q, offset, maxResults)
+            def userList = userService.listUsers(params.q, paginationToken, maxResults)
 //            def userList = User.findAllByEmailLikeOrLastNameLikeOrFirstNameLike(q,q,q)
-            [userInstanceList: userList, userInstanceTotal: userList.size(), q: params.q]
+            [ userInstanceList: userList, userInstanceTotal: userList.size(), q: params.q ]
 
         } else {
 
-            def userList = userService.listUsers(null, offset, maxResults)
+            def userList = userService.listUsers(null, paginationToken, maxResults)
 
             [ userInstanceList: userList, userInstanceTotal: userList.size() ]
 //            [ userInstanceList: User.list(params), userInstanceTotal: User.count() ]
@@ -80,7 +80,7 @@ class UserController {
 
     def show(String id) {
 
-        def userInstance = userService.getUserById(String)
+        def userInstance = userService.getUserById(id)
 
         if (!userInstance) {
             flash.message = message(code: 'default.not.found.message', args: [message(code: 'user.label', default: 'User'), id])
@@ -93,8 +93,8 @@ class UserController {
         [userInstance: userInstance, resetPasswordUrl: resetPasswordUrl]
     }
 
-    def edit(Long id) {
-        def userInstance = userService.getUserById(id as String)
+    def edit(String id) {
+        def userInstance = userService.getUserById(id)
         if (!userInstance) {
             flash.message = message(code: 'default.not.found.message', args: [message(code: 'user.label', default: 'User'), id])
             redirect(action: "list")
@@ -103,37 +103,37 @@ class UserController {
         [userInstance: userInstance, props:userInstance.propsAsMap()]
     }
 
-    @Transactional
-    def update(Long id, Long version) {
-        def userInstance= userService.getUserById(id as String)
+    def update(String id, Long version) {
+
+        def userInstance= userService.getUserById(id)
+
         if (!userInstance) {
             flash.message = message(code: 'default.not.found.message', args: [message(code: 'user.label', default: 'User'), id])
             redirect(action: "list")
             return
         }
 
-        if (version != null) {
-            if (userInstance.version > version) {
-                userInstance.errors.rejectValue("version", "default.optimistic.locking.failure",
-                          [message(code: 'user.label', default: 'User')] as Object[],
-                          "Another user has updated this User while you were editing")
-                render(view: "edit", model: [userInstance: userInstance])
-                return
-            }
-        }
+        // TODO: deal with optimistic locking
+//        if (version != null) {
+//            if (userInstance.version > version) {
+//                userInstance.errors.rejectValue("version", "default.optimistic.locking.failure",
+//                          [message(code: 'user.label', default: 'User')] as Object[],
+//                          "Another user has updated this User while you were editing")
+//                render(view: "edit", model: [userInstance: userInstance])
+//                return
+//            }
+//        }
+//
+//        if (userInstance.email != params.email) {
+//            params.userName = params.email
+//        }
 
-        if (userInstance.email != params.email) {
-            params.userName = params.email
-        }
+        def success = userService.updateUser(id, params)
 
-        userInstance.properties = params
-
-        if (!userInstance.save(flush: true)) {
-            render(view: "edit", model: [userInstance: userInstance])
+        if (!success) {
+            render(view: "edit", model: [ userInstance: userInstance ])
             return
         }
-
-        userService.updateProperties(userInstance, params)
 
         flash.message = message(code: 'default.updated.message', args: [message(code: 'user.label', default: 'User'), userInstance.id])
         redirect(action: "show", id: userInstance.id)

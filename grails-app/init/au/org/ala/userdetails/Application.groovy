@@ -21,6 +21,7 @@ import au.org.ala.users.UserProperty
 import au.org.ala.users.UserRole
 import au.org.ala.web.AuthService
 import au.org.ala.ws.service.WebService
+import au.org.ala.ws.tokens.TokenService
 import com.amazonaws.auth.AWSCredentials
 import com.amazonaws.auth.AWSCredentialsProvider
 import com.amazonaws.auth.AWSStaticCredentialsProvider
@@ -117,16 +118,14 @@ class Application extends GrailsAutoConfiguration {
 
     @Profile('cognito')
     @Bean('userService')
-    IUserService cognitoUserService(AuthService authService, EmailService emailService, AWSCognitoIdentityProvider cognitoIdp) {
-
-//        grailsApplication.addArtefact(DomainClassArtefactHandler.TYPE, UserRole)
+    IUserService cognitoUserService(TokenService tokenService, EmailService emailService, AWSCognitoIdentityProvider cognitoIdp) {
 
         CognitoUserService userService = new CognitoUserService()
         userService.cognitoIdp = cognitoIdp
         userService.poolId = grailsApplication.config.getProperty('cognito.poolId')
 
         userService.emailService = emailService
-        userService.authService = authService
+        userService.tokenService = tokenService
 
         userService.affiliationsEnabled = grailsApplication.config.getProperty('attributes.affiliations.enabled', Boolean, false)
 

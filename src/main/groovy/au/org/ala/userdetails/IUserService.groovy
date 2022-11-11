@@ -17,6 +17,7 @@ package au.org.ala.userdetails
 
 import au.org.ala.auth.BulkUserLoadResults
 import au.org.ala.auth.PasswordResetFailedException
+import au.org.ala.users.Role
 import au.org.ala.users.User
 import au.org.ala.userdetails.records.IUserRecord
 import au.org.ala.userdetails.records.UserRecord
@@ -25,6 +26,8 @@ import grails.web.servlet.mvc.GrailsParameterMap
 import javax.servlet.http.HttpSession
 
 interface IUserService {
+
+    boolean updateUser(GrailsParameterMap params)
 
     boolean updateUser(String userId, GrailsParameterMap params)
 
@@ -40,7 +43,7 @@ interface IUserService {
 
     boolean activateAccount(User user, GrailsParameterMap params)
 
-    def listUsers(String query, int offset, int maxResults)
+    def listUsers(String query, String paginationToken, int maxResults)
 
     BulkUserLoadResults bulkRegisterUsersFromFile(InputStream stream, Boolean firstRowContainsFieldNames, String affiliation, String emailSubject, String emailTitle, String emailBody)
 
@@ -54,7 +57,7 @@ interface IUserService {
 
     void clearTempAuthKey(User user)
 
-    User getUserById(String id)
+    User getUserById(String userId)
 
     User getUserByEmail(String email)
 
@@ -76,6 +79,14 @@ interface IUserService {
     Map getUsersCounts(Locale locale)
 
     List<String[]> countByProfileAttribute(String s, Date date, Locale locale)
+
+    Collection<Role> listRoles(String paginationToken, int maxResults)
+
+    Role createRole(GrailsParameterMap params)
+
+    boolean addUserRole(User user, Role role)
+
+    boolean removeUserRole(User user, Role role)
 
     boolean resetPassword(User user, String newPassword, boolean isPermanent)
 

@@ -15,7 +15,7 @@
 
 package au.org.ala.userdetails
 
-import au.org.ala.userdetails.Role
+import au.org.ala.users.Role
 
 class BootStrap {
     def messageSource

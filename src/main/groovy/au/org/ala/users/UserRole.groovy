@@ -15,7 +15,7 @@
 
 package au.org.ala.users
 
-import au.org.ala.userdetails.Role
+
 import grails.gorm.annotation.Entity
 import groovy.transform.EqualsAndHashCode
 

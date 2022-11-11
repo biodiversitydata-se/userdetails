@@ -43,7 +43,7 @@
                 </ul>
             </g:hasErrors>
             <g:form method="post">
-                <g:hiddenField name="id" value="${userInstance?.id}"/>
+                <g:hiddenField name="id" value="${userInstance?.userId}"/>
                 <g:hiddenField name="version" value="${userInstance?.version}"/>
                 <fieldset class="form">
                     <g:render template="form"/>

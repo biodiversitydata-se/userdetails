@@ -134,7 +134,7 @@ security:
       enabled: false
     oidc:
       enabled: true
-      scope: openid profile email ala roles
+      scope: openid profile email ala/attrs ala/roles aws.cognito.signin.user.admin
       allowUnsignedIdTokens: true # Disable once CAS no longer suggests the none algorithm
     jwt:
       enabled: true
@@ -381,7 +381,10 @@ environments:
         dataSource:
             dbCreate: "validate"
 
----
+security:
+  core:
+    roleAttribute: custom:role
+
 spring:
   profile: cognito
 

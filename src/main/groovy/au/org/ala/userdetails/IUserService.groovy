@@ -22,6 +22,8 @@ import au.org.ala.userdetails.records.IUserRecord
 import au.org.ala.userdetails.records.UserRecord
 import grails.web.servlet.mvc.GrailsParameterMap
 
+import javax.servlet.http.HttpSession
+
 interface IUserService {
 
     boolean updateUser(String userId, GrailsParameterMap params)
@@ -80,4 +82,10 @@ interface IUserService {
     String getPasswordResetView()
 
     def sendAccountActivation(User user)
+
+    def getSecretForMfa(HttpSession session)
+
+    def verifyUserCode(HttpSession session, String userCode)
+
+    def enableMfa(String userId, boolean enable)
 }

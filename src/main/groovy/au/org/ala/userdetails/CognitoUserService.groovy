@@ -13,18 +13,23 @@ import com.amazonaws.services.cognitoidp.model.AdminEnableUserRequest
 import com.amazonaws.services.cognitoidp.model.AdminGetUserRequest
 import com.amazonaws.services.cognitoidp.model.AdminGetUserResult
 import com.amazonaws.services.cognitoidp.model.AdminResetUserPasswordRequest
+import com.amazonaws.services.cognitoidp.model.AdminSetUserMFAPreferenceRequest
 import com.amazonaws.services.cognitoidp.model.AdminSetUserPasswordRequest
 import com.amazonaws.services.cognitoidp.model.AdminUpdateUserAttributesRequest
+import com.amazonaws.services.cognitoidp.model.AssociateSoftwareTokenRequest
 import com.amazonaws.services.cognitoidp.model.AttributeType
 import com.amazonaws.services.cognitoidp.model.GetUserRequest
 import com.amazonaws.services.cognitoidp.model.ListUsersRequest
 import com.amazonaws.services.cognitoidp.model.ListUsersResult
+import com.amazonaws.services.cognitoidp.model.SoftwareTokenMfaSettingsType
 import com.amazonaws.services.cognitoidp.model.UserNotFoundException
 import com.amazonaws.services.cognitoidp.model.UserType
+import com.amazonaws.services.cognitoidp.model.VerifySoftwareTokenRequest
 import grails.web.servlet.mvc.GrailsParameterMap
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Value
 
+import javax.servlet.http.HttpSession
 import java.util.stream.Collectors
 import java.util.stream.Stream
 
@@ -207,6 +212,7 @@ class CognitoUserService implements IUserService {
         request.username = params.email
         request.userPoolId = poolId
         request.desiredDeliveryMediums = ["EMAIL"]
+        request.messageAction = "SUPPRESS"
 
         Collection<AttributeType> userAttributes = new ArrayList<>()
 
@@ -260,9 +266,6 @@ class CognitoUserService implements IUserService {
                     }
 
             user.userRoles = userRoles
-
-            //disable user
-            disableUser(user)
 
             return user
         }
@@ -330,6 +333,7 @@ class CognitoUserService implements IUserService {
                         new UserProperty(name: it.name, value: it.value)
 //                    }
                     }
+            userProperties.add(new UserProperty(name: "enableMFA", value: userResponse.getUserMFASettingList()?.size() > 0))
 
 
             User user = new User(
@@ -399,6 +403,48 @@ class CognitoUserService implements IUserService {
 
     @Override
     def sendAccountActivation(User user) {
-        emailService.sendCognitoAccountActivation(user)
+        //this email can be sent via cognito
+        //emailService.sendCognitoAccountActivation(user)
+    }
+
+    @Override
+    def getSecretForMfa(HttpSession session){
+        try {
+            AssociateSoftwareTokenRequest request = new AssociateSoftwareTokenRequest()
+            request.accessToken = session.getAttribute("pac4jUserProfiles").getAt("OidcClient").getAt("accessToken").value
+            def response = cognitoIdp.associateSoftwareToken(request)
+            return [success: response.sdkHttpMetadata.httpStatusCode == 200, code: response.secretCode]
+        }
+        catch (Exception e) {
+            return [success: false, error: e.getMessage()]
+        }
+    }
+
+    @Override
+    def verifyUserCode(HttpSession session, String userCode){
+        try {
+            VerifySoftwareTokenRequest request = new VerifySoftwareTokenRequest()
+            request.accessToken = session.getAttribute("pac4jUserProfiles").getAt("OidcClient").getAt("accessToken").value
+            request.userCode = userCode
+            def response= cognitoIdp.verifySoftwareToken(request)
+            return [success: response.sdkHttpMetadata.httpStatusCode == 200 && response.status == "SUCCESS"]
+        }
+        catch (Exception e) {
+            return [success: false, error: e.getMessage()]
+        }
+    }
+
+    @Override
+    def enableMfa(String userId, boolean enable){
+        try{
+            AdminSetUserMFAPreferenceRequest mfaRequest = new AdminSetUserMFAPreferenceRequest().withUserPoolId(poolId)
+                    .withUsername(userId)
+            mfaRequest.setSoftwareTokenMfaSettings(new SoftwareTokenMfaSettingsType(enabled: enable))
+            def response = cognitoIdp.adminSetUserMFAPreference(mfaRequest)
+            return [success: response.sdkHttpMetadata.httpStatusCode == 200]
+        }
+        catch (Exception e) {
+            return [success: false, error: e.getMessage()]
+        }
     }
 }

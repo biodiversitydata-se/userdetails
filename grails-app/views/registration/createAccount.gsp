@@ -30,6 +30,7 @@
     <g:if test="${grailsApplication.config.getProperty('recaptcha.siteKey')}">
         <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     </g:if>
+    <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
 </head>
 <body>
 
@@ -126,6 +127,31 @@
                 <p>
                     <g:message code="create.account.tos.description" args="[grailsApplication.config.getProperty('skin.orgNameShort'), grailsApplication.config.getProperty('termsOfUse')]" />
                 </p>
+                <g:if test="${edit}">
+                    <h2><g:message code="user.enableMFA.title" /></h2>
+                    <g:if test="${props?.enableMFA}">
+                        <p><g:message code="user.enabledMFA.description" />
+                    </g:if>
+                    <g:else>
+                        <input name="setupMFA" class="btn btn-default" id="setupMFA" value="${message(code: 'user.setupMFA')}">
+                    </g:else>
+
+                    <div id="mfa" hidden="hidden">
+                        <p id="instruction">
+                            <g:message code="user.mfa.instruction" />
+                            <br/>
+                            <g:message code="user.mfa.secret" /><label id="secret"></label>
+                        </p>
+                        <div id="qrcode"></div>
+                        <label for="code" id="codeLabel"><g:message code="user.mfa.code" /></label>
+                        <p id="message" hidden></p>
+                        <input id="code" name="code" type="text" class="form-control" data-validation-engine="validate[required]"/>
+                        <div id="buttonsDiv">
+                            <button class="btn btn-primary" id="verifyMFA"><g:message code="user.mfa.verify" /></button>
+                            <button id="hide" class="btn btn-danger">Hide</button>
+                        </div>
+                    </div>
+                </g:if>
             </div>
         </div>
         <div class="col-md-4 col-md-pull-8">
@@ -227,6 +253,14 @@
                     <input id="city" name="city" type="text" class="form-control" value="${props?.city}" />
                 </div>
                 <g:if test="${edit}">
+                    <div class="form-group checkbox">
+                        <label>
+                            <g:checkBox name="enableMFA" value="${props?.enableMFA}" id="enableMFA" disabled="disabled"/> <g:message code="user.enabledMFA" />
+                        </label>
+                        <g:if test="${props?.enableMFA}">
+                            <g:link controller="Registration" action="disableMfa" params="[userId:user?.email]">Disable MFA</g:link>
+                        </g:if>
+                    </div>
                     <button id="updateAccountSubmit" class="btn btn-primary"><g:message code="create.account.update.account" /></button>
                     <button id="disableAccountSubmit" class="btn btn-danger"><g:message code="create.account.disable.account" /></button>
                 </g:if>
@@ -287,7 +321,55 @@
             }
         });
 
+         $("#setupMFA").click(function(e) {
+             $.ajax({
+             url: "${createLink(action:'getSecretForMfa', controller: 'Registration')}",
+             type: "GET",
+             success: function(result){
+                 if(result.success){
+                    document.getElementById("secret").innerHTML = ""
+                    document.getElementById("secret").innerHTML = result.code
+                    document.getElementById("mfa").hidden = false
+                    document.getElementById("qrcode").innerHTML = ""
+                    new QRCode(document.getElementById("qrcode"), "otpauth://totp/ala-test:${raw(user?.email)}?secret=" + result.code);
+                }
+                 else{
+                     document.getElementById("message").value = result.error
+                     document.getElementById("message").hidden = false
+                 }
+            }});
+         });
 
+         $("#verifyMFA").click(function(e) {
+             var code = $("#code").val();
+             if(code == null || code === "" || isNaN(code)) {
+                 document.getElementById("message").innerHTML = "Invalid code"
+                 document.getElementById("message").hidden = false
+             }
+             else {
+                 $.ajax({
+                 url: "${createLink(action:'verifyAndActivateMfa', controller: 'Registration')}?userCode=" + code + "&userId=${raw(user?.email)}",
+                 type: "GET",
+                 success: function(result){
+                     if(result.success){
+                        document.getElementById("message").innerHTML = "Success"
+                        document.getElementById("message").hidden = false
+                        document.getElementById("enableMFA").checked = true;
+                    }
+                     else{
+                         document.getElementById("message").innerHTML = result.error
+                         document.getElementById("message").hidden = false
+                     }
+                }});
+             }
+         });
+
+         $("#hide").click(function(e) {
+             document.getElementById("code").value = ""
+             document.getElementById("message").innerHTML = ""
+             document.getElementById("message").hidden = true
+             document.getElementById("mfa").hidden = true
+         });
 
     });
 </asset:script>

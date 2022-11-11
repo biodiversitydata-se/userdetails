@@ -38,6 +38,8 @@ import org.grails.orm.hibernate.cfg.GrailsHibernateUtil
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.MessageSource
 
+import javax.servlet.http.HttpSession
+
 @Slf4j
 @Transactional
 class GormUserService implements IUserService {
@@ -475,4 +477,13 @@ class GormUserService implements IUserService {
     def sendAccountActivation(User user) {
         emailService.sendAccountActivation(user, user.tempAuthKey)
     }
+
+    @Override
+    def getSecretForMfa(HttpSession session){}
+
+    @Override
+    def verifyUserCode(HttpSession session, String userCode){}
+
+    @Override
+    def enableMfa(String userId, boolean enable){}
 }

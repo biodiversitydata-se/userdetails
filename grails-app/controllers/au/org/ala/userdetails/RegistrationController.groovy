@@ -19,6 +19,7 @@ import au.org.ala.auth.UpdateCognitoPasswordCommand
 import au.org.ala.auth.UpdatePasswordCommand
 import au.org.ala.recaptcha.RecaptchaClient
 import au.org.ala.users.User
+import grails.converters.JSON
 import org.springframework.beans.factory.annotation.Qualifier
 
 /**
@@ -304,5 +305,26 @@ class RegistrationController {
             respond locations.states[country] ?: []
         else
             respond locations.states
+    }
+
+    def getSecretForMfa() {
+        def response = userService.getSecretForMfa(session)
+        render(response as JSON)
+    }
+
+    def verifyAndActivateMfa() {
+        def response = userService.verifyUserCode(session, params.userCode)
+        if(response.success) {
+            def mfaResponse = userService.enableMfa(params.userId, true)
+            render(mfaResponse as JSON)
+        }
+        else {
+            render(response as JSON)
+        }
+    }
+
+    def disableMfa() {
+        userService.enableMfa(params.userId, false)
+        redirect(action: 'editAccount')
     }
 }

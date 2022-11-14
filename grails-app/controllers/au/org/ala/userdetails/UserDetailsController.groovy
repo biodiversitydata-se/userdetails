@@ -16,13 +16,14 @@
 package au.org.ala.userdetails
 
 import au.org.ala.cas.encoding.CloseShieldWriter
+import au.org.ala.users.Role
+import au.org.ala.users.User
 import au.org.ala.userdetails.marshaller.UserMarshaller
 import au.org.ala.web.UserDetails
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import grails.converters.JSON
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
-import io.swagger.v3.oas.annotations.enums.ParameterIn
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
@@ -30,6 +31,8 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import org.hibernate.ScrollableResults
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
 
 import javax.ws.rs.Consumes
 import javax.ws.rs.Path
@@ -41,6 +44,10 @@ import static io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY
 class UserDetailsController {
 
     static allowedMethods = [getUserDetails: "POST", getUserList: "POST", getUserListWithIds: "POST", getUserListFull: "POST", getUserDetailsFromIdList: "POST"]
+
+    @Autowired
+    @Qualifier('userService')
+    IUserService userService
 
     def index() {}
 
@@ -256,7 +263,7 @@ class UserDetailsController {
 
         if (userName) {
             if (userName.isLong()) {
-                user = User.findById(userName.toLong())
+                user = userService.getUserById(userName)
             } else {
                 user = User.findByUserNameOrEmail(userName, userName)
             }

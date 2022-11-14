@@ -17,13 +17,8 @@ package au.org.ala.userdetails
 
 import au.org.ala.auth.UpdatePasswordCommand
 import au.org.ala.recaptcha.RecaptchaClient
-import grails.converters.JSON
-import okhttp3.OkHttpClient
-import org.springframework.beans.factory.annotation.Autowired
-import retrofit2.Retrofit
-import retrofit2.converter.moshi.MoshiConverterFactory
-
-import javax.annotation.PostConstruct
+import au.org.ala.users.User
+import org.springframework.beans.factory.annotation.Qualifier
 
 /**
  * Controller that handles the interactions with general public.
@@ -40,7 +35,9 @@ class RegistrationController {
     def emailService
     def authService
     def passwordService
-    def userService
+
+    @Qualifier('userService')
+    IUserService userService
     def locationService
     RecaptchaClient recaptchaClient
 
@@ -57,7 +54,7 @@ class RegistrationController {
     }
 
     def passwordReset() {
-        User user = User.get(params.userId?.toLong())
+        User user = userService.getUserById(params.userId)
         if (!user) {
             render(view: 'accountError', model: [msg: "User not found with ID ${params.userId}"])
         } else if (user.tempAuthKey == params.authKey) {
@@ -69,7 +66,7 @@ class RegistrationController {
     }
 
     def updatePassword(UpdatePasswordCommand cmd) {
-        User user = User.get(cmd.userId)
+        User user = userService.getUserById(cmd.userId as String)
         if (cmd.hasErrors()) {
             render(view: 'passwordReset', model: [user: user, authKey: cmd.authKey, errors:cmd.errors, passwordMatchFail: true])
         }
@@ -123,7 +120,7 @@ class RegistrationController {
             render(view: 'forgottenPassword', model: [email: params.email, captchaInvalid: true])
         } else {
             log.info("Starting password reset for email address: " + params.email)
-            def user = User.findByEmail(params.email)
+            def user = userService.getUserByEmail(params.email)
             if (user) {
                 try {
                     userService.resetAndSendTemporaryPassword(user, null, null, null)
@@ -158,22 +155,25 @@ class RegistrationController {
     }
 
     def update() {
+
         def user = userService.currentUser
+
         log.debug("Updating account for " + user)
 
         if (user) {
             if (params.email != user.email) {
                 // email address has changed
-                if (userService.isEmailInUse(params.email, user)) {
+                if (userService.isEmailInUse(params.email)) {
                     def msg = message(code: "update.account.failure.msg", default: "Failed to update user profile - A user is already registered with the email address.")
                     render(view: "accountError", model: [msg: msg])
                     return
                 }
                 // and username and email address must be kept in sync
-                params.userName = params.email
+//                params.userName = params.email
             }
 
-            def success = userService.updateUser(user, params)
+            def success = userService.updateUser(user.userId, params)
+
             if (success) {
                 redirect(controller: 'profile')
                 log.info("Account details updated for user: " + user.id + " username: " + user.userName)
@@ -241,14 +241,14 @@ class RegistrationController {
     }
 
     def accountCreated() {
-        def user = User.get(params.id)
+        def user= userService.getUserById(params.id)
         render(view: 'accountCreated', model: [user: user])
     }
 
     def forgottenPassword() {}
 
     def activateAccount() {
-        def user = User.get(params.userId)
+        def user= userService.getUserById(params.userId)
         //check the activation key
         if (user.tempAuthKey == params.authKey) {
             userService.activateAccount(user)

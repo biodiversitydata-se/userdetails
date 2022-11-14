@@ -15,6 +15,10 @@
 
 package au.org.ala.userdetails
 
+import au.org.ala.users.Role
+import au.org.ala.users.User
+import au.org.ala.users.UserProperty
+import au.org.ala.users.UserRole
 import grails.testing.gorm.DataTest
 import grails.testing.web.interceptor.InterceptorUnitTest
 import org.apache.http.HttpStatus

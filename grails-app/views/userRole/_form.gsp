@@ -1,4 +1,4 @@
-<%@ page import="au.org.ala.userdetails.UserRole" %>
+<%@ page import="au.org.ala.users.UserRole" %>
 
 
 
@@ -7,7 +7,7 @@
 		<g:message code="userRole.role.label" default="Role" />
 		<span class="required-indicator">*</span>
 	</label>
-	<g:select id="role" name="role.id" from="${au.org.ala.userdetails.Role.list()}" optionKey="id" required="" value="${userRoleInstance?.role?.id}" class="form-control many-to-one"/>
+	<g:select id="role" name="role.id" from="${au.org.ala.users.Role.list()}" optionKey="id" required="" value="${userRoleInstance?.role?.id}" class="form-control many-to-one"/>
 </div>
 
 <div class="form-group fieldcontain ${hasErrors(bean: userRoleInstance, field: 'user', 'error')} required">
@@ -15,6 +15,6 @@
 		<g:message code="userRole.user.label" default="User" />
 		<span class="required-indicator">*</span>
 	</label>
-	<g:select id="user" name="user.id" from="${au.org.ala.userdetails.User.list()}" optionKey="id" required="" value="${userRoleInstance?.user?.id}" class="form-control many-to-one"/>
+	<g:select id="user" name="user.id" from="${au.org.ala.users.User.list()}" optionKey="id" required="" value="${userRoleInstance?.user?.id}" class="form-control many-to-one"/>
 </div>
 

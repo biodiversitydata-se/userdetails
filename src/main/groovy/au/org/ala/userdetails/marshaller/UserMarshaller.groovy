@@ -15,7 +15,7 @@
 
 package au.org.ala.userdetails.marshaller
 
-import au.org.ala.userdetails.User
+import au.org.ala.users.User
 import grails.converters.JSON
 
 /**

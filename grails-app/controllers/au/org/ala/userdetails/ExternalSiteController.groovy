@@ -15,18 +15,16 @@
 
 package au.org.ala.userdetails
 
+import au.org.ala.users.UserProperty
 import grails.converters.JSON
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
-import io.swagger.v3.oas.annotations.security.SecurityRequirement
 
 import javax.ws.rs.Path
 import javax.ws.rs.Produces
-
-import static io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY
 
 @Path('/ws')
 class ExternalSiteController {

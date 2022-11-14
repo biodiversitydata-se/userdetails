@@ -17,10 +17,13 @@ package au.org.ala.userdetails
 
 import au.org.ala.recaptcha.RecaptchaClient
 import au.org.ala.recaptcha.RecaptchaResponse
+import au.org.ala.users.Role
+import au.org.ala.users.User
+import au.org.ala.users.UserProperty
+import au.org.ala.users.UserRole
 import grails.testing.gorm.DataTest
 import grails.testing.web.controllers.ControllerUnitTest
 import org.grails.web.servlet.mvc.SynchronizerTokensHolder
-import retrofit2.Response
 import retrofit2.mock.Calls
 
 
@@ -28,7 +31,7 @@ import retrofit2.mock.Calls
 class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUnitTest<RegistrationController>, DataTest {
 
     def passwordService = Mock(PasswordService)
-    def userService = Mock(UserService)
+    def userService = Mock(GormUserService)
     def emailService = Mock(EmailService)
     def recaptchaClient = Mock(RecaptchaClient)
 
@@ -245,7 +248,7 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
         controller.update()
 
         then:
-        1 * userService.isEmailInUse(params.email, currentUser) >> true
+        1 * userService.isEmailInUse(params.email) >> true
         model.msg.indexOf("A user is already registered") != -1
         view == '/registration/accountError'
     }
@@ -271,7 +274,7 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
 
         then:
         1 * userService.updateUser(_, _) >> true
-        1 * userService.isEmailInUse(params.email, currentUser) >> false
+        1 * userService.isEmailInUse(params.email) >> false
         response.redirectedUrl == '/profile'
     }
 

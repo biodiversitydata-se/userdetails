@@ -15,6 +15,10 @@
 
 package au.org.ala.userdetails
 
+import au.org.ala.users.Role
+import au.org.ala.users.User
+import au.org.ala.users.UserProperty
+import au.org.ala.users.UserRole
 import au.org.ala.userdetails.marshaller.UserMarshaller
 import grails.converters.JSON
 import org.grails.web.converters.configuration.ConvertersConfigurationHolder
@@ -23,7 +27,6 @@ import org.grails.web.converters.marshaller.json.MapMarshaller
 import spock.lang.Specification
 
 import javax.servlet.http.HttpServletRequest
-import java.sql.Timestamp
 
 /**
  * Base class for user details tests.  Sets up some domain objects to support testing.

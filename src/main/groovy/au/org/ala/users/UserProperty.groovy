@@ -13,10 +13,14 @@
  * rights and limitations under the License.
  */
 
-package au.org.ala.userdetails
+package au.org.ala.users
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import grails.gorm.annotation.Entity
+import groovy.transform.EqualsAndHashCode
 
+@Entity
+@EqualsAndHashCode(includes = 'id')
 @JsonIgnoreProperties(['metaClass','errors'])
 class UserProperty implements Serializable {
 

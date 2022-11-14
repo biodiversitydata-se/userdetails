@@ -15,6 +15,8 @@
 
 package au.org.ala.userdetails
 
+import au.org.ala.users.AuthKey
+import au.org.ala.users.MobileUser
 import org.apache.http.client.HttpClient;
 import org.apache.http.NameValuePair
 import org.apache.http.impl.client.DefaultHttpClient

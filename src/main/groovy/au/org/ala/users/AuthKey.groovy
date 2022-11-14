@@ -13,13 +13,16 @@
  * rights and limitations under the License.
  */
 
-package au.org.ala.userdetails
+package au.org.ala.users
 
-class MobileUser {
+class AuthKey {
 
-    String userName
-    static hasMany = [authkeys: AuthKey]
+    String key
+    MobileUser mobileUser
 
-    static constraints = {
+    static constraints = {}
+
+    static mapping = {
+        key column: "auth_key"
     }
 }

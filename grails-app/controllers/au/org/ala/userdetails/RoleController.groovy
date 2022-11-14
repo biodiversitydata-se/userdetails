@@ -16,6 +16,9 @@
 package au.org.ala.userdetails
 
 import au.org.ala.auth.PreAuthorise
+import au.org.ala.users.Role
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.dao.DataIntegrityViolationException
 
 @PreAuthorise
@@ -23,17 +26,23 @@ class RoleController {
 
     static allowedMethods = [save: "POST", update: "POST", delete: "POST"]
 
+    @Autowired
+    @Qualifier('userService')
+    IUserService userService
+
     def index() {
         redirect(action: "list", params: params)
     }
 
     def list(Integer max) {
-        params.max = Math.min(max ?: 100, 1000)
-        [roleInstanceList: Role.list(params), roleInstanceTotal: Role.count()]
+
+        Collection<Role> roles = userService.listRoles(params.paginationToken, Math.min(max ?: 100, 1000))
+
+        [ roleInstanceList: roles, roleInstanceTotal: roles.count() ]
     }
 
     def create() {
-        [roleInstance: new Role(params)]
+        [roleInstance: new Role(params) ]
     }
 
     def save() {

@@ -13,8 +13,14 @@
  * rights and limitations under the License.
  */
 
-package au.org.ala.userdetails
+package au.org.ala.users
 
+
+import grails.gorm.annotation.Entity
+import groovy.transform.EqualsAndHashCode
+
+@Entity
+@EqualsAndHashCode(includes = 'id')
 class UserRole implements Serializable {
 
     User user

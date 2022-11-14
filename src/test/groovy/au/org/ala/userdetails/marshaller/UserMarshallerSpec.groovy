@@ -16,6 +16,10 @@
 package au.org.ala.userdetails.marshaller
 
 import au.org.ala.userdetails.*
+import au.org.ala.users.Role
+import au.org.ala.users.User
+import au.org.ala.users.UserProperty
+import au.org.ala.users.UserRole
 import grails.converters.JSON
 import grails.testing.gorm.DataTest
 

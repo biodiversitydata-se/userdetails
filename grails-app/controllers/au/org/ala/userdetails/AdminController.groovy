@@ -16,7 +16,8 @@
 package au.org.ala.userdetails
 
 import au.org.ala.auth.PreAuthorise
-import com.opencsv.CSVWriter
+import au.org.ala.users.Role
+import au.org.ala.users.User
 import com.opencsv.CSVWriterBuilder
 import com.opencsv.RFC4180ParserBuilder
 import org.springframework.web.multipart.MultipartFile

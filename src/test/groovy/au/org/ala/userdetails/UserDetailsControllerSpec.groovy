@@ -15,12 +15,14 @@
 
 package au.org.ala.userdetails
 
+import au.org.ala.users.Role
+import au.org.ala.users.User
+import au.org.ala.users.UserProperty
+import au.org.ala.users.UserRole
 import au.org.ala.ws.security.JwtProperties
 import grails.converters.JSON
 import grails.testing.gorm.DataTest
 import grails.testing.web.controllers.ControllerUnitTest
-import org.apache.http.HttpStatus
-import org.grails.web.util.GrailsApplicationAttributes
 
 /**
  * Tests the UserDetailsController and the filtering behaviour associated with it.

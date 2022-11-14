@@ -25,8 +25,9 @@ import grails.testing.gorm.DataTest
 import grails.testing.web.controllers.ControllerUnitTest
 import org.grails.web.servlet.mvc.SynchronizerTokensHolder
 import retrofit2.mock.Calls
+import spock.lang.Ignore
 
-
+@Ignore
 //@Mock([User, Role, UserRole, UserProperty])
 class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUnitTest<RegistrationController>, DataTest {
 

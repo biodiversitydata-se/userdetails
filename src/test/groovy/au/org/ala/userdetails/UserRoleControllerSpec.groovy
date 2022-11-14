@@ -27,10 +27,12 @@ import org.apache.http.HttpStatus
 import org.grails.spring.beans.factory.InstanceFactoryBean
 import org.pac4j.core.config.Config
 import org.pac4j.http.client.direct.DirectBearerAuthClient
+import spock.lang.Ignore
 
 /**
  * Specification for the UserRoleController
  */
+@Ignore
 //@TestFor(UserRoleController)
 //@TestMixin(InterceptorUnitTestMixin)
 //@Mock([AuthorisedSystemService, User, Role, UserRole, UserProperty])

@@ -19,6 +19,7 @@ import au.org.ala.auth.UpdateCognitoPasswordCommand
 import au.org.ala.auth.UpdatePasswordCommand
 import au.org.ala.recaptcha.RecaptchaClient
 import au.org.ala.users.User
+import au.org.ala.ws.service.WebService
 import grails.converters.JSON
 import org.springframework.beans.factory.annotation.Qualifier
 
@@ -42,7 +43,7 @@ class RegistrationController {
     IUserService userService
     def locationService
     RecaptchaClient recaptchaClient
-
+    WebService webService
 
     def index() {
         redirect(action: 'createAccount')
@@ -77,7 +78,7 @@ class RegistrationController {
                 if (user.tempAuthKey == params.authKey) {
                     //update the password
                     try {
-                        userService.resetPassword(user, cmd.password, true)
+                        userService.resetPassword(user, cmd.password, true, null)
                         userService.clearTempAuthKey(user)
                         redirect(controller: 'registration', action: 'passwordResetSuccess')
                         log.info("Password successfully reset for user: " + cmd.userId)
@@ -110,10 +111,16 @@ class RegistrationController {
                 }
                 //update the password
                 try {
-                    userService.resetPassword(user, cmd.password, true)
+                    def success = userService.resetPassword(user, cmd.password, true, cmd.code)
                     //userService.clearTempAuthKey(user) //TODO do we need this?
-                    redirect(controller: 'registration', action: 'passwordResetSuccess')
-                    log.info("Password successfully reset for user: " + cmd.email)
+                    if(success) {
+                        Map resp = webService.get("${grailsApplication.config.getProperty('grails.serverURL')}/logout?")
+                        redirect(controller: 'registration', action: 'passwordResetSuccess')
+                        log.info("Password successfully reset for user: " + cmd.email)
+                    }
+                    else{
+                        render(view: 'accountError', model: [msg: "Failed to reset password"])
+                    }
                 } catch (e) {
                     log.error("Couldn't reset password", e)
                     render(view: 'accountError', model: [msg: "Failed to reset password"])
@@ -255,7 +262,7 @@ class RegistrationController {
                     if(user) {
                         //store the password
                         try {
-                            userService.resetPassword(user, params.password, true)
+                            userService.resetPassword(user, params.password, true, null)
                             //store the password
                             userService.sendAccountActivation(user)
                             redirect(action: 'accountCreated', id: user.id)

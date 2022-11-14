@@ -78,7 +78,7 @@ class PasswordService {
        //generate a new password
        def newPassword = RandomStringUtils.randomAlphanumeric(10) + RandomStringUtils.randomAscii(58, 65) //TODO need to change this
 
-       userService.resetPassword(user, newPassword, false)
+       userService.resetPassword(user, newPassword, false, null)
        return newPassword
     }
 }

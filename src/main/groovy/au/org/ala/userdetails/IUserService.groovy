@@ -88,7 +88,7 @@ interface IUserService {
 
     boolean removeUserRole(User user, Role role)
 
-    boolean resetPassword(User user, String newPassword, boolean isPermanent)
+    boolean resetPassword(User user, String newPassword, boolean isPermanent, String confirmationCode)
 
     String getPasswordResetView()
 

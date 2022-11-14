@@ -160,4 +160,9 @@ class UserController {
         }
 
     }
+
+    def disableMfa() {
+        userService.enableMfa(params.userId, false)
+        redirect(action: "edit", id: params.userId)
+    }
 }

@@ -490,7 +490,7 @@ class GormUserService implements IUserService {
     }
 
     @Override
-    boolean resetPassword(User user, String newPassword, boolean isPermanent) {
+    boolean resetPassword(User user, String newPassword, boolean isPermanent, String confirmationCode) {
         passwordService.resetPassword(user, newPassword)
         return true
     }

@@ -72,6 +72,15 @@
             <input id="city" name="city" type="text" class="form-control" value="${props?.city}" />
         </div>
 
+        <div class="form-group checkbox">
+            <label>
+                <g:checkBox name="enableMFA" value="${props?.enableMFA}" id="enableMFA" disabled="disabled"/> <g:message code="user.enabledMFA" />
+            </label>
+            <g:if test="${props?.enableMFA}">
+                <g:link controller="user" action="disableMfa" params="[userId:userInstance?.email]">Disable MFA</g:link>
+            </g:if>
+        </div>
+
 </div>
 <div class="col-md-6 well well-lg">
     <div class="fieldcontain ${hasErrors(bean: userInstance, field: 'activated', 'error')} ">

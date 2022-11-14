@@ -1,5 +1,5 @@
 <!doctype html>
-<html>
+<html xmlns="http://www.w3.org/1999/html">
 <head>
     <meta name="layout" content="${grailsApplication.config.getProperty('skin.layout')}"/>
     <meta name="section" content="home"/>
@@ -46,26 +46,40 @@
 
     <div class="row">
 
-        <g:form useToken="true" name="resetPasswordForm" controller="registration" action="updateCognitoPassword">
-            <input id="email" type="hidden" name="email" value="${email}"/>
+        <div class="col-md-6">
+            <g:form useToken="true" name="resetPasswordForm" controller="registration" action="updateCognitoPassword">
+                <input id="email" type="hidden" name="email" value="${email}"/>
 
-            <div class="form-group">
-                <label for="code">Code sent to your email</label>
-                <input id="code" type="number" class="form-control" name="code" value=""/>
+                <div class="form-group">
+                    <label for="code">Code sent to your email</label>
+                    <input id="code" type="number" class="form-control" name="code" value=""/>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Your new password</label>
+                    <input id="password" type="password" class="form-control" name="password" value=""/>
+                </div>
+
+                <div class="form-group">
+                    <label for="reenteredPassword"><g:message code="password.reset.re.enter.password" /></label>
+                    <input id="reenteredPassword" type="password" class="form-control" name="reenteredPassword" value=""/>
+                </div>
+
+                <button id="submitResetBtn" class="btn btn-primary"><g:message code="password.reset.set.btn" /></button>
+            </g:form>
+        </div>
+        <div class="col-md-6">
+            <div class="well">
+                <p><g:message code="updatePassword.string" />
+                <ul>
+                    <li><g:message code="updatePassword.constraint.1" /></li>
+                    <li><g:message code="updatePassword.constraint.2" /></li>
+                    <li><g:message code="updatePassword.constraint.3" /></li>
+                    <li><g:message code="updatePassword.constraint.4" /></li>
+                    <li><g:message code="updatePassword.constraint.5" /></li>
+                </ul>
             </div>
-
-            <div class="form-group">
-                <label for="password">Your new password (Password must contain at least 8 characters and must contain a lower case letter, an upper case letter, a special character and a number)</label>
-                <input id="password" type="password" class="form-control" name="password" value=""/>
-            </div>
-
-            <div class="form-group">
-                <label for="reenteredPassword"><g:message code="password.reset.re.enter.password" /></label>
-                <input id="reenteredPassword" type="password" class="form-control" name="reenteredPassword" value=""/>
-            </div>
-
-            <button id="submitResetBtn" class="btn btn-primary"><g:message code="password.reset.set.btn" /></button>
-        </g:form>
+        </div>
    </div>
 </div>
 </body>

@@ -6,7 +6,6 @@ import au.org.ala.users.Role
 import au.org.ala.users.User
 import au.org.ala.users.UserProperty
 import au.org.ala.users.UserRole
-import au.org.ala.web.AuthService
 import au.org.ala.ws.tokens.TokenService
 import com.amazonaws.services.cognitoidp.AWSCognitoIdentityProvider
 import com.amazonaws.services.cognitoidp.model.AdminCreateUserRequest
@@ -20,6 +19,7 @@ import com.amazonaws.services.cognitoidp.model.AdminSetUserPasswordRequest
 import com.amazonaws.services.cognitoidp.model.AdminUpdateUserAttributesRequest
 import com.amazonaws.services.cognitoidp.model.AssociateSoftwareTokenRequest
 import com.amazonaws.services.cognitoidp.model.AttributeType
+import com.amazonaws.services.cognitoidp.model.ConfirmForgotPasswordRequest
 import com.amazonaws.services.cognitoidp.model.GetUserRequest
 import com.amazonaws.services.cognitoidp.model.GetUserResult
 import com.amazonaws.services.cognitoidp.model.ListGroupsRequest
@@ -37,7 +37,10 @@ import grails.web.servlet.mvc.GrailsParameterMap
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Value
 
+import javax.crypto.Mac
+import javax.crypto.spec.SecretKeySpec
 import javax.servlet.http.HttpSession
+import java.nio.charset.StandardCharsets
 import java.util.stream.Stream
 
 @Slf4j
@@ -48,8 +51,8 @@ class CognitoUserService implements IUserService {
     static customAttrs = [ 'organisation', 'city', 'state', 'country' ] as Set
 
     EmailService emailService
-    AuthService authService
     TokenService tokenService
+    def grailsApplication
 
     AWSCognitoIdentityProvider cognitoIdp
     String poolId
@@ -271,7 +274,6 @@ class CognitoUserService implements IUserService {
         request.username = params.email
         request.userPoolId = poolId
         request.desiredDeliveryMediums = ["EMAIL"]
-        request.messageAction = "SUPPRESS"
 
         Collection<AttributeType> userAttributes = new ArrayList<>()
 
@@ -325,6 +327,9 @@ class CognitoUserService implements IUserService {
                     }
 
             user.userRoles = userRoles
+
+            //disable user
+            disableUser(user)
 
             return user
         }
@@ -404,29 +409,34 @@ class CognitoUserService implements IUserService {
     @Override
     User getCurrentUser() {
 
-        AccessToken accessToken = tokenService.getAuthToken(true)
+        try {
+            AccessToken accessToken = tokenService.getAuthToken(true)
 
-        GetUserResult userResponse = cognitoIdp.getUser(new GetUserRequest().withAccessToken(accessToken as String))
+            GetUserResult userResponse = cognitoIdp.getUser(new GetUserRequest().withAccessToken(accessToken as String))
 
-        Map<String, String> attributes = userResponse.userAttributes.collectEntries { [ (it.name): it.value ] }
-        Collection<UserProperty> userProperties = userResponse.userAttributes
-                .findAll {!mainAttrs.contains(it.name) }
-                .collect {
-                    new UserProperty(name: it.name, value: it.value)
-                }
+            Map<String, String> attributes = userResponse.userAttributes.collectEntries { [(it.name): it.value] }
+            Collection<UserProperty> userProperties = userResponse.userAttributes
+                    .findAll { !mainAttrs.contains(it.name) }
+                    .collect {
+                        new UserProperty(name: it.name, value: it.value)
+                    }
 
 
-        User user = new User(
-                userId: userResponse.username,
+            User user = new User(
+                    userId: userResponse.username,
 //                dateCreated: userResponse.userCreateDate, lastUpdated: userResponse.userLastModifiedDate,
 //                activated: userResponse.userStatus == "CONFIRMED", locked: !userResponse.enabled,
-                firstName: attributes['given_name'], lastName: attributes['family_name'],
-                email: attributes['email'], userName: userResponse.username,
+                    firstName: attributes['given_name'], lastName: attributes['family_name'],
+                    email: attributes['email'], userName: userResponse.username,
 //                userRoles: attributes['custom:roles']?.split(','),
-                userProperties: userProperties
-        )
+                    userProperties: userProperties
+            )
 
-        return user
+            return user
+        }
+        catch (Exception e){
+            log.error(e.getMessage())
+        }
     }
 
     @Override
@@ -481,18 +491,31 @@ class CognitoUserService implements IUserService {
     }
 
     @Override
-    boolean resetPassword(User user, String newPassword, boolean isPermanent) {
+    boolean resetPassword(User user, String newPassword, boolean isPermanent, String confirmationCode) {
         if(!user || !newPassword) {
             return false
         }
-        def request = new AdminSetUserPasswordRequest()
-        request.username = user.email
-        request.userPoolId = poolId
-        request.password = newPassword
-        request.permanent = isPermanent
 
-        def response = cognitoIdp.adminSetUserPassword(request)
-        return response.getSdkHttpMetadata().httpStatusCode == 200
+        if(confirmationCode == null) {
+            def request = new AdminSetUserPasswordRequest()
+            request.username = user.email
+            request.userPoolId = poolId
+            request.password = newPassword
+            request.permanent = isPermanent
+
+            def response = cognitoIdp.adminSetUserPassword(request)
+            return response.getSdkHttpMetadata().httpStatusCode == 200
+        }
+        else{
+            def request = new ConfirmForgotPasswordRequest().withUsername(user.email)
+            request.password = newPassword
+            request.confirmationCode = confirmationCode
+            request.clientId = grailsApplication.config.getProperty('security.oidc.client-id')
+            request.secretHash = calculateSecretHash(grailsApplication.config.getProperty('security.oidc.client-id'),
+                    grailsApplication.config.getProperty('security.oidc.secret'), user.email)
+            def response = cognitoIdp.confirmForgotPassword(request)
+            return response.getSdkHttpMetadata().httpStatusCode == 200
+        }
     }
 
     @Override
@@ -503,6 +526,7 @@ class CognitoUserService implements IUserService {
     @Override
     def sendAccountActivation(User user) {
         //this email can be sent via cognito
+        //TODO this can be converted to a welcome email
         //emailService.sendCognitoAccountActivation(user)
     }
 
@@ -546,4 +570,22 @@ class CognitoUserService implements IUserService {
             return [success: false, error: e.getMessage()]
         }
     }
+
+    static String calculateSecretHash(String userPoolClientId, String userPoolClientSecret, String userName) {
+        final String HMAC_SHA256_ALGORITHM = "HmacSHA256";
+
+        SecretKeySpec signingKey = new SecretKeySpec(
+                userPoolClientSecret.getBytes(StandardCharsets.UTF_8),
+                HMAC_SHA256_ALGORITHM);
+        try {
+            Mac mac = Mac.getInstance(HMAC_SHA256_ALGORITHM);
+            mac.init(signingKey);
+            mac.update(userName.getBytes(StandardCharsets.UTF_8));
+            byte[] rawHmac = mac.doFinal(userPoolClientId.getBytes(StandardCharsets.UTF_8));
+            return Base64.getEncoder().encodeToString(rawHmac);
+        } catch (Exception e) {
+            throw new RuntimeException("Error while calculating ");
+        }
+    }
+
 }

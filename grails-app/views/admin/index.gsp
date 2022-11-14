@@ -29,8 +29,6 @@
                 <li><g:link controller="admin" action="resetPasswordForUser">Reset user password</g:link></li>
                 <li><g:link controller="role" action="list">Roles</g:link></li>
                 <li><g:link controller="authorisedSystem" action="list">Authorised systems</g:link></li>
-                <li><g:link controller="admin" action="bulkUploadUsers">Bulk create user accounts</g:link></li>
-                <li><g:link controller="admin" action="exportUsers">Export users to CSV file</g:link></li>
                 <g:if test="${grailsApplication.config.getProperty('attributes.affiliations.enabled', Boolean, false)}">
                     <li><g:link controller="admin" action="surveyResults">Get user survey results</g:link></li>
                 </g:if>

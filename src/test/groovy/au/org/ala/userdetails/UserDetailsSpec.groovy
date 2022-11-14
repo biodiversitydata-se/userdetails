@@ -72,7 +72,7 @@ abstract class UserDetailsSpec extends Specification {
         role.save(failOnError: true, flush: true)
 
 
-        User user = new User(firstName: 'test first', lastName: 'test last', email: 'test@test.com', userName:'test@test.com', activated: true, locked: false, tempAuthKey: tempAuthKey)
+        User user = new User(userId:"test first", firstName: 'test first', lastName: 'test last', email: 'test@test.com', userName:'test@test.com', activated: true, locked: false, tempAuthKey: tempAuthKey)
         user.save(failOnError: true, flush: true)
 
         UserRole userRole = new UserRole(user:user, role:role)

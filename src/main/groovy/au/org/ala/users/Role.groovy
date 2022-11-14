@@ -16,7 +16,9 @@
 package au.org.ala.users
 
 import au.org.ala.userdetails.records.RoleRecord
+import grails.gorm.annotation.Entity
 
+@Entity
 class Role extends RoleRecord implements Serializable {
 
     String role

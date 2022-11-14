@@ -420,6 +420,7 @@ class CognitoUserService implements IUserService {
                     .collect {
                         new UserProperty(name: it.name, value: it.value)
                     }
+            userProperties.add(new UserProperty(name: "enableMFA", value: userResponse.getUserMFASettingList()?.size() > 0))
 
 
             User user = new User(

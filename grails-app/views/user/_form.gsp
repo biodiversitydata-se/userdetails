@@ -86,7 +86,7 @@
     <div class="fieldcontain ${hasErrors(bean: userInstance, field: 'activated', 'error')} ">
         <div class="checkbox">
             <label>
-                <g:checkBox name="activated" value="${userInstance?.activated}"/> <g:message code="user.form.activated" />
+                <g:checkBox name="activated" value="${userInstance?.activated}" disabled="disabled"/> <g:message code="user.form.activated" />
             </label>
         </div>
     </div>

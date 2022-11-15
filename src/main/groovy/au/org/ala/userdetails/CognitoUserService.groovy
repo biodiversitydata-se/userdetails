@@ -35,6 +35,7 @@ import com.nimbusds.oauth2.sdk.token.AccessToken
 import com.amazonaws.services.cognitoidp.model.VerifySoftwareTokenRequest
 import grails.web.servlet.mvc.GrailsParameterMap
 import groovy.util.logging.Slf4j
+import org.apache.commons.lang3.RandomStringUtils
 import org.springframework.beans.factory.annotation.Value
 
 import javax.crypto.Mac
@@ -115,6 +116,7 @@ class CognitoUserService implements IUserService {
     boolean updateUser(String userId, GrailsParameterMap params) {
 
         User user = getUserById(userId)
+        def isUserLocked = user.locked
 
         def emailRecipients = [ user.email ]
         if (params.email != user.email) {
@@ -138,8 +140,8 @@ class CognitoUserService implements IUserService {
 //            userAttributes.add(new AttributeType().withName('email').withValue(user.email))
 //            userAttributes.add(new AttributeType().withName('email_verified').withValue('false'))
 
-//            params.findAll {customAttrs.contains(it.key) }
-//                    .each {userAttributes.add(new AttributeType().withName("custom:${it.key}").withValue(it.value)) }
+            params.findAll {customAttrs.contains(it.key) }
+                    .each {userAttributes.add(new AttributeType().withName("custom:${it.key}").withValue(it.value)) }
 
             AdminUpdateUserAttributesRequest request =
                     new AdminUpdateUserAttributesRequest()
@@ -148,6 +150,14 @@ class CognitoUserService implements IUserService {
                             .withUserAttributes(userAttributes)
 
             cognitoIdp.adminUpdateUserAttributes(request)
+
+            //disable user
+            if(params.locked && !isUserLocked){
+                disableUser(user)
+            }
+            else if(!params.locked && isUserLocked) {
+                activateAccount(user, params)
+            }
 
             emailService.sendUpdateProfileSuccess(user, emailRecipients)
             return true
@@ -271,7 +281,8 @@ class CognitoUserService implements IUserService {
     @Override
     User registerUser(GrailsParameterMap params) throws Exception {
         def request = new AdminCreateUserRequest()
-        request.username = params.email
+        //TODO need to change
+        request.username = RandomStringUtils.randomNumeric(6)
         request.userPoolId = poolId
         request.desiredDeliveryMediums = ["EMAIL"]
 
@@ -311,12 +322,12 @@ class CognitoUserService implements IUserService {
             User user = new User(
                     dateCreated: userResponse.user.userCreateDate,
                     lastUpdated: userResponse.user.userLastModifiedDate,
-                    activated: userProperties.find { it.name == 'activated' }.value == "1",
-                    locked: userProperties.find { it.name == 'disabled' }.value == "1",
+                    activated: userResponse.user.userStatus == "CONFIRMED", locked: !userResponse.user.enabled,
                     firstName: attributes.find { it.key == 'given_name' }.value,
                     lastName: attributes.find { it.key == 'family_name' }.value,
                     email: attributes.find { it.key == 'email' }.value,
                     userName: userResponse.user.username,
+                    userId: userResponse.user.username,
                     userProperties: userProperties
             )
 

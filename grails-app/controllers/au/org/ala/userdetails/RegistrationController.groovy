@@ -290,7 +290,10 @@ class RegistrationController {
         render(view: 'accountCreated', model: [user: user])
     }
 
-    def forgottenPassword() {}
+    def forgottenPassword() {
+        def currentUser = userService.getCurrentUser()
+        render(view: 'forgottenPassword', model: [currentUser: currentUser])
+    }
 
     def activateAccount() {
         def user= userService.getUserById(params.userId)

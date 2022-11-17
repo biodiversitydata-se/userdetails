@@ -423,6 +423,9 @@ class CognitoUserService implements IUserService {
         try {
             AccessToken accessToken = tokenService.getAuthToken(true)
 
+            if(accessToken == null){
+                return null
+            }
             GetUserResult userResponse = cognitoIdp.getUser(new GetUserRequest().withAccessToken(accessToken as String))
 
             Map<String, String> attributes = userResponse.userAttributes.collectEntries { [(it.name): it.value] }
@@ -448,6 +451,7 @@ class CognitoUserService implements IUserService {
         }
         catch (Exception e){
             log.error(e.getMessage())
+            return null
         }
     }
 

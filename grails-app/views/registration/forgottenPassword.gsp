@@ -18,6 +18,9 @@
     <meta name="layout" content="${grailsApplication.config.getProperty('skin.layout')}"/>
     <meta name="section" content="home"/>
     <title><g:message code="forgotten.password.title" /></title>
+    <g:if test="${currentUser}">
+        <meta name="breadcrumbParent" content="${g.createLink(controller: 'profile')},My Profile" />
+    </g:if>
     <asset:stylesheet src="application.css" />
 </head>
 <body>

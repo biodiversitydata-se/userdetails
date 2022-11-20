@@ -24,6 +24,7 @@ import au.org.ala.userdetails.records.UserRecord
 import grails.web.servlet.mvc.GrailsParameterMap
 
 import javax.servlet.http.HttpSession
+import grails.web.servlet.mvc.GrailsParameterMap
 
 interface IUserService {
 

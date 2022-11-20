@@ -27,7 +27,9 @@ import com.amazonaws.auth.AWSCredentialsProvider
 import com.amazonaws.auth.AWSStaticCredentialsProvider
 import com.amazonaws.auth.BasicAWSCredentials
 import com.amazonaws.auth.BasicSessionCredentials
+import com.amazonaws.auth.DefaultAWSCredentialsProviderChain
 import com.amazonaws.services.cognitoidp.AWSCognitoIdentityProvider
+import com.amazonaws.services.cognitoidp.AWSCognitoIdentityProviderClient
 import com.amazonaws.services.cognitoidp.AWSCognitoIdentityProviderClientBuilder
 import grails.boot.GrailsApp
 import grails.boot.config.GrailsAutoConfiguration
@@ -91,26 +93,35 @@ class Application extends GrailsAutoConfiguration {
 
     @Profile('cognito')
     @Bean
-    AWSCognitoIdentityProvider cognitoIdp() {
+    AWSCredentialsProvider awsCredentialsProvider() {
 
         String accessKey = grailsApplication.config.getProperty('cognito.accessKey')
         String secretKey = grailsApplication.config.getProperty('cognito.secretKey')
         String sessionToken = grailsApplication.config.getProperty('cognito.sessionToken')
-        String region = grailsApplication.config.getProperty('cognito.region')
 
-        // TODO Talk to Joe/Matt about Credentials
-        AWSCredentials credentials
-        if (sessionToken) {
-            credentials = new BasicSessionCredentials(accessKey, secretKey, sessionToken)
+        AWSCredentialsProvider credentialsProvider
+        if (accessKey && secretKey) {
+            AWSCredentials credentials
+            if (sessionToken) {
+                credentials = new BasicSessionCredentials(accessKey, secretKey, sessionToken)
+            } else {
+                credentials = new BasicAWSCredentials(accessKey, secretKey)
+            }
+            credentialsProvider = new AWSStaticCredentialsProvider(credentials)
         } else {
-            credentials = new BasicAWSCredentials(accessKey, secretKey)
+            credentialsProvider = DefaultAWSCredentialsProviderChain.getInstance()
         }
-        AWSCredentialsProvider credentialsProvider = new AWSStaticCredentialsProvider(credentials)
+        return credentialsProvider
+    }
 
+    @Profile('cognito')
+    @Bean
+    AWSCognitoIdentityProviderClient cognitoIdpClient(AWSCredentialsProvider awsCredentialsProvider) {
+        def region = grailsApplication.config.getProperty('cognito.region')
 
         AWSCognitoIdentityProvider cognitoIdp = AWSCognitoIdentityProviderClientBuilder.standard()
                 .withRegion(region)
-                .withCredentials(credentialsProvider)
+                .withCredentials(awsCredentialsProvider)
                 .build()
 
         return cognitoIdp

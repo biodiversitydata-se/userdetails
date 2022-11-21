@@ -512,25 +512,28 @@ class CognitoUserService implements IUserService {
             return false
         }
 
-        if(confirmationCode == null) {
-            def request = new AdminSetUserPasswordRequest()
-            request.username = user.email
-            request.userPoolId = poolId
-            request.password = newPassword
-            request.permanent = isPermanent
+        try {
+            if (confirmationCode == null) {
+                def request = new AdminSetUserPasswordRequest()
+                request.username = user.email
+                request.userPoolId = poolId
+                request.password = newPassword
+                request.permanent = isPermanent
 
-            def response = cognitoIdp.adminSetUserPassword(request)
-            return response.getSdkHttpMetadata().httpStatusCode == 200
-        }
-        else{
-            def request = new ConfirmForgotPasswordRequest().withUsername(user.email)
-            request.password = newPassword
-            request.confirmationCode = confirmationCode
-            request.clientId = grailsApplication.config.getProperty('security.oidc.client-id')
-            request.secretHash = calculateSecretHash(grailsApplication.config.getProperty('security.oidc.client-id'),
-                    grailsApplication.config.getProperty('security.oidc.secret'), user.email)
-            def response = cognitoIdp.confirmForgotPassword(request)
-            return response.getSdkHttpMetadata().httpStatusCode == 200
+                def response = cognitoIdp.adminSetUserPassword(request)
+                return response.getSdkHttpMetadata().httpStatusCode == 200
+            } else {
+                def request = new ConfirmForgotPasswordRequest().withUsername(user.email)
+                request.password = newPassword
+                request.confirmationCode = confirmationCode
+                request.clientId = grailsApplication.config.getProperty('security.oidc.client-id')
+                request.secretHash = calculateSecretHash(grailsApplication.config.getProperty('security.oidc.client-id'),
+                        grailsApplication.config.getProperty('security.oidc.secret'), user.email)
+                def response = cognitoIdp.confirmForgotPassword(request)
+                return response.getSdkHttpMetadata().httpStatusCode == 200
+            }
+        }catch(Exception e){
+            return false
         }
     }
 
@@ -542,7 +545,6 @@ class CognitoUserService implements IUserService {
     @Override
     def sendAccountActivation(User user) {
         //this email can be sent via cognito
-        //TODO this can be converted to a welcome email
         //emailService.sendCognitoAccountActivation(user)
     }
 

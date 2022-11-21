@@ -331,7 +331,7 @@
                     document.getElementById("secret").innerHTML = result.code
                     document.getElementById("mfa").hidden = false
                     document.getElementById("qrcode").innerHTML = ""
-                    new QRCode(document.getElementById("qrcode"), "otpauth://totp/ala-test:${raw(user?.email)}?secret=" + result.code);
+                    new QRCode(document.getElementById("qrcode"), "otpauth://totp/${grailsApplication.config.getProperty('serverName')}:${raw(user?.email)}?secret=" + result.code);
                 }
                  else{
                      document.getElementById("message").value = result.error

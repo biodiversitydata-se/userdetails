@@ -112,7 +112,6 @@ class RegistrationController {
                 //update the password
                 try {
                     def success = userService.resetPassword(user, cmd.password, true, cmd.code)
-                    //userService.clearTempAuthKey(user) //TODO do we need this?
                     if(success) {
                         Map resp = webService.get("${grailsApplication.config.getProperty('grails.serverURL')}/logout?")
                         redirect(controller: 'registration', action: 'passwordResetSuccess')

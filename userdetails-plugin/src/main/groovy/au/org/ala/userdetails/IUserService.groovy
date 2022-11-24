@@ -83,4 +83,10 @@ interface IUserService {
     boolean addUserRole(User user, Role role)
 
     boolean removeUserRole(User user, Role role)
+
+    // TODO return type and implementation
+    void findScrollableUsersByUserName(String username, int maxResults, ResultStreamer resultStreamer)
+
+    // TODO return type and implementation
+    void findScrollableUsersByIdsAndRole(List<String> ids, String roleName, ResultStreamer resultStreamer)
 }

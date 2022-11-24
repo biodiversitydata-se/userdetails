@@ -13,19 +13,19 @@
  * rights and limitations under the License.
  */
 
-package au.org.ala.users
+package au.org.ala.userdetails.gorm
 
-class Role implements Serializable {
+import grails.web.databinding.WebDataBinding
+import groovy.transform.EqualsAndHashCode
 
-    String role
+@EqualsAndHashCode(includes = 'id')
+class AuthorisedSystem implements WebDataBinding, Serializable {
+
+    String host
     String description
 
-    String toString(){
-        role
-    }
-
     static constraints = {
-        role nullable: false, blank: false
-        description nullable:true
+        host nullable: false, blank: false
+        description nullable: true
     }
 }

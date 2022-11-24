@@ -15,11 +15,9 @@
 
 package au.org.ala.users
 
-import grails.persistence.Entity
 import grails.web.databinding.WebDataBinding
 import groovy.transform.EqualsAndHashCode
 
-@Entity
 @EqualsAndHashCode(includes = 'id')
 class AuthorisedSystem implements WebDataBinding, Serializable {
 

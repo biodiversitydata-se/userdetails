@@ -28,9 +28,16 @@
                 <li><g:link controller="user" action="list">Find a user</g:link></li>
                 <li><g:link controller="admin" action="resetPasswordForUser">Reset user password</g:link></li>
                 <li><g:link controller="role" action="list">Roles</g:link></li>
-                <li><g:link controller="authorisedSystem" action="list">Authorised systems</g:link></li>
-                <li><g:link controller="admin" action="bulkUploadUsers">Bulk create user accounts</g:link></li>
-                <li><g:link controller="admin" action="exportUsers">Export users to CSV file</g:link></li>
+                <!-- TODO have these contributed by implementations instead of controlled by feature flags -->
+                <g:if test="${grailsApplication.config.getProperty('userdetails.features.authorisedSystems', Boolean, false)}">
+                    <li><g:link controller="authorisedSystem" action="list">Authorised systems</g:link></li>
+                </g:if>
+                <g:if test="${grailsApplication.config.getProperty('userdetails.features.bulkCreate', Boolean, false)}">
+                    <li><g:link controller="admin" action="bulkUploadUsers">Bulk create user accounts</g:link></li>
+                </g:if>
+                <g:if test="${grailsApplication.config.getProperty('userdetails.features.exportUsers', Boolean, false)}">
+                    <li><g:link controller="admin" action="exportUsers">Export users to CSV file</g:link></li>
+                </g:if>
                 <g:if test="${grailsApplication.config.getProperty('attributes.affiliations.enabled', Boolean, false)}">
                     <li><g:link controller="admin" action="surveyResults">Get user survey results</g:link></li>
                 </g:if>

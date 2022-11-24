@@ -13,7 +13,7 @@
  * rights and limitations under the License.
  */
 
-package au.org.ala.userdetails
+package au.org.ala.userdetails.gorm
 
 import au.org.ala.auth.PreAuthorise
 import au.org.ala.users.AuthorisedSystem

@@ -13,16 +13,14 @@
  * rights and limitations under the License.
  */
 
-package au.org.ala.users
+package au.org.ala.userdetails.gorm
 
-import grails.gorm.annotation.Entity
-import grails.web.databinding.WebDataBinding
 import groovy.transform.EqualsAndHashCode
 
 import java.sql.Timestamp
 
 @EqualsAndHashCode(includes = 'id')
-class User implements WebDataBinding, Serializable {
+class User extends au.org.ala.users.User implements Serializable {
 
     static hasMany =  [
             userRoles: UserRole,
@@ -52,6 +50,24 @@ class User implements WebDataBinding, Serializable {
     Collection<UserRole> userRoles
     Collection<UserProperty> userProperties
 
+
+
+    static mapping = {
+        table 'users'
+
+        id (generator:'identity', column:'userid', type:'long')
+        userId column:'userid', updatable: false, insertable: false, type: 'string'
+
+        userName column:  'username'
+        firstName column:  'firstname'
+        lastName column:  'lastname'
+        activated sqlType: 'char'
+        locked sqlType: 'char'
+        lastLogin type: Timestamp, sqlType: "timestamp"
+        displayName formula: 'CONCAT_WS(" ", NULLIF(firstname,""), NULLIF(lastname,""))'
+        version false
+    }
+
     static constraints = {
         email nullable: true
         firstName  nullable: true
@@ -63,38 +79,38 @@ class User implements WebDataBinding, Serializable {
         displayName nullable: true
     }
 
-//    static List<String[]> findNameAndEmailWhereEmailIsNotNull() {
-//        return User.withCriteria {
-//            isNotNull('email')
-//            projections {
-//                property('email')
-//                property('firstName')
-//                property('lastName')
-//            }
-//        }
-//    }
-//
-//    static List<String[]> findIdFirstAndLastName() {
-//        return User.withCriteria {
-//            projections {
-//                property('id')
-//                property('firstName')
-//                property('lastName')
-//            }
-//        }
-//    }
-//
-//    static List<String[]> findUserDetails() {
-//        return User.withCriteria {
-//            projections {
-//                property('id')
-//                property('firstName')
-//                property('lastName')
-//                property('userName')
-//                property('email')
-//            }
-//        }
-//    }
+    static List<String[]> findNameAndEmailWhereEmailIsNotNull() {
+        return User.withCriteria {
+            isNotNull('email')
+            projections {
+                property('email')
+                property('firstName')
+                property('lastName')
+            }
+        }
+    }
+
+    static List<String[]> findIdFirstAndLastName() {
+        return User.withCriteria {
+            projections {
+                property('id')
+                property('firstName')
+                property('lastName')
+            }
+        }
+    }
+
+    static List<String[]> findUserDetails() {
+        return User.withCriteria {
+            projections {
+                property('id')
+                property('firstName')
+                property('lastName')
+                property('userName')
+                property('email')
+            }
+        }
+    }
 
     def propsAsMap(){
         def map = [:]

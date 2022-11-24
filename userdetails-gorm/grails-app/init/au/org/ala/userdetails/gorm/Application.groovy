@@ -16,7 +16,6 @@
 package au.org.ala.userdetails.gorm
 
 import au.org.ala.userdetails.EmailService
-import au.org.ala.userdetails.GormUserService
 import au.org.ala.userdetails.IUserService
 import au.org.ala.userdetails.LocationService
 import au.org.ala.userdetails.PasswordService

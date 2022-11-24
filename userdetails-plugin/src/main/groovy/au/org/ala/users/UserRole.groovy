@@ -17,19 +17,15 @@ package au.org.ala.users
 
 
 import grails.gorm.annotation.Entity
+import grails.web.databinding.WebDataBinding
 import groovy.transform.EqualsAndHashCode
 
-@Entity
+//@Entity
 @EqualsAndHashCode(includes = 'id')
-class UserRole implements Serializable {
+class UserRole implements WebDataBinding, Serializable {
 
     User user
     Role role
-
-    static mapping = {
-        id composite: ['user', 'role']
-        version false
-    }
 
     static constraints = {
     }

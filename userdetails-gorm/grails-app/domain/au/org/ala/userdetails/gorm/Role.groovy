@@ -13,12 +13,17 @@
  * rights and limitations under the License.
  */
 
-package au.org.ala.users
+package au.org.ala.userdetails.gorm
 
 class Role implements Serializable {
 
     String role
     String description
+
+    static mapping = {
+        id (generator:'assigned', column:'role', type:'string' , name: 'role')
+        version false
+    }
 
     String toString(){
         role

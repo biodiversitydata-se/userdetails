@@ -189,7 +189,11 @@ password:
 bcrypt:
     strength: 10
 
-
+userdetails:
+  features:
+    authorisedSystems: false
+    bulkCreate: false
+    exportUsers: false
 
 attributes:
     states:

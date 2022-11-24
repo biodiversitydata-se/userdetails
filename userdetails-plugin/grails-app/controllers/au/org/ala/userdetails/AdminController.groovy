@@ -20,6 +20,8 @@ import au.org.ala.users.Role
 import au.org.ala.users.User
 import com.opencsv.CSVWriterBuilder
 import com.opencsv.RFC4180ParserBuilder
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.web.multipart.MultipartFile
 import org.springframework.web.multipart.MultipartHttpServletRequest
 
@@ -28,10 +30,13 @@ class AdminController {
 
     def passwordService
     def emailService
-    def userService
     def exportService
     def profileService
     def authorisedSystemService
+
+    @Autowired
+    @Qualifier('userService')
+    IUserService userService
 
     def index() {}
 
@@ -40,7 +45,7 @@ class AdminController {
 
     def sendPasswordResetEmail(){
 
-        def user = User.findByEmail(params.email)
+        def user = userService.getUserByEmail(params.email) // User.findByEmail(params.email)
         if (user) {
             def password = passwordService.generatePassword(user)
             //email to user

@@ -13,19 +13,13 @@
  * rights and limitations under the License.
  */
 
-package au.org.ala.users
+package au.org.ala.userdetails.gorm
 
-class Role implements Serializable {
+class MobileUser {
 
-    String role
-    String description
-
-    String toString(){
-        role
-    }
+    String userName
+    static hasMany = [authkeys: AuthKey]
 
     static constraints = {
-        role nullable: false, blank: false
-        description nullable:true
     }
 }

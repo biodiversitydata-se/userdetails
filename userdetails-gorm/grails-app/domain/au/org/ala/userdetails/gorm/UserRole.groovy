@@ -13,19 +13,27 @@
  * rights and limitations under the License.
  */
 
-package au.org.ala.users
+package au.org.ala.userdetails.gorm
 
-class Role implements Serializable {
 
-    String role
-    String description
+import grails.gorm.annotation.Entity
+import groovy.transform.EqualsAndHashCode
 
+@EqualsAndHashCode(includes = 'id')
+class UserRole implements Serializable {
+
+    User user
+    au.org.ala.userdetails.gorm.Role role
+
+    static mapping = {
+        id composite: ['user', 'role']
+        version false
+    }
+
+    static constraints = {
+    }
     String toString(){
         role
     }
 
-    static constraints = {
-        role nullable: false, blank: false
-        description nullable:true
-    }
 }

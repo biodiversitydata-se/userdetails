@@ -13,17 +13,14 @@
  * rights and limitations under the License.
  */
 
-package au.org.ala.users
+package au.org.ala.userdetails.gorm
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import grails.gorm.annotation.Entity
-import grails.web.databinding.WebDataBinding
 import groovy.transform.EqualsAndHashCode
 
-//@Entity
 @EqualsAndHashCode(includes = 'id')
 @JsonIgnoreProperties(['metaClass','errors'])
-class UserProperty implements WebDataBinding, Serializable {
+class UserProperty extends au.org.ala.users.UserProperty implements Serializable {
 
     User user
     String name
@@ -41,6 +38,14 @@ class UserProperty implements WebDataBinding, Serializable {
         up
     }
 
+    static mapping = {
+        table 'profiles'
+        id composite: ['user', 'name']
+        user column:  'userid'
+        name column: 'property'
+        version false
+        value sqlType: 'text'
+    }
     static constraints = {
         value nullable: false, blank: true
         name nullable: false, blank: false

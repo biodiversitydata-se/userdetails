@@ -13,7 +13,7 @@
  * rights and limitations under the License.
  */
 
-package au.org.ala.users
+package au.org.ala.userdetails.gorm
 
 import java.sql.Timestamp
 
@@ -37,6 +37,14 @@ class Password implements Serializable {
     Timestamp expiry
     String status
 
+    static mapping = {
+        table 'passwords'
+        id composite: ['user', 'password']
+        user column:  'userid'
+        created sqlType: 'timestamp'
+        expiry sqlType: 'timestamp'
+        version false
+    }
     static constraints = {
         password nullable: false, blank: false
         type nullable: false, blank: false

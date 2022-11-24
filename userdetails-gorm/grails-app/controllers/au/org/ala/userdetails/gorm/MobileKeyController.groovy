@@ -1,3 +1,4 @@
+package au.org.ala.userdetails.gorm
 /*
  * Copyright (C) 2022 Atlas of Living Australia
  * All Rights Reserved.
@@ -13,7 +14,7 @@
  * rights and limitations under the License.
  */
 
-package au.org.ala.userdetails
+
 
 import au.org.ala.users.AuthKey
 import au.org.ala.users.MobileUser

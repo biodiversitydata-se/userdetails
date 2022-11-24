@@ -144,6 +144,12 @@ openapi:
           users/read: Read or list any or all user records
           users/write: Write to a user's record, eg update a user's attributes.
 
+userdetails:
+  features:
+    authorisedSystems: true
+    bulkCreate: true
+    exportUsers: true
+
 environments:
     development:
         grails:

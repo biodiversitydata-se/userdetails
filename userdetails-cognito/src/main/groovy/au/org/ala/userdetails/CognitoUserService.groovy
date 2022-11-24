@@ -23,6 +23,7 @@ import com.amazonaws.services.cognitoidp.model.UserType
 import com.nimbusds.oauth2.sdk.token.AccessToken
 import grails.web.servlet.mvc.GrailsParameterMap
 import groovy.util.logging.Slf4j
+import org.apache.commons.lang3.NotImplementedException
 import org.springframework.beans.factory.annotation.Value
 
 import java.util.stream.Stream
@@ -384,5 +385,15 @@ class CognitoUserService implements IUserService {
     @Override
     boolean removeUserRole(User user, Role role) {
         return false
+    }
+
+    @Override
+    void findScrollableUsersByUserName(String username, int maxResults, ResultStreamer resultStreamer) {
+        throw new NotImplementedException()
+    }
+
+    @Override
+    void findScrollableUsersByIdsAndRole(List<String> ids, String roleName, ResultStreamer resultStreamer) {
+        throw new NotImplementedException()
     }
 }

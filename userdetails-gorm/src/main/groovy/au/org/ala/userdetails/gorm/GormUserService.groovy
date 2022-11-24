@@ -13,10 +13,15 @@
  * rights and limitations under the License.
  */
 
-package au.org.ala.userdetails
+package au.org.ala.userdetails.gorm
 
 import au.org.ala.auth.BulkUserLoadResults
 import au.org.ala.auth.PasswordResetFailedException
+import au.org.ala.userdetails.EmailService
+import au.org.ala.userdetails.IUserService
+import au.org.ala.userdetails.LocationService
+import au.org.ala.userdetails.PasswordService
+import au.org.ala.userdetails.ResultStreamer
 import au.org.ala.users.Password
 import au.org.ala.users.Role
 import au.org.ala.users.User
@@ -33,7 +38,9 @@ import grails.util.Environment
 import grails.web.servlet.mvc.GrailsParameterMap
 import groovy.util.logging.Slf4j
 import org.apache.http.HttpStatus
+import org.grails.datastore.mapping.core.Session
 import org.grails.orm.hibernate.cfg.GrailsHibernateUtil
+import org.hibernate.ScrollableResults
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.MessageSource
 
@@ -473,5 +480,73 @@ class GormUserService implements IUserService {
     @Override
     boolean removeUserRole(User user, Role role) {
         return false
+    }
+
+    @Override
+    void findScrollableUsersByUserName(String username, int maxResults, ResultStreamer resultStreamer) {
+        User.withStatelessSession { Session session ->
+            def c = User.createCriteria()
+            ScrollableResults results = c.scroll {
+                or {
+                    ilike('userName', "%$username%")
+                    ilike('email', "%$username%")
+                    ilike('displayName', "%$username%")
+                }
+                maxResults(max)
+            }
+
+            streamUserResults(resultStreamer, results, session)
+        }
+    }
+
+    @Override
+    void findScrollableUsersByIdsAndRole(List<String> ids, String roleName, ResultStreamer resultStreamer) {
+
+        def things = ids.groupBy { it.isLong() }
+        def userIds = things[false]
+        def numberIds = things[true]
+
+        User.withStatelessSession { Session session ->
+            Role role = Role.findByRole(roleName)
+
+            def c = User.createCriteria()
+            ScrollableResults results = c.scroll {
+                or {
+                    if (numberIds) {
+                        inList('id', numberIds*.toLong())
+                    }
+                    if (userIds) {
+                        inList('userName', userIds)
+                        inList('email', userIds)
+                    }
+                }
+                userRoles {
+                    eq("role", role)
+                }
+            }
+
+            streamUserResults(resultStreamer, results, session)
+        }
+    }
+
+    private void streamUserResults(ResultStreamer resultStreamer, ScrollableResults results, session) {
+        resultStreamer.init()
+        try {
+            int count = 0
+
+            while (results.next()) {
+                User user = ((User) results.get()[0])
+
+                resultStreamer.offer(user)
+
+                if (count++ % 50 == 0) {
+                    session.flush()
+                    session.clear()
+                }
+            }
+        } finally {
+            resultStreamer.finalise()
+        }
+        resultStreamer.complete()
     }
 }

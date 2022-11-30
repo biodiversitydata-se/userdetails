@@ -11,6 +11,7 @@ import com.amazonaws.services.cognitoidp.model.AdminGetUserRequest
 import com.amazonaws.services.cognitoidp.model.AdminGetUserResult
 import com.amazonaws.services.cognitoidp.model.AdminUpdateUserAttributesRequest
 import com.amazonaws.services.cognitoidp.model.AttributeType
+import com.amazonaws.services.cognitoidp.model.DescribeUserPoolRequest
 import com.amazonaws.services.cognitoidp.model.GetUserRequest
 import com.amazonaws.services.cognitoidp.model.GetUserResult
 import com.amazonaws.services.cognitoidp.model.ListGroupsRequest
@@ -21,6 +22,7 @@ import com.amazonaws.services.cognitoidp.model.UpdateUserAttributesRequest
 import com.amazonaws.services.cognitoidp.model.UpdateUserAttributesResult
 import com.amazonaws.services.cognitoidp.model.UserType
 import com.nimbusds.oauth2.sdk.token.AccessToken
+import grails.converters.JSON
 import grails.web.servlet.mvc.GrailsParameterMap
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Value
@@ -347,7 +349,12 @@ class CognitoUserService implements IUserService {
 
     @Override
     Map getUsersCounts(Locale locale) {
-        return null
+        Map jsonMap = [:]
+        DescribeUserPoolRequest request = new DescribeUserPoolRequest().withUserPoolId(poolId)
+        def response = cognitoIdp.describeUserPool(request)
+        jsonMap.totalUsers = response.userPool.estimatedNumberOfUsers
+        log.debug "jsonMap = ${jsonMap as JSON}"
+        jsonMap
     }
 
     @Override

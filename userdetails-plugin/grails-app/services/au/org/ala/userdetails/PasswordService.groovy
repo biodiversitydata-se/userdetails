@@ -18,7 +18,7 @@ package au.org.ala.userdetails
 import au.org.ala.cas.encoding.BcryptPasswordEncoder
 import au.org.ala.cas.encoding.LegacyPasswordEncoder
 import au.org.ala.users.Password
-import au.org.ala.users.User
+import au.org.ala.users.UserRecord
 import grails.gorm.transactions.Transactional
 import org.apache.commons.lang3.RandomStringUtils
 import org.springframework.beans.factory.annotation.Value
@@ -45,7 +45,7 @@ class PasswordService {
      * @param newPassword
      * @return
      */
-    void resetPassword(User user, String newPassword) {
+    void resetPassword(UserRecord user, String newPassword) {
        //update the password
         Password.findAllByUser(user).each {
            it.delete()
@@ -67,7 +67,7 @@ class PasswordService {
        password.save(failOnError: true)
     }
 
-    String generatePassword(User user) {
+    String generatePassword(UserRecord user) {
        //generate a new password
        def newPassword = RandomStringUtils.randomAlphanumeric(10)
 

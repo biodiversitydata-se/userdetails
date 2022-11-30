@@ -17,7 +17,7 @@ package au.org.ala.userdetails
 
 import au.org.ala.auth.UpdatePasswordCommand
 import au.org.ala.recaptcha.RecaptchaClient
-import au.org.ala.users.User
+import au.org.ala.users.UserRecord
 import org.springframework.beans.factory.annotation.Qualifier
 
 /**
@@ -54,9 +54,9 @@ class RegistrationController {
     }
 
     def passwordReset() {
-        User user = userService.getUserById(params.userId)
+        UserRecord user = userService.getUserById(params.userId)
         if (!user) {
-            render(view: 'accountError', model: [msg: "User not found with ID ${params.userId}"])
+            render(view: 'accountError', model: [msg: "UserRecord not found with ID ${params.userId}"])
         } else if (user.tempAuthKey == params.authKey) {
             //keys match, so lets reset password
             render(view: 'passwordReset', model: [user: user, authKey: params.authKey])
@@ -66,7 +66,7 @@ class RegistrationController {
     }
 
     def updatePassword(UpdatePasswordCommand cmd) {
-        User user = userService.getUserById(cmd.userId as String)
+        UserRecord user = userService.getUserById(cmd.userId as String)
         if (cmd.hasErrors()) {
             render(view: 'passwordReset', model: [user: user, authKey: cmd.authKey, errors:cmd.errors, passwordMatchFail: true])
         }

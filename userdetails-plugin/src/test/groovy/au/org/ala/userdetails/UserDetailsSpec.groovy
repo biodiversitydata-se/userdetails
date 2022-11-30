@@ -15,10 +15,11 @@
 
 package au.org.ala.userdetails
 
-import au.org.ala.users.Role
-import au.org.ala.users.User
-import au.org.ala.users.UserProperty
-import au.org.ala.users.UserRole
+
+import au.org.ala.users.RoleRecord
+import au.org.ala.users.UserPropertyRecord
+import au.org.ala.users.UserRecord
+import au.org.ala.users.UserRoleRecord
 import au.org.ala.userdetails.marshaller.UserMarshaller
 import grails.converters.JSON
 import org.grails.web.converters.configuration.ConvertersConfigurationHolder
@@ -60,30 +61,30 @@ abstract class UserDetailsSpec extends Specification {
     }
 
     void cleanup() {
-        User.deleteAll()
-        Role.deleteAll()
-        UserRole.deleteAll()
-        UserProperty.deleteAll()
+        UserRecord.deleteAll()
+        RoleRecord.deleteAll()
+        UserRoleRecord.deleteAll()
+        UserPropertyRecord.deleteAll()
     }
 
 
-    protected User createUser(String tempAuthKey = "") {
-        Role role = Role.findOrCreateWhere(role: 'ROLE_USER', description:"Everyone has this role")
+    protected UserRecord createUser(String tempAuthKey = "") {
+        RoleRecord role = RoleRecord.findOrCreateWhere(role: 'ROLE_USER', description:"Everyone has this role")
         role.save(failOnError: true, flush: true)
 
 
-        User user = new User(firstName: 'test first', lastName: 'test last', email: 'test@test.com', userName:'test@test.com', activated: true, locked: false, tempAuthKey: tempAuthKey)
+        UserRecord user = new UserRecord(firstName: 'test first', lastName: 'test last', email: 'test@test.com', userName:'test@test.com', activated: true, locked: false, tempAuthKey: tempAuthKey)
         user.save(failOnError: true, flush: true)
 
-        UserRole userRole = new UserRole(user:user, role:role)
+        UserRoleRecord userRole = new UserRoleRecord(user:user, role:role)
         userRole.save(failOnError: true, flush: true)
 
 
         [prop1:'prop1', prop2:'prop2'].each { k,v ->
-            UserProperty prop = new UserProperty(user:user, name:k, value:v)
+            UserPropertyRecord prop = new UserPropertyRecord(user:user, name:k, value:v)
             prop.save(failOnError: true, flush: true)
         }
 
-        User.findById(user.id)
+        UserRecord.findById(user.id)
     }
 }

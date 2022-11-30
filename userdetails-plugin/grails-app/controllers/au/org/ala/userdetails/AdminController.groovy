@@ -16,8 +16,8 @@
 package au.org.ala.userdetails
 
 import au.org.ala.auth.PreAuthorise
-import au.org.ala.users.Role
-import au.org.ala.users.User
+import au.org.ala.users.RoleRecord
+import au.org.ala.users.UserRecord
 import com.opencsv.CSVWriterBuilder
 import com.opencsv.RFC4180ParserBuilder
 import org.springframework.beans.factory.annotation.Autowired
@@ -45,7 +45,7 @@ class AdminController {
 
     def sendPasswordResetEmail(){
 
-        def user = userService.getUserByEmail(params.email) // User.findByEmail(params.email)
+        def user = userService.getUserByEmail(params.email) // UserRecord.findByEmail(params.email)
         if (user) {
             def password = passwordService.generatePassword(user)
             //email to user
@@ -64,7 +64,7 @@ class AdminController {
         String extraFields =  secondaryFields.join(",")
 
         render(view: 'exportUsers',
-                model: [roles        : Role.list(),
+                model: [roles        : userService.listRoles(),//RoleRecord.list(),
                         primaryFields: grailsApplication.config.getProperty('admin.export.csv.primary.fields'),
                         extraFields  : extraFields])
     }
@@ -106,7 +106,7 @@ class AdminController {
 
             if (params.includeRoles) {
                 String roleFieldName = 'roles'
-                formatters[roleFieldName] = { User domain, value ->
+                formatters[roleFieldName] = { UserRecord domain, value ->
                     def result = ""
                     domain.userRoles.each {
                         result += it.role.role + " "

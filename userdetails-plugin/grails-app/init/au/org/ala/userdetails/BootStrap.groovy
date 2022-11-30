@@ -15,12 +15,17 @@
 
 package au.org.ala.userdetails
 
-import au.org.ala.users.Role
+
+import au.org.ala.users.RoleRecord
+import org.springframework.beans.factory.annotation.Autowired
 
 class BootStrap {
     def messageSource
 
     def customObjectMarshallers
+
+    @Autowired
+    IUserService userService
 
     def init = { servletContext ->
         log.info("Running bootstrap queries")
@@ -38,21 +43,24 @@ class BootStrap {
     }
 
     def addRoles() {
-        if(Role.findAll().size()==0){
-            (new Role([role:'ROLE_ABRS_ADMIN', description:''])).save()
-            (new Role([role:'ROLE_ADMIN', description:''])).save()
-            (new Role([role:'ROLE_COLLECTION_ADMIN', description:''])).save()
-            (new Role([role:'ROLE_COLLECTION_EDITOR', description:''])).save()
-            (new Role([role:'ROLE_COLLECTORS_ADMIN', description:''])).save()
-            (new Role([role:'ROLE_SYSTEM_ADMIN', description:''])).save()
-            (new Role([role:'ROLE_USER', description:''])).save()
-            (new Role([role:'ROLE_AVH_CLUB', description:''])).save()
-            (new Role([role:'ROLE_VP_ADMIN', description:''])).save()
-            (new Role([role:'ROLE_ABRS_INSTITUTION', description:''])).save()
-            (new Role([role:'ROLE_SPATIAL_ADMIN', description:''])).save()
-            (new Role([role:'ROLE_VP_VALIDATOR', description:''])).save()
-            (new Role([role:'ROLE_IMAGE_ADMIN', description:''])).save()
-            (new Role([role:'ROLE_AVH_ADMIN', description:''])).save()
+        if (userService.listRoles().size() == 0) {
+            userService.addRoles([
+                (new RoleRecord([role:'ROLE_ABRS_ADMIN', description:'']))
+                (new RoleRecord([role:'ROLE_ADMIN', description:'']))
+                (new RoleRecord([role:'ROLE_COLLECTION_ADMIN', description:'']))
+                (new RoleRecord([role:'ROLE_COLLECTION_EDITOR', description:'']))
+                (new RoleRecord([role:'ROLE_COLLECTORS_ADMIN', description:'']))
+                (new RoleRecord([role:'ROLE_SYSTEM_ADMIN', description:'']))
+                (new RoleRecord([role:'ROLE_USER', description:'']))
+                (new RoleRecord([role:'ROLE_AVH_CLUB', description:'']))
+                (new RoleRecord([role:'ROLE_VP_ADMIN', description:'']))
+                (new RoleRecord([role:'ROLE_ABRS_INSTITUTION', description:'']))
+                (new RoleRecord([role:'ROLE_SPATIAL_ADMIN', description:'']))
+                (new RoleRecord([role:'ROLE_VP_VALIDATOR', description:'']))
+                (new RoleRecord([role:'ROLE_IMAGE_ADMIN', description:'']))
+                (new RoleRecord([role:'ROLE_AVH_ADMIN', description:'']))
+            ])
         }
+
     }
 }

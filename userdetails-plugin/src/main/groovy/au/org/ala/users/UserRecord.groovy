@@ -15,18 +15,19 @@
 
 package au.org.ala.users
 
-import grails.gorm.annotation.Entity
+
 import grails.web.databinding.WebDataBinding
 import groovy.transform.EqualsAndHashCode
 
 import java.sql.Timestamp
 
-@EqualsAndHashCode(includes = 'id')
-class User implements WebDataBinding, Serializable {
+@EqualsAndHashCode()
+//@EqualsAndHashCode(includes = 'id')
+class UserRecord implements WebDataBinding, Serializable {
 
     static hasMany =  [
-            userRoles: UserRole,
-            userProperties: UserProperty
+            userRoles: UserRoleRecord,
+            userProperties: UserPropertyRecord
     ]
 
     String userId
@@ -49,8 +50,8 @@ class User implements WebDataBinding, Serializable {
 
     String displayName
 
-    Collection<UserRole> userRoles
-    Collection<UserProperty> userProperties
+    Collection<UserRoleRecord> userRoles
+    Collection<UserPropertyRecord> userProperties
 
     static constraints = {
         email nullable: true
@@ -64,7 +65,7 @@ class User implements WebDataBinding, Serializable {
     }
 
 //    static List<String[]> findNameAndEmailWhereEmailIsNotNull() {
-//        return User.withCriteria {
+//        return UserRecord.withCriteria {
 //            isNotNull('email')
 //            projections {
 //                property('email')
@@ -75,7 +76,7 @@ class User implements WebDataBinding, Serializable {
 //    }
 //
 //    static List<String[]> findIdFirstAndLastName() {
-//        return User.withCriteria {
+//        return UserRecord.withCriteria {
 //            projections {
 //                property('id')
 //                property('firstName')
@@ -85,7 +86,7 @@ class User implements WebDataBinding, Serializable {
 //    }
 //
 //    static List<String[]> findUserDetails() {
-//        return User.withCriteria {
+//        return UserRecord.withCriteria {
 //            projections {
 //                property('id')
 //                property('firstName')

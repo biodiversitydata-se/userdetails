@@ -13,7 +13,7 @@
   - rights and limitations under the License.
   --}%
 
-<%@ page import="au.org.ala.users.User" %>
+<%@ page import="au.org.ala.users.UserRecord" %>
 
 <div class="row">
     <div class="col-md-6">
@@ -116,7 +116,7 @@
 
     <g:link controller="userRole" action="create"
             class="btn btn-default"
-                    params="['user.id': userInstance?.id]">${message(code: 'default.add.label', args: [message(code: 'userRole.label', default: 'UserRole')])}</g:link>
+                    params="['user.id': userInstance?.id]">${message(code: 'default.add.label', args: [message(code: 'userRole.label', default: 'UserRoleRecord')])}</g:link>
 
 </div>
 

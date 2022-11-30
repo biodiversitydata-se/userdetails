@@ -143,7 +143,7 @@ security:
 #    basic:
 #        enabled: true
 #        authorizeMode: role
-#        realm: ALA User Details
+#        realm: ALA UserRecord Details
 #        path:
 #          - /status/**
 webservice:

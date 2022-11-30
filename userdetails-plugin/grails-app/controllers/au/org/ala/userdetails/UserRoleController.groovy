@@ -16,9 +16,9 @@
 package au.org.ala.userdetails
 
 import au.org.ala.auth.PreAuthorise
-import au.org.ala.users.Role
-import au.org.ala.users.User
-import au.org.ala.users.UserRole
+import au.org.ala.users.RoleRecord
+import au.org.ala.users.UserRecord
+import au.org.ala.users.UserRoleRecord
 import grails.converters.JSON
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
@@ -39,9 +39,9 @@ class UserRoleController {
 
     def create() {
 
-        User user = userService.getUserById(params['user.id'])
+        UserRecord user = userService.getUserById(params['user.id'])
 
-        def roles = Role.list()
+        def roles = userService.listRoles()
 
         //remove existing roles this user has
         def usersRoles = user.getUserRoles()
@@ -56,20 +56,20 @@ class UserRoleController {
 
     def list(Integer max) {
 
-        Map model
-        if(params.role){
-            def role = Role.findByRole(params.role)
-            if(role){
-                params.max = Math.min(max ?: 100, 1000)
-                def list = UserRole.findAllByRole(role,params)
-                model = [userRoleInstanceList: list, userRoleInstanceTotal: UserRole.findAllByRole(role).size()]
-            } else {
-                model = [userRoleInstanceList: [], userRoleInstanceTotal: 0]
-            }
-        } else {
-            params.max = Math.min(max ?: 100, 1000)
-            model = [userRoleInstanceList: UserRole.list(params), userRoleInstanceTotal: UserRole.count()]
-        }
+        Map model = userService.findUserRoles(params.role, params)
+//        if(params.role){
+//            def role = userService.findUserRoles(params.role, params) // RoleRecord.findByRole(params.role)
+//            if(role){
+//                params.max = Math.min(max ?: 100, 1000)
+//                def list = UserRoleRecord.findAllByRole(role,params)
+//                model = [userRoleInstanceList: list, userRoleInstanceTotal: UserRoleRecord.findAllByRole(role).size()]
+//            } else {
+//                model = [userRoleInstanceList: [], userRoleInstanceTotal: 0]
+//            }
+//        } else {
+//            params.max = Math.min(max ?: 100, 1000)
+//            model = [userRoleInstanceList: UserRoleRecord.list(params), userRoleInstanceTotal: UserRoleRecord.count()]
+//        }
         withFormat {
 
             html { model }
@@ -85,34 +85,29 @@ class UserRoleController {
         log.debug(params.userId + " - " + params.role.id)
 
         def user = userService.getUserById(params['user.id'])
-        def role = Role.findByRole(params.role.id)
+//        def role = RoleRecord.findByRole(params.role.id)
 
-        userService.addUserRole(user, role)
+        userService.addUserRole(params['user.id'], params.role.id)
 
         redirect(action: "show", controller: 'user', id: user.userId)
     }
 
     def deleteRole() {
 
-        def user = User.get(params.userId.toLong())
-        def role = Role.get(params.role)
-
-        UserRole.withNewTransaction {
-            def userRoleInstance = UserRole.findByUserAndRole(user, role)
-            if (!userRoleInstance) {
-                flash.message = message(code: 'default.not.found.message', args: [message(code: 'userRole.label', default: 'UserRole'), role.role])
-                redirect(controller:"user", action: "edit", id:user.id)
-                return
+        try {
+            def result = userService.deleteRole(params.userId, params.role)
+            if (result) {
+                flash.message = message(code: 'default.deleted.message', args: [message(code: 'userRole.label', default: 'UserRole'), params.role])
+                redirect(controller:"user", action: "edit", id:params.userId)
+            } else {
+                flash.message = message(code: 'default.not.found.message', args: [message(code: 'userRole.label', default: 'UserRole'), params.role])
+                redirect(controller:"user", action: "edit", id:params.userId)
             }
-            try {
-                userRoleInstance.delete(flush: true)
-                flash.message = message(code: 'default.deleted.message', args: [message(code: 'userRole.label', default: 'UserRole'), role.role])
-                redirect(controller:"user", action: "edit", id:user.id)
-            }
-            catch (DataIntegrityViolationException e) {
-                flash.message = message(code: 'default.not.deleted.message', args: [message(code: 'userRole.label', default: 'UserRole'), role.role])
-                redirect(action: "show", id: id)
-            }
+        } catch (Exception e) {
+            flash.message = message(code: 'default.not.deleted.message', args: [message(code: 'userRole.label', default: 'UserRole'), params.role])
+            redirect(controller:"user", action: "edit", id: params.userId)
         }
+
+
     }
 }

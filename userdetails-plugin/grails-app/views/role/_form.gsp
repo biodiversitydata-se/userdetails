@@ -1,4 +1,4 @@
-<%@ page import="au.org.ala.users.Role" %>
+<%@ page import="au.org.ala.users.RoleRecord" %>
 
 
 

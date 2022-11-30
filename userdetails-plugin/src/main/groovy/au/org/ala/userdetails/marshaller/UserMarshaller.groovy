@@ -15,17 +15,18 @@
 
 package au.org.ala.userdetails.marshaller
 
-import au.org.ala.users.User
+
+import au.org.ala.users.UserRecord
 import grails.converters.JSON
 
 /**
- * Registers two custom marshallers for the User class - one that includes properties, one that doesn't.
+ * Registers two custom marshallers for the UserRecord class - one that includes properties, one that doesn't.
  */
 class UserMarshaller {
 
     public static final String WITH_PROPERTIES_CONFIG = 'withProperties'
 
-    private Map toMap(User user) {
+    private Map toMap(UserRecord user) {
         [
                 userId: user.id.toString(),
                 userName: user.userName,
@@ -41,13 +42,13 @@ class UserMarshaller {
     void register(){
 
         JSON.createNamedConfig(WITH_PROPERTIES_CONFIG) {
-            it.registerObjectMarshaller(User) { User user ->
+            it.registerObjectMarshaller(UserRecord) { UserRecord user ->
                 Map userMap = toMap(user)
                 userMap.props = user.propsAsMap()
                 userMap
             }
         }
-        JSON.registerObjectMarshaller(User) { User user ->
+        JSON.registerObjectMarshaller(UserRecord) { UserRecord user ->
             toMap(user)
         }
     }

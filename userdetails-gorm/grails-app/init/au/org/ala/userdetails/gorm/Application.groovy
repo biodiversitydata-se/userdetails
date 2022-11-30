@@ -52,9 +52,9 @@ class Application extends GrailsAutoConfiguration {
                              MessageSource messageSource,
                              WebService webService) {
 
-//        grailsApplication.addArtefact(DomainClassArtefactHandler.TYPE, User)
-//        grailsApplication.addArtefact(DomainClassArtefactHandler.TYPE, UserProperty)
-//        grailsApplication.addArtefact(DomainClassArtefactHandler.TYPE, UserRole)
+//        grailsApplication.addArtefact(DomainClassArtefactHandler.TYPE, UserRecord)
+//        grailsApplication.addArtefact(DomainClassArtefactHandler.TYPE, UserPropertyRecord)
+//        grailsApplication.addArtefact(DomainClassArtefactHandler.TYPE, UserRoleRecord)
 
         GormUserService userService = new GormUserService()
         userService.emailService = emailService

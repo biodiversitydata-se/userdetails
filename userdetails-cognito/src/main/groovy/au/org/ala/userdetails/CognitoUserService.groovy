@@ -2,9 +2,9 @@ package au.org.ala.userdetails
 
 import au.org.ala.auth.BulkUserLoadResults
 import au.org.ala.auth.PasswordResetFailedException
-import au.org.ala.users.Role
-import au.org.ala.users.User
-import au.org.ala.users.UserProperty
+import au.org.ala.users.RoleRecord
+import au.org.ala.users.UserPropertyRecord
+import au.org.ala.users.UserRecord
 import au.org.ala.ws.tokens.TokenService
 import com.amazonaws.services.cognitoidp.AWSCognitoIdentityProvider
 import com.amazonaws.services.cognitoidp.model.AdminGetUserRequest
@@ -97,7 +97,7 @@ class CognitoUserService implements IUserService {
     @Override
     boolean updateUser(String userId, GrailsParameterMap params) {
 
-        User user = getUserById(userId)
+        UserRecord user = getUserById(userId)
 
         def emailRecipients = [ user.email ]
         if (params.email != user.email) {
@@ -142,14 +142,14 @@ class CognitoUserService implements IUserService {
         return false
     }
 
-    private AdminUpdateUserAttributesRequest updateUserAttributesRequest(User record) {
+    private AdminUpdateUserAttributesRequest updateUserAttributesRequest(UserRecord record) {
 
 
         return request
     }
 
     @Override
-    boolean disableUser(User user) {
+    boolean disableUser(UserRecord user) {
         return false
     }
 
@@ -180,7 +180,7 @@ class CognitoUserService implements IUserService {
     }
 
     @Override
-    void activateAccount(User user) {
+    void activateAccount(UserRecord user) {
 
     }
 
@@ -223,13 +223,13 @@ class CognitoUserService implements IUserService {
         users.map { userType ->
 
             Map<String, String> attributes = userType.attributes.collectEntries { [ (it.name): it.value ] }
-            Collection<UserProperty> userProperties = userType.attributes
+            Collection<UserPropertyRecord> userProperties = userType.attributes
                     .findAll {!mainAttrs.contains(it.name) }
                     .collect {
-                        new UserProperty(name: it.name, value: it.value)
+                        new UserPropertyRecord(name: it.name, value: it.value)
                     }
 
-            new User(
+            new UserRecord(
                     userId: userType.username,
                     dateCreated: userType.userCreateDate, lastUpdated: userType.userLastModifiedDate,
                     activated: userType.userStatus == "CONFIRMED", locked: !userType.enabled,
@@ -241,37 +241,42 @@ class CognitoUserService implements IUserService {
     }
 
     @Override
+    Collection<UserRecord> listUsers() {
+        throw new NotImplementedException()
+    }
+
+    @Override
     BulkUserLoadResults bulkRegisterUsersFromFile(InputStream stream, Boolean firstRowContainsFieldNames, String affiliation, String emailSubject, String emailTitle, String emailBody) {
         return null
     }
 
     @Override
-    User registerUser(GrailsParameterMap params) throws Exception {
+    UserRecord registerUser(GrailsParameterMap params) throws Exception {
         return null
     }
 
     @Override
-    void updateProperties(User user, GrailsParameterMap params) {
+    void updateProperties(UserRecord user, GrailsParameterMap params) {
 
     }
 
     @Override
-    void deleteUser(User user) {
+    void deleteUser(UserRecord user) {
 
     }
 
     @Override
-    void resetAndSendTemporaryPassword(User user, String emailSubject, String emailTitle, String emailBody, String password) throws PasswordResetFailedException {
+    void resetAndSendTemporaryPassword(UserRecord user, String emailSubject, String emailTitle, String emailBody, String password) throws PasswordResetFailedException {
 
     }
 
     @Override
-    void clearTempAuthKey(User user) {
+    void clearTempAuthKey(UserRecord user) {
 
     }
 
     @Override
-    User getUserById(String userId) {
+    UserRecord getUserById(String userId) {
 
         if (userId == null) {
             // Problem. This might mean an expired cookie, or it might mean that this service is not in the authorised system list
@@ -282,14 +287,14 @@ class CognitoUserService implements IUserService {
         AdminGetUserResult userResponse = cognitoIdp.adminGetUser(new AdminGetUserRequest().withUsername(userId).withUserPoolId(poolId))
 
         Map<String, String> attributes = userResponse.userAttributes.collectEntries { [ (it.name): it.value ] }
-        Collection<UserProperty> userProperties = userResponse.userAttributes
+        Collection<UserPropertyRecord> userProperties = userResponse.userAttributes
                 .findAll {!mainAttrs.contains(it.name) }
                 .collect {
-                        new UserProperty(name: it.name, value: it.value)
+                        new UserPropertyRecord(name: it.name, value: it.value)
                 }
 
 
-        User user = new User(
+        UserRecord user = new UserRecord(
                 userId: userResponse.username,
                 dateCreated: userResponse.userCreateDate, lastUpdated: userResponse.userLastModifiedDate,
                 activated: userResponse.userStatus == "CONFIRMED", locked: !userResponse.enabled,
@@ -302,26 +307,26 @@ class CognitoUserService implements IUserService {
     }
 
     @Override
-    User getUserByEmail(String email) {
+    UserRecord getUserByEmail(String email) {
         return null
     }
 
     @Override
-    User getCurrentUser() {
+    UserRecord getCurrentUser() {
 
         AccessToken accessToken = tokenService.getAuthToken(true)
 
         GetUserResult userResponse = cognitoIdp.getUser(new GetUserRequest().withAccessToken(accessToken as String))
 
         Map<String, String> attributes = userResponse.userAttributes.collectEntries { [ (it.name): it.value ] }
-        Collection<UserProperty> userProperties = userResponse.userAttributes
+        Collection<UserPropertyRecord> userProperties = userResponse.userAttributes
                 .findAll {!mainAttrs.contains(it.name) }
                 .collect {
-                    new UserProperty(name: it.name, value: it.value)
+                    new UserPropertyRecord(name: it.name, value: it.value)
                 }
 
 
-        User user = new User(
+        UserRecord user = new UserRecord(
                 userId: userResponse.username,
 //                dateCreated: userResponse.userCreateDate, lastUpdated: userResponse.userLastModifiedDate,
 //                activated: userResponse.userStatus == "CONFIRMED", locked: !userResponse.enabled,
@@ -337,12 +342,12 @@ class CognitoUserService implements IUserService {
     }
 
     @Override
-    String getResetPasswordUrl(User user) {
+    String getResetPasswordUrl(UserRecord user) {
         return null
     }
 
     @Override
-    Collection<User> findUsersForExport(List usersInRoles, Object includeInactive) {
+    Collection<UserRecord> findUsersForExport(List usersInRoles, Object includeInactive) {
         return null
     }
 
@@ -357,35 +362,40 @@ class CognitoUserService implements IUserService {
     }
 
     @Override
-    Collection<Role> listRoles(String paginationToken, int maxResults) {
+    Collection<RoleRecord> listRoles() {
+        return null
+    }
+
+    @Override
+    Collection<RoleRecord> listRoles(String paginationToken, int maxResults) {
 
         ListGroupsResult result = cognitoIdp.listGroups(new ListGroupsRequest()
                 .withUserPoolId(poolId)
                 .withNextToken(paginationToken))
 
         result.groups.stream().map { groupType ->
-            new Role(role: groupType.groupName, description: groupType.description)
+            new RoleRecord(role: groupType.groupName, description: groupType.description)
         }
         .toList()
     }
 
-    @Override
-    Role createRole(GrailsParameterMap params) {
+//    @Override
+//    RoleRecord createRole(GrailsParameterMap params) {
+//
+//    }
 
-    }
-
     @Override
-    boolean addUserRole(User user, Role role) {
+    boolean addUserRole(String userId, String roleName) {
 
         user
 
         return false
     }
 
-    @Override
-    boolean removeUserRole(User user, Role role) {
-        return false
-    }
+//    @Override
+//    boolean removeUserRole(UserRecord user, RoleRecord role) {
+//        return false
+//    }
 
     @Override
     void findScrollableUsersByUserName(String username, int maxResults, ResultStreamer resultStreamer) {
@@ -394,6 +404,71 @@ class CognitoUserService implements IUserService {
 
     @Override
     void findScrollableUsersByIdsAndRole(List<String> ids, String roleName, ResultStreamer resultStreamer) {
+        throw new NotImplementedException()
+    }
+
+    @Override
+    void addRoles(Collection<RoleRecord> roleRecords) {
+        throw new NotImplementedException()
+    }
+
+    @Override
+    List<UserPropertyRecord> findAllAttributesByName(String s) {
+        throw new NotImplementedException()
+    }
+
+    @Override
+    void addOrUpdateProperty(UserRecord userRecord, String name, String value) {
+        throw new NotImplementedException()
+    }
+
+    @Override
+    void removeUserAttributes(UserRecord userRecord, ArrayList<String> attributes) {
+        throw new NotImplementedException()
+    }
+
+    @Override
+    void getUserAttribute(UserRecord userRecord, String attribute) {
+        throw new NotImplementedException()
+    }
+
+    @Override
+    List getAllAvailableProperties() {
+        throw new NotImplementedException()
+    }
+
+    @Override
+    RoleRecord addRole(RoleRecord roleRecord) {
+        throw new NotImplementedException()
+    }
+
+    @Override
+    UserRecord findByUserNameOrEmail(String username) {
+        throw new NotImplementedException()
+    }
+
+    @Override
+    List<String[]> listNamesAndEmails() {
+        throw new NotImplementedException()
+    }
+
+    @Override
+    List<String[]> listIdsAndNames() {
+        throw new NotImplementedException()
+    }
+
+    @Override
+    List<String[]> listUserDetails() {
+        throw new NotImplementedException()
+    }
+
+    @Override
+    Map findUserRoles(String role, GrailsParameterMap grailsParameterMap) {
+        throw new NotImplementedException()
+    }
+
+    @Override
+    boolean deleteRole(String userId, String roleName) {
         throw new NotImplementedException()
     }
 }

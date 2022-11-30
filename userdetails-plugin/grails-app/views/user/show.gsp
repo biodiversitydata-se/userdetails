@@ -13,12 +13,12 @@
   - rights and limitations under the License.
   --}%
 
-<%@ page import="au.org.ala.users.User" %>
+<%@ page import="au.org.ala.users.UserRecord" %>
 <!DOCTYPE html>
 <html>
 <head>
     <meta name="layout" content="${grailsApplication.config.getProperty('skin.layout')}">
-    <g:set var="entityName" value="${message(code: 'user.label', default: 'User')}"/>
+    <g:set var="entityName" value="${message(code: 'user.label', default: 'UserRecord')}"/>
     <title><g:message code="default.show.label" args="[entityName]"/></title>
     <meta name="breadcrumbParent" content="${g.createLink(action:"list")},${g.message(code:"default.list.label", args:[entityName])}" />
     <asset:stylesheet src="application.css" />

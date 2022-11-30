@@ -16,30 +16,30 @@
 package au.org.ala.users
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import grails.gorm.annotation.Entity
 import grails.web.databinding.WebDataBinding
 import groovy.transform.EqualsAndHashCode
 
 //@Entity
-@EqualsAndHashCode(includes = 'id')
+//@EqualsAndHashCode(includes = 'id')
+@EqualsAndHashCode()
 @JsonIgnoreProperties(['metaClass','errors'])
-class UserProperty implements WebDataBinding, Serializable {
+class UserPropertyRecord implements WebDataBinding, Serializable {
 
-    User user
+    UserRecord user
     String name
     String value
 
-    static def addOrUpdateProperty(user, name, value){
-
-        def up = UserProperty.findByUserAndName(user, name)
-        if(!up){
-           up = new UserProperty(user:user, name:name, value:value)
-        } else {
-           up.value = value
-        }
-        up.save(flush:true)
-        up
-    }
+//    static def addOrUpdateProperty(user, name, value){
+//
+//        def up = UserPropertyRecord.findByUserAndName(user, name)
+//        if(!up){
+//           up = new UserPropertyRecord(user:user, name:name, value:value)
+//        } else {
+//           up.value = value
+//        }
+//        up.save(flush:true)
+//        up
+//    }
 
     static constraints = {
         value nullable: false, blank: true

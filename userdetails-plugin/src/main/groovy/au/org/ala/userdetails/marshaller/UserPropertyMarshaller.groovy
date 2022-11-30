@@ -18,13 +18,14 @@
  */
 package au.org.ala.userdetails.marshaller
 
-import au.org.ala.users.UserProperty
+
+import au.org.ala.users.UserPropertyRecord
 import grails.converters.JSON
 
 class UserPropertyMarshaller {
     void register(){
 
-        JSON.registerObjectMarshaller(UserProperty){ UserProperty prop ->
+        JSON.registerObjectMarshaller(UserPropertyRecord){ UserPropertyRecord prop ->
             return [
                     property: prop.name,
                     value: prop.value

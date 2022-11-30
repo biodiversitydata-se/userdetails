@@ -17,17 +17,17 @@ package au.org.ala.userdetails
 
 import au.org.ala.recaptcha.RecaptchaClient
 import au.org.ala.recaptcha.RecaptchaResponse
-import au.org.ala.users.Role
-import au.org.ala.users.User
-import au.org.ala.users.UserProperty
-import au.org.ala.users.UserRole
+import au.org.ala.users.RoleRecord
+import au.org.ala.users.UserPropertyRecord
+import au.org.ala.users.UserRecord
+import au.org.ala.users.UserRoleRecord
 import grails.testing.gorm.DataTest
 import grails.testing.web.controllers.ControllerUnitTest
 import org.grails.web.servlet.mvc.SynchronizerTokensHolder
 import retrofit2.mock.Calls
 
 
-//@Mock([User, Role, UserRole, UserProperty])
+//@Mock([UserRecord, RoleRecord, UserRoleRecord, UserPropertyRecord])
 class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUnitTest<RegistrationController>, DataTest {
 
     def passwordService = Mock(PasswordService)
@@ -43,7 +43,7 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
     }
 
     void setupSpec() {
-        mockDomains(User, Role, UserRole, UserProperty)
+//        mockDomains(UserRecord, RoleRecord, UserRoleRecord, UserPropertyRecord)
     }
 
     void "A new password must be supplied"() {
@@ -114,7 +114,7 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
         setup:
         String authKey = "test"
         String password = "password"
-        User user = createUser(authKey)
+        UserRecord user = createUser(authKey)
         request.method = 'POST'
         params.userId = Long.toString(1)
         params.authKey = authKey
@@ -166,7 +166,7 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
 
         then:
         1 * recaptchaClient.verify(secretKey, '123', '127.0.0.1') >> { Calls.response(new RecaptchaResponse(true, '2019-09-27T16:06:00Z', 'test-host', [])) }
-        1 * userService.registerUser(_) >> { def user = new User(params); user.tempAuthKey = '123'; user }
+        1 * userService.registerUser(_) >> { def user = new UserRecord(params); user.tempAuthKey = '123'; user }
         1 * passwordService.resetPassword(_, 'password')
         1 * emailService.sendAccountActivation(_, '123')
         response.redirectedUrl == '/registration/accountCreated'
@@ -198,7 +198,7 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
 
         then:
         0 * recaptchaClient.verify(_, _, _)
-        1 * userService.registerUser(_) >> { def user = new User(params); user.tempAuthKey = '123'; user }
+        1 * userService.registerUser(_) >> { def user = new UserRecord(params); user.tempAuthKey = '123'; user }
         1 * passwordService.resetPassword(_, 'password')
         1 * emailService.sendAccountActivation(_, '123')
         response.redirectedUrl == '/registration/accountCreated'
@@ -239,7 +239,7 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
 
     void "A new email address must not be in use by others"() {
         setup:
-        User currentUser = new User()
+        UserRecord currentUser = new UserRecord()
         currentUser.email = 'currentUser@example.org'
         userService.currentUser >> currentUser
         params.email = 'in.use@example.org'
@@ -255,7 +255,7 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
 
     void "Account is updated when a valid new email address is supplied"() {
         setup:
-        User currentUser = new User()
+        UserRecord currentUser = new UserRecord()
         currentUser.email = 'currentUser@example.org'
         userService.currentUser >> currentUser
 

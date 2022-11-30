@@ -16,8 +16,8 @@
 package au.org.ala.userdetails
 
 import au.org.ala.auth.PreAuthorise
-import au.org.ala.users.User
-import au.org.ala.users.UserProperty
+import au.org.ala.users.UserRecord
+import au.org.ala.users.UserPropertyRecord
 import grails.converters.JSON
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
@@ -88,7 +88,7 @@ class PropertyController extends BaseController {
                             content = [
                                     @Content(
                                             mediaType = "application/json",
-                                            array = @ArraySchema(schema = @Schema(implementation = UserProperty))
+                                            array = @ArraySchema(schema = @Schema(implementation = UserPropertyRecord))
                                     )
                             ]
                     )
@@ -104,7 +104,7 @@ class PropertyController extends BaseController {
         if (!name || !alaId) {
             badRequest "name and alaId must be provided";
         } else {
-            User user = userService.getUserById(alaId);
+            UserRecord user = userService.getUserById(alaId);
             List props
             if (user) {
                 props = profileService.getUserProperty(user, name);
@@ -160,7 +160,7 @@ class PropertyController extends BaseController {
                             content = [
                                     @Content(
                                             mediaType = "application/json",
-                                            schema = @Schema(implementation = UserProperty)
+                                            schema = @Schema(implementation = UserPropertyRecord)
                                     )
                             ]
                     ),
@@ -182,8 +182,8 @@ class PropertyController extends BaseController {
         if (!name || !alaId) {
             badRequest "name and alaId must be provided";
         } else {
-            User user = userService.getUserById(alaId);
-            UserProperty property
+            UserRecord user = userService.getUserById(alaId);
+            UserPropertyRecord property
             if (user) {
                 property = profileService.saveUserProperty(user, name, value);
                 if (property.hasErrors()) {

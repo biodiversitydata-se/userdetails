@@ -15,12 +15,13 @@
 
 package au.org.ala.userdetails.gorm
 
+import au.org.ala.users.UserPropertyRecord
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import groovy.transform.EqualsAndHashCode
 
 @EqualsAndHashCode(includes = 'id')
 @JsonIgnoreProperties(['metaClass','errors'])
-class UserProperty extends au.org.ala.users.UserProperty implements Serializable {
+class UserProperty extends UserPropertyRecord implements Serializable {
 
     User user
     String name

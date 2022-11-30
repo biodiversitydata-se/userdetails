@@ -16,7 +16,7 @@
 package au.org.ala.userdetails
 
 import au.org.ala.auth.PasswordResetFailedException
-import au.org.ala.users.User
+import au.org.ala.users.UserRecord
 import grails.web.mapping.LinkGenerator
 
 class EmailService {
@@ -98,7 +98,7 @@ class EmailService {
         }
     }
 
-    def sendUpdateProfileSuccess(User user, List<String> emailRecipients) throws PasswordResetFailedException {
+    def sendUpdateProfileSuccess(UserRecord user, List<String> emailRecipients) throws PasswordResetFailedException {
         try {
             sendMail {
                 from grailsApplication.config.getProperty('emailSenderTitle')+"<" + grailsApplication.config.getProperty('emailSender') + ">"

@@ -15,15 +15,14 @@
 
 package au.org.ala.userdetails.gorm
 
-
-import grails.gorm.annotation.Entity
+import au.org.ala.users.UserRoleRecord
 import groovy.transform.EqualsAndHashCode
 
 @EqualsAndHashCode(includes = 'id')
-class UserRole implements Serializable {
+class UserRole extends UserRoleRecord implements Serializable {
 
     User user
-    au.org.ala.userdetails.gorm.Role role
+    Role role
 
     static mapping = {
         id composite: ['user', 'role']

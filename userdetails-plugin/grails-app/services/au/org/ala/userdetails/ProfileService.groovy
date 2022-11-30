@@ -15,25 +15,24 @@
 
 package au.org.ala.userdetails
 
-import au.org.ala.users.User
-import au.org.ala.users.UserProperty
+import au.org.ala.users.UserRecord
+import au.org.ala.users.UserPropertyRecord
+import org.springframework.beans.factory.annotation.Autowired
 
 class ProfileService {
 
-    List getUserProperty(User user, String name) {
-        UserProperty.findAllByUserAndName(user, name)?:[];
+    @Autowired
+    IUserService userService
+
+    List getUserProperty(UserRecord user, String name) {
+        userService.getUserAttribute(user, name) ?: [] // UserPropertyRecord.findAllByUserAndName(user, name)?:[];
     }
 
-    UserProperty saveUserProperty(User user, String name, String value){
-        UserProperty.addOrUpdateProperty(user, name, value);
+    UserPropertyRecord saveUserProperty(UserRecord user, String name, String value) {
+        userService.addOrUpdateProperty(user, name, value);
     }
 
-    List getAllAvailableProperties() {
-        UserProperty.withCriteria {
-            projections {
-                distinct("name")
-            }
-            order("name")
-        }
+    List<UserPropertyRecord> getAllAvailableProperties() {
+        userService.getAllAvailableProperties()
     }
 }

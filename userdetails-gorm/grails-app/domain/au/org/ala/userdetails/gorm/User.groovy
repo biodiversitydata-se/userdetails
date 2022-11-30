@@ -15,12 +15,13 @@
 
 package au.org.ala.userdetails.gorm
 
+import au.org.ala.users.UserRecord
 import groovy.transform.EqualsAndHashCode
 
 import java.sql.Timestamp
 
 @EqualsAndHashCode(includes = 'id')
-class User extends au.org.ala.users.User implements Serializable {
+class User extends UserRecord implements Serializable {
 
     static hasMany =  [
             userRoles: UserRole,

@@ -15,10 +15,10 @@
 
 package au.org.ala.userdetails
 
-import au.org.ala.users.Role
-import au.org.ala.users.User
-import au.org.ala.users.UserProperty
-import au.org.ala.users.UserRole
+import au.org.ala.users.RoleRecord
+import au.org.ala.users.UserPropertyRecord
+import au.org.ala.users.UserRecord
+import au.org.ala.users.UserRoleRecord
 import au.org.ala.ws.security.JwtProperties
 import grails.converters.JSON
 import grails.testing.gorm.DataTest
@@ -29,7 +29,7 @@ import grails.testing.web.controllers.ControllerUnitTest
  */
 //@TestFor(UserDetailsController)
 //@TestMixin(InterceptorUnitTestMixin)
-//@Mock([UserDetailsWebServicesInterceptor, User, Role, UserRole, UserProperty])
+//@Mock([UserDetailsWebServicesInterceptor, UserRecord, RoleRecord, UserRoleRecord, UserPropertyRecord])
 class UserDetailsControllerSpec extends UserDetailsSpec implements ControllerUnitTest<UserDetailsController>, DataTest {
 
     static doWithSpring = {
@@ -40,10 +40,10 @@ class UserDetailsControllerSpec extends UserDetailsSpec implements ControllerUni
         authorisedSystemService(UserDetailsSpec.Authorised)
     }
 
-    private User user
+    private UserRecord user
 
     void setupSpec() {
-        mockDomains(User, Role, UserRole, UserProperty)
+//        mockDomains(UserRecord, RoleRecord, UserRoleRecord, UserPropertyRecord)
     }
 
     void setup() {
@@ -96,7 +96,7 @@ class UserDetailsControllerSpec extends UserDetailsSpec implements ControllerUni
     void "Details of a list of users can be returned"() {
 
         setup:
-        User user2 = createUser()
+        UserRecord user2 = createUser()
 
         when:
         request.method = 'POST'

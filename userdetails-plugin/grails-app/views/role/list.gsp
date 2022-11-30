@@ -14,7 +14,7 @@
   - rights and limitations under the License.
   --}%
 
-<%@ page import="au.org.ala.users.Role" %>
+<%@ page import="au.org.ala.users.RoleRecord" %>
 <!DOCTYPE html>
 <html>
 <head>

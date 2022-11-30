@@ -15,10 +15,10 @@
 
 package au.org.ala.userdetails
 
-import au.org.ala.users.Role
-import au.org.ala.users.User
-import au.org.ala.users.UserProperty
-import au.org.ala.users.UserRole
+import au.org.ala.users.RoleRecord
+import au.org.ala.users.UserRecord
+import au.org.ala.users.UserPropertyRecord
+import au.org.ala.users.UserRoleRecord
 import au.org.ala.ws.security.JwtProperties
 import grails.converters.JSON
 import grails.testing.gorm.DataTest
@@ -33,13 +33,13 @@ import org.pac4j.http.client.direct.DirectBearerAuthClient
  */
 //@TestFor(UserRoleController)
 //@TestMixin(InterceptorUnitTestMixin)
-//@Mock([AuthorisedSystemService, User, Role, UserRole, UserProperty])
+//@Mock([AuthorisedSystemService, UserRecord, RoleRecord, UserRoleRecord, UserPropertyRecord])
 class UserRoleControllerSpec extends UserDetailsSpec implements ControllerUnitTest<UserRoleController>, DataTest {
 
-    private User user
+    private UserRecord user
 
     void setupSpec() {
-        mockDomains(User, Role, UserRole, UserProperty)
+//        mockDomains(UserRecord, RoleRecord, UserRoleRecord, UserPropertyRecord)
     }
 
     void setup() {

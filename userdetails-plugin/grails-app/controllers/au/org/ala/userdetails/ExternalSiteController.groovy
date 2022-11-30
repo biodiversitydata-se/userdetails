@@ -15,13 +15,15 @@
 
 package au.org.ala.userdetails
 
-import au.org.ala.users.UserProperty
+
+import au.org.ala.users.UserPropertyRecord
 import grails.converters.JSON
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
+import org.springframework.beans.factory.annotation.Autowired
 
 import javax.ws.rs.Path
 import javax.ws.rs.Produces
@@ -29,7 +31,8 @@ import javax.ws.rs.Produces
 @Path('/ws')
 class ExternalSiteController {
 
-    def userService
+    @Autowired
+    IUserService userService
 
     def index() {}
 
@@ -57,9 +60,9 @@ class ExternalSiteController {
     @Produces("application/json")
     def flickr() {
 
-        def flickrIds = UserProperty.findAllByName("flickrId")
+        def flickrIds = userService.findAllAttributesByName("flickrId") // UserPropertyRecord.findAllByName("flickrId")
         render(contentType: "application/json") {
-            flickrUsers(flickrIds) { UserProperty flickrId ->
+            flickrUsers(flickrIds) { UserPropertyRecord flickrId ->
                 id flickrId.user.id.toString()
                 externalId flickrId.value
                 externalUsername flickrId.user.propsAsMap().flickrUsername

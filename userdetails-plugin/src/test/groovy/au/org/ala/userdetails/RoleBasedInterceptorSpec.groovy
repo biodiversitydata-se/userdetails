@@ -15,10 +15,10 @@
 
 package au.org.ala.userdetails
 
-import au.org.ala.users.Role
-import au.org.ala.users.User
-import au.org.ala.users.UserProperty
-import au.org.ala.users.UserRole
+import au.org.ala.users.RoleRecord
+import au.org.ala.users.UserPropertyRecord
+import au.org.ala.users.UserRecord
+import au.org.ala.users.UserRoleRecord
 import grails.testing.gorm.DataTest
 import grails.testing.web.interceptor.InterceptorUnitTest
 import org.apache.http.HttpStatus
@@ -29,14 +29,14 @@ import org.grails.web.util.GrailsApplicationAttributes
  */
 //@TestFor(RoleBasedInterceptor)
 //@TestMixin([InterceptorUnitTestMixin, GrailsUnitTestMixin])
-//@Mock([AuthorisedSystemService, User, Role, UserRole, UserProperty])
+//@Mock([AuthorisedSystemService, UserRecord, RoleRecord, UserRoleRecord, UserPropertyRecord])
 class RoleBasedInterceptorSpec extends UserDetailsSpec implements InterceptorUnitTest<RoleBasedInterceptor>, DataTest {
 
     def controller
-    private User user
+    private UserRecord user
 
     def setupSpec() {
-        mockDomains(User, Role, UserRole, UserProperty)
+//        mockDomains(UserRecord, RoleRecord, UserRoleRecord, UserPropertyRecord)
 //        mockDataService(AuthorisedSystemService)
     }
 

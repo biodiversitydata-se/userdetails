@@ -14,12 +14,12 @@
   - rights and limitations under the License.
   --}%
 
-<%@ page import="au.org.ala.users.UserRole" %>
+<%@ page import="au.org.ala.users.UserRoleRecord" %>
 <!DOCTYPE html>
 <html>
 	<head>
 		<meta name="layout" content="${grailsApplication.config.getProperty('skin.layout')}">
-		<g:set var="entityName" value="${message(code: 'userRole.label', default: 'UserRole')}" />
+		<g:set var="entityName" value="${message(code: 'userRole.label', default: 'UserRoleRecord')}" />
 		<title><g:message code="default.list.label" args="[entityName]" /></title>
 	</head>
 	<body>

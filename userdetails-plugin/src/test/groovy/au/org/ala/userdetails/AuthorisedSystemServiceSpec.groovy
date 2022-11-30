@@ -14,7 +14,7 @@ import spock.lang.Specification
 class AuthorisedSystemServiceSpec extends Specification implements ServiceUnitTest<AuthorisedSystemService>, DataTest {
 
     void setupSpec() {
-        mockDomains(AuthorisedSystem)
+//        mockDomains(AuthorisedSystem)
     }
 
     Closure doWithSpring() {{ ->

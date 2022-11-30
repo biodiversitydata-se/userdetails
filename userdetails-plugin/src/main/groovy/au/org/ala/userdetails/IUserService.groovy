@@ -17,8 +17,10 @@ package au.org.ala.userdetails
 
 import au.org.ala.auth.BulkUserLoadResults
 import au.org.ala.auth.PasswordResetFailedException
-import au.org.ala.users.Role
-import au.org.ala.users.User
+import au.org.ala.users.RoleRecord
+import au.org.ala.users.UserPropertyRecord
+import au.org.ala.users.UserRecord
+import au.org.ala.users.UserRoleRecord
 import grails.web.servlet.mvc.GrailsParameterMap
 
 interface IUserService {
@@ -27,7 +29,7 @@ interface IUserService {
 
     boolean updateUser(String userId, GrailsParameterMap params)
 
-    boolean disableUser(User user)
+    boolean disableUser(UserRecord user)
 
     boolean isActive(String email)
 
@@ -37,34 +39,36 @@ interface IUserService {
 
     boolean isEmailInUse(String newEmail)
 
-    void activateAccount(User user)
+    void activateAccount(UserRecord user)
 
     def listUsers(String query, String paginationToken, int maxResults)
 
+    Collection<UserRecord> listUsers()
+
     BulkUserLoadResults bulkRegisterUsersFromFile(InputStream stream, Boolean firstRowContainsFieldNames, String affiliation, String emailSubject, String emailTitle, String emailBody)
 
-    User registerUser(GrailsParameterMap params) throws Exception
+    UserRecord registerUser(GrailsParameterMap params) throws Exception
 
-    void updateProperties(User user, GrailsParameterMap params)
+    void updateProperties(UserRecord user, GrailsParameterMap params)
 
-    void deleteUser(User user)
+    void deleteUser(UserRecord user)
 
-    void resetAndSendTemporaryPassword(User user, String emailSubject, String emailTitle, String emailBody, String password) throws PasswordResetFailedException
+    void resetAndSendTemporaryPassword(UserRecord user, String emailSubject, String emailTitle, String emailBody, String password) throws PasswordResetFailedException
 
-    void clearTempAuthKey(User user)
+    void clearTempAuthKey(UserRecord user)
 
-    User getUserById(String userId)
+    UserRecord getUserById(String userId)
 
-    User getUserByEmail(String email)
+    UserRecord getUserByEmail(String email)
 
     /**
-     * This service method returns the User object for the current user.
+     * This service method returns the UserRecord object for the current user.
      */
-    User getCurrentUser()
+    UserRecord getCurrentUser()
 
-    String getResetPasswordUrl(User user)
+    String getResetPasswordUrl(UserRecord user)
 
-    Collection<User> findUsersForExport(List usersInRoles, includeInactive)
+    Collection<UserRecord> findUsersForExport(List usersInRoles, includeInactive)
 
     /**
      * Calculate the number of active users (not locked and is activated), as well as the number
@@ -76,17 +80,45 @@ interface IUserService {
 
     List<String[]> countByProfileAttribute(String s, Date date, Locale locale)
 
-    Collection<Role> listRoles(String paginationToken, int maxResults)
+    Collection<RoleRecord> listRoles()
 
-    Role createRole(GrailsParameterMap params)
+    Collection<RoleRecord> listRoles(String paginationToken, int maxResults)
 
-    boolean addUserRole(User user, Role role)
+//    RoleRecord createRole(GrailsParameterMap params)
 
-    boolean removeUserRole(User user, Role role)
+    boolean addUserRole(String userId, String roleName)
+
+//    boolean removeUserRole(UserRecord user, RoleRecord role)
 
     // TODO return type and implementation
     void findScrollableUsersByUserName(String username, int maxResults, ResultStreamer resultStreamer)
 
     // TODO return type and implementation
     void findScrollableUsersByIdsAndRole(List<String> ids, String roleName, ResultStreamer resultStreamer)
+
+    void addRoles(Collection<RoleRecord> roleRecords)
+
+    List<UserPropertyRecord> findAllAttributesByName(String s)
+
+    void addOrUpdateProperty(UserRecord userRecord, String name, String value)
+
+    void removeUserAttributes(UserRecord userRecord, ArrayList<String> attributes)
+
+    void getUserAttribute(UserRecord userRecord, String attribute)
+
+    List getAllAvailableProperties()
+
+    RoleRecord addRole(RoleRecord roleRecord)
+
+    UserRecord findByUserNameOrEmail(String username)
+
+    List<String[]> listNamesAndEmails()
+
+    List<String[]> listIdsAndNames()
+
+    List<String[]> listUserDetails()
+
+    Map findUserRoles(String role, GrailsParameterMap grailsParameterMap)
+
+    boolean deleteRole(String userId, String roleName)
 }

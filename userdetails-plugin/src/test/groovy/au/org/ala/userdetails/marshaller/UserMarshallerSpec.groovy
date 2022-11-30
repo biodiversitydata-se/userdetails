@@ -16,23 +16,23 @@
 package au.org.ala.userdetails.marshaller
 
 import au.org.ala.userdetails.*
-import au.org.ala.users.Role
-import au.org.ala.users.User
-import au.org.ala.users.UserProperty
-import au.org.ala.users.UserRole
+import au.org.ala.users.RoleRecord
+import au.org.ala.users.UserPropertyRecord
+import au.org.ala.users.UserRecord
+import au.org.ala.users.UserRoleRecord
 import grails.converters.JSON
 import grails.testing.gorm.DataTest
 
 /**
  * Tests the UserMarshaller
  */
-//@Mock([User, Role, UserRole, UserProperty])
+//@Mock([UserRecord, RoleRecord, UserRoleRecord, UserPropertyRecord])
 class UserMarshallerSpec extends UserDetailsSpec implements DataTest {
 
-    private User user
+    private UserRecord user
 
     void setupSpec() {
-        mockDomains(User, Role, UserRole, UserProperty)
+//        mockDomains(UserRecord, RoleRecord, UserRoleRecord, UserPropertyRecord)
     }
 
     void setup() {
@@ -43,7 +43,7 @@ class UserMarshallerSpec extends UserDetailsSpec implements DataTest {
     void "JSON serialization of the User object should be output in a specific format"() {
         when:
         registerMarshallers()
-        User user = createUser()
+        UserRecord user = createUser()
         def expectedSerializedProperies = ['userId', 'userName', 'firstName', 'lastName', 'email', 'roles', 'activated', 'locked']
         JSON json = user as JSON
         Map deserializedJson = JSON.parse(json.toString())
@@ -65,7 +65,7 @@ class UserMarshallerSpec extends UserDetailsSpec implements DataTest {
     void "There should be a named JSON configuration that allows the properties of a User to be included in the serialized user data"() {
         when:
         JSON json
-        User user = createUser()
+        UserRecord user = createUser()
         registerMarshallers()
 
         def expectedSerializedProperties = ['userId', 'userName', 'firstName', 'lastName', 'email', 'roles', 'activated', 'locked', 'props']

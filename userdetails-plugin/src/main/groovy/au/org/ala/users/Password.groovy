@@ -30,7 +30,7 @@ import java.sql.Timestamp
 +----------+--------------+------+-----+---------------------+-----------------------------+
  */
 class Password implements Serializable {
-    static belongsTo = [user: User]
+    static belongsTo = [user: UserRecord]
     String password //encoded
     String type
     Timestamp created

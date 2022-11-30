@@ -1,5 +1,8 @@
 package au.org.ala.userdetails
 
+import au.org.ala.userdetails.marshaller.CustomObjectMarshallers
+import au.org.ala.userdetails.marshaller.UserMarshaller
+import au.org.ala.userdetails.marshaller.UserPropertyMarshaller
 import grails.plugins.*
 
 class UserdetailsGrailsPlugin extends Plugin {
@@ -42,6 +45,12 @@ Base functionality for the userdetails application
 
     Closure doWithSpring() { {->
             // TODO Implement runtime spring config (optional)
+            customObjectMarshallers(CustomObjectMarshallers){
+                marshallers =[
+                        new UserPropertyMarshaller(),
+                        new UserMarshaller()
+                ]
+            }
         }
     }
 

@@ -1,10 +1,9 @@
 package au.org.ala.userdetails
 
 import au.org.ala.cas.encoding.CloseShieldWriter
-import au.org.ala.users.User
+import au.org.ala.users.UserRecord
 import grails.converters.JSON
 
-import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
 class ResultStreamer {
@@ -24,7 +23,7 @@ class ResultStreamer {
         else JSON.use('default')
     }
 
-    def offer(User user) {
+    def offer(UserRecord user) {
         if (!first) {
             csw.print(',')
         } else {

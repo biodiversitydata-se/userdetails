@@ -3,7 +3,7 @@ package au.org.ala.users
  * API key implementation
  */
 class ApiKey implements Serializable {
-    static belongsTo = [user: User]
+    static belongsTo = [user: UserRecord]
 
     String apiKey // not encoded
     String apiSecret // encoded

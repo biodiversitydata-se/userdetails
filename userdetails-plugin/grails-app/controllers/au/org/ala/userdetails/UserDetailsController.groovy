@@ -15,10 +15,9 @@
 
 package au.org.ala.userdetails
 
-import au.org.ala.cas.encoding.CloseShieldWriter
-import au.org.ala.users.Role
-import au.org.ala.users.User
+
 import au.org.ala.userdetails.marshaller.UserMarshaller
+import au.org.ala.users.UserRecord
 import au.org.ala.web.UserDetails
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import grails.converters.JSON
@@ -94,8 +93,8 @@ class UserDetailsController {
         def max = params.int('max', 10)
         def streamer = new ResultStreamer(response: response, jsonConfig: UserMarshaller.WITH_PROPERTIES_CONFIG)
         userService.findScrollableUsersByUserName(q, max, streamer)
-//        def results = User.withStatelessSession { session ->
-//            def c = User.createCriteria()
+//        def results = UserRecord.withStatelessSession { session ->
+//            def c = UserRecord.createCriteria()
 //            c.scroll {
 //                or {
 //                    ilike('userName', "%$q%")
@@ -157,7 +156,7 @@ class UserDetailsController {
         def streamer = new ResultStreamer(response: response, jsonConfig: includeProps ? UserMarshaller.WITH_PROPERTIES_CONFIG : 'default')
 
 //        if (!role) {
-//            response.sendError(404, "Role not found")
+//            response.sendError(404, "RoleRecord not found")
 //            return
 //        }
 
@@ -166,14 +165,14 @@ class UserDetailsController {
 
 
         // stream the results just in case someone requests ROLE_USER or something
-//        results = User.withStatelessSession { session ->
-//            Role role = Role.findByRole(roleName)
+//        results = UserRecord.withStatelessSession { session ->
+//            RoleRecord role = RoleRecord.findByRole(roleName)
 //            if (!role) {
-//                response.sendError(404, "Role not found")
+//                response.sendError(404, "RoleRecord not found")
 //                return
 //            }
 //
-//            def c = User.createCriteria()
+//            def c = UserRecord.createCriteria()
 //            c.scroll {
 //                or {
 //                    if (numberIds) {
@@ -209,7 +208,7 @@ class UserDetailsController {
 //                } else {
 //                    first = false
 //                }
-//                User user = ((User)results.get()[0])
+//                UserRecord user = ((UserRecord)results.get()[0])
 //
 //                (user as JSON).render(csw)
 //
@@ -230,8 +229,8 @@ class UserDetailsController {
     @Operation(
             method = "POST",
             tags = "users",
-            summary = "Get User Details",
-            description = "Get User Details.  Required scopes: 'users/read'.",
+            summary = "Get UserRecord Details",
+            description = "Get UserRecord Details.  Required scopes: 'users/read'.",
             parameters = [
                     @Parameter(
                             name = "userName",
@@ -248,7 +247,7 @@ class UserDetailsController {
             ],
             responses = [
                     @ApiResponse(
-                            description = "User Details",
+                            description = "UserRecord Details",
                             responseCode = "200",
                             content = [
                                     @Content(
@@ -272,7 +271,8 @@ class UserDetailsController {
             if (userName.isLong()) {
                 user = userService.getUserById(userName)
             } else {
-                user = User.findByUserNameOrEmail(userName, userName)
+                user = userService.findByUserNameOrEmail(userName)
+//                user = UserRecord.findByUserNameOrEmail(userName, userName)
             }
         } else {
             render status:400, text: "Missing parameter: userName"
@@ -297,7 +297,7 @@ class UserDetailsController {
     @Operation(
             method = "POST",
             tags = "users",
-            summary = "Get User List",
+            summary = "Get UserRecord List",
             description = "Get a list of all users.  Required scopes: 'users/read'.",
             deprecated = true,
             responses = [
@@ -318,7 +318,7 @@ class UserDetailsController {
     @Path("getUserList")
     @Produces("application/json")
     def getUserList() {
-        def users = User.findNameAndEmailWhereEmailIsNotNull()
+        def users = userService.listNamesAndEmails() // UserRecord.findNameAndEmailWhereEmailIsNotNull()
         def map = users.collectEntries { [(it[0].toLowerCase()): "${it[1]?:""} ${it[2]?:""}"]}
         render(map as JSON, contentType: "application/json")
     }
@@ -326,7 +326,7 @@ class UserDetailsController {
     @Operation(
             method = "POST",
             tags = "users",
-            summary = "Get User List With Ids",
+            summary = "Get UserRecord List With Ids",
             description = "Get a list of all users by their user id.  Required scopes: 'users/read'.",
             deprecated = true,
             responses = [
@@ -347,7 +347,7 @@ class UserDetailsController {
     @Path("getUserListWithIds")
     @Produces("application/json")
     def getUserListWithIds() {
-        def users = User.findIdFirstAndLastName()
+        def users = userService.listIdsAndNames() // UserRecord.findIdFirstAndLastName()
         def map = users.collectEntries { [(it[0]), "${it[1]?:""} ${it[2]?:""}"] }
         render(map as JSON, contentType: "application/json")
     }
@@ -355,12 +355,12 @@ class UserDetailsController {
     @Operation(
             method = "POST",
             tags = "users",
-            summary = "Get User List With Ids",
+            summary = "Get UserRecord List With Ids",
             description = "Get a list of all users by their user id.  Required scopes: 'users/read'.",
             deprecated = true,
             responses = [
                     @ApiResponse(
-                            description = "User Details",
+                            description = "UserRecord Details",
                             responseCode = "200",
                             content = [
                                     @Content(
@@ -376,7 +376,8 @@ class UserDetailsController {
     @Path("getUserListFull")
     @Produces("application/json")
     def getUserListFull() {
-        def details = User.findUserDetails().collect {
+//        UserRecord.findUserDetails()
+        def details = userService.listUserDetails().collect {
             [id: it[0], firstName: it[1]?:"", lastName: it[2]?:"", userName: it[3]?:"", email: it[4]?:""]
         }
         render(details as JSON, contentType: "application/json")
@@ -386,7 +387,7 @@ class UserDetailsController {
             method = "POST",
             tags = "users",
             operationId = "getUserDetailsFromIdList",
-            summary = "Get User Details by id list",
+            summary = "Get UserRecord Details by id list",
             description = "Get a list of user details for a list of user ids.  Required scopes: 'users/read'.",
             requestBody = @RequestBody(
                     description = "The list of user ids to request and whether to include extended properties",
@@ -398,7 +399,7 @@ class UserDetailsController {
             ),
             responses = [
                     @ApiResponse(
-                            description = "User Details",
+                            description = "UserRecord Details",
                             responseCode = "200",
                             content = [
                                     @Content(
@@ -423,7 +424,7 @@ class UserDetailsController {
             try {
                 List<Long> idList = req.userIds.collect { userId -> userId as long }
 
-                def c = User.createCriteria()
+                def c = UserRecord.createCriteria()
                 def results = c.list() {
                     'in'("id", idList)
                 }

@@ -15,7 +15,9 @@
 
 package au.org.ala.userdetails.gorm
 
-class Role implements Serializable {
+import au.org.ala.users.RoleRecord
+
+class Role extends RoleRecord implements Serializable {
 
     String role
     String description

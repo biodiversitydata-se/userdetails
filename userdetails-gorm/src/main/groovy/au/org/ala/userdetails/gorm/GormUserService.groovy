@@ -22,13 +22,14 @@ import au.org.ala.userdetails.IUserService
 import au.org.ala.userdetails.LocationService
 import au.org.ala.userdetails.PasswordService
 import au.org.ala.userdetails.ResultStreamer
-import au.org.ala.users.Password
-import au.org.ala.users.Role
-import au.org.ala.users.User
-import au.org.ala.users.UserProperty
-import au.org.ala.users.UserRole
+//import au.org.ala.users.Password
+import au.org.ala.users.RoleRecord
+import au.org.ala.users.UserPropertyRecord
+import au.org.ala.users.UserRecord
+import au.org.ala.users.UserRoleRecord
 import au.org.ala.web.AuthService
 import au.org.ala.ws.service.WebService
+import com.google.common.base.Preconditions
 import grails.converters.JSON
 import grails.core.GrailsApplication
 import grails.plugin.cache.Cacheable
@@ -43,6 +44,7 @@ import org.grails.orm.hibernate.cfg.GrailsHibernateUtil
 import org.hibernate.ScrollableResults
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.MessageSource
+import org.springframework.dao.DataIntegrityViolationException
 
 @Slf4j
 @Transactional
@@ -90,7 +92,8 @@ class GormUserService implements IUserService {
         }
     }
 
-    boolean disableUser(User user) {
+    boolean disableUser(UserRecord user) {
+        assert user instanceof User
         try {
             user.activated = false
             user.save(failOnError: true, flush: true)
@@ -129,7 +132,8 @@ class GormUserService implements IUserService {
     }
 
     @Transactional
-    void activateAccount(User user) {
+    void activateAccount(UserRecord user) {
+        assert user instanceof User
         Map resp = webService.post("${grailsApplication.config.getProperty('alerts.url')}/api/alerts/user/createAlerts", [:], [userId: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName])
         if (resp.statusCode == HttpStatus.SC_CREATED) {
             emailService.sendAccountActivationSuccess(user, resp.resp)
@@ -148,10 +152,15 @@ class GormUserService implements IUserService {
 
             String q = "%${query}%"
 
-            return User.findAllByEmailLikeOrLastNameLikeOrFirstNameLike(q, q, q, [ offset: paginationToken as int, max: maxResults ])
+            return User.findAllByEmailLikeOrLastNameLikeOrFirstNameLike(q, q, q, [offset: paginationToken as int, max: maxResults ])
         }
 
-        return User.list([ offset: paginationToken as int, max: maxResults ])
+        return User.list([offset: paginationToken as int, max: maxResults ])
+    }
+
+    @Override
+    Collection<UserRecord> listUsers() {
+        return User.list()
     }
 
     BulkUserLoadResults bulkRegisterUsersFromFile(InputStream stream, Boolean firstRowContainsFieldNames, String affiliation, String emailSubject, String emailTitle, String emailBody) {
@@ -228,14 +237,14 @@ class GormUserService implements IUserService {
                 }
 
                 roles?.each { role ->
-                    def userRole = new UserRole(user: userInstance, role: role)
+                    def userRole = new UserRoleRecord(user: userInstance, role: role)
                     userRole.save(failOnError: true)
                 }
 
                 if (!isNewUser) {
                     results.warnings << [lineNumber: lineNumber, tokens: tokens, reason: "Email address already exists in database. Added roles ${roles}"]
                 } else {
-                    // User Properties
+                    // UserRecord Properties
                     def userProps = [:]
 
                     userProps['affiliation'] = affiliation ?: 'disinclinedToAcquiesce'
@@ -262,7 +271,7 @@ class GormUserService implements IUserService {
         return results
     }
 
-    private setUserPropertiesFromMap(User user, Map properties) {
+    private setUserPropertiesFromMap(UserRecord user, Map properties) {
 
         properties.keySet().each { String propName ->
             def propValue = properties[propName] ?: ''
@@ -271,7 +280,7 @@ class GormUserService implements IUserService {
 
     }
 
-    private setUserProperty(User user, String propName, String propValue) {
+    private setUserProperty(UserRecord user, String propName, String propValue) {
         def existingProperty = UserProperty.findByUserAndName(user, propName)
         if (existingProperty) {
             existingProperty.value = propValue
@@ -282,7 +291,7 @@ class GormUserService implements IUserService {
         }
     }
 
-    User registerUser(GrailsParameterMap params) throws Exception {
+    UserRecord registerUser(GrailsParameterMap params) throws Exception {
 
         //does a user with the supplied email address exist
         def user = new User(params)
@@ -301,7 +310,8 @@ class GormUserService implements IUserService {
         createdUser
     }
 
-    void updateProperties(User user, GrailsParameterMap params) {
+    void updateProperties(UserRecord user, GrailsParameterMap params) {
+
         ['city', 'organisation', 'state', 'country'].each { propName ->
             setUserProperty(user, propName, params.get(propName, ''))
         }
@@ -310,8 +320,8 @@ class GormUserService implements IUserService {
         }
     }
 
-    void deleteUser(User user) {
-
+    void deleteUser(UserRecord user) {
+        assert user instanceof User
         if (user) {
             // First need to delete any user properties
             def userProperties = UserProperty.findAllByUser(user)
@@ -336,7 +346,8 @@ class GormUserService implements IUserService {
 
     }
 
-    void resetAndSendTemporaryPassword(User user, String emailSubject, String emailTitle, String emailBody, String password = null) throws PasswordResetFailedException {
+    void resetAndSendTemporaryPassword(UserRecord user, String emailSubject, String emailTitle, String emailBody, String password = null) throws PasswordResetFailedException {
+        assert user instanceof User
         if (user) {
             //set the temp auth key
             user.tempAuthKey = UUID.randomUUID().toString()
@@ -346,7 +357,7 @@ class GormUserService implements IUserService {
         }
     }
 
-    void clearTempAuthKey(User user) {
+    void clearTempAuthKey(UserRecord user) {
         if (user) {
             //set the temp auth key
             user.tempAuthKey = null
@@ -364,10 +375,10 @@ class GormUserService implements IUserService {
         return User.findByEmail(email)
     }
 /**
-     * This service method returns the User object for the current user.
+     * This service method returns the UserRecord object for the current user.
      */
     @Transactional(readOnly = true)
-    User getCurrentUser() {
+    UserRecord getCurrentUser() {
 
         def userId = authService.getUserId()
         if (userId == null) {
@@ -394,7 +405,8 @@ class GormUserService implements IUserService {
     }
 
     @NotTransactional
-    String getResetPasswordUrl(User user) {
+    String getResetPasswordUrl(UserRecord user) {
+        assert user instanceof User
         if(user.tempAuthKey){
             emailService.getServerUrl() + "resetPassword/" +  user.id +  "/"  + user.tempAuthKey
         }
@@ -462,28 +474,36 @@ class GormUserService implements IUserService {
     }
 
     @Override
-    Collection<Role> listRoles(String paginationToken, int maxResults) {
-        Role.list([ offset: paginationToken as int, max: maxResults ])
-    }
-
-    Role createRole(GrailsParameterMap params) {
-
-
+    Collection<RoleRecord> listRoles() {
+        Role.list()
     }
 
     @Override
-    boolean addUserRole(User user, Role role) {
+    Collection<RoleRecord> listRoles(String paginationToken, int maxResults) {
+        Role.list([offset: paginationToken as int, max: maxResults ])
+    }
+
+//    Role createRole(GrailsParameterMap params) {
+//
+//
+//    }
+
+    @Override
+    boolean addUserRole(String userId, String roleId) {
+
+        def user = getUserById(userId)
+        def role = Role.findByRole(roleId)
 
          new UserRole(user: user, role: role).save()
     }
 
-    @Override
-    boolean removeUserRole(User user, Role role) {
-        return false
-    }
+//    @Override
+//    boolean removeUserRole(UserRecord user, RoleRecord role) {
+//        return false
+//    }
 
     @Override
-    void findScrollableUsersByUserName(String username, int maxResults, ResultStreamer resultStreamer) {
+    void findScrollableUsersByUserName(String username, int max, ResultStreamer resultStreamer) {
         User.withStatelessSession { Session session ->
             def c = User.createCriteria()
             ScrollableResults results = c.scroll {
@@ -507,7 +527,7 @@ class GormUserService implements IUserService {
         def numberIds = things[true]
 
         User.withStatelessSession { Session session ->
-            Role role = Role.findByRole(roleName)
+            RoleRecord role = Role.findByRole(roleName)
 
             def c = User.createCriteria()
             ScrollableResults results = c.scroll {
@@ -529,13 +549,112 @@ class GormUserService implements IUserService {
         }
     }
 
+    @Override
+    void addRoles(Collection<RoleRecord> roleRecords) {
+        Role.saveAll(roleRecords.collect { new Role(it.role, it.description) })
+
+    }
+
+    @Override
+    List<UserPropertyRecord> findAllAttributesByName(String s) {
+        UserProperty.findAllByName("flickrId")
+    }
+
+    @Override
+    void addOrUpdateProperty(UserRecord userRecord, String name, String value) {
+        assert userRecord instanceof User
+        UserProperty.addOrUpdateProperty(userRecord, name, value)
+    }
+
+    @Override
+    void removeUserAttributes(UserRecord user, ArrayList<String> attrs) {
+        def props = UserProperty.findAllByUserAndNameInList(user, attrs)
+        if (props) UserProperty.deleteAll(props)
+    }
+
+    @Override
+    void getUserAttribute(UserRecord userRecord, String attribute) {
+        UserProperty.findAllByUserAndName(userRecord, attribute)
+    }
+
+    @Override
+    List<UserProperty> getAllAvailableProperties() {
+        UserProperty.withCriteria {
+            projections {
+                distinct("name")
+            }
+            order("name")
+        }
+    }
+
+    @Override
+    RoleRecord addRole(RoleRecord roleRecord) {
+        return new Role(role: roleRecord.role).save(flush: true)
+    }
+
+    @Override
+    User findByUserNameOrEmail(String username) {
+        return User.findByUserNameOrEmail(username, username)
+    }
+
+    @Override
+    List<String[]> listNamesAndEmails() {
+        return User.findNameAndEmailWhereEmailIsNotNull()
+    }
+
+    @Override
+    List<String[]> listIdsAndNames() {
+        return User.findIdFirstAndLastName()
+    }
+
+    @Override
+    List<String[]> listUserDetails() {
+        return User.findUserDetails()
+    }
+
+//    @Override
+//    RoleRecord findRole(String role) {
+//        return Role.findByRole(role)
+//    }
+
+    @Override
+    Map findUserRoles(String roleName, GrailsParameterMap params) {
+        params.max = Math.min(params.int('max', 100), 1000)
+        if (roleName) {
+            def role = Role.findByRole(roleName)
+            if(role) {
+                def list = UserRole.findAllByRole(role, params)
+                return [userRoleInstanceList: list, userRoleInstanceTotal: UserRole.findAllByRole(role).size()]
+            } else {
+                return [userRoleInstanceList: [], userRoleInstanceTotal: 0]
+            }
+        } else {
+            return [userRoleInstanceList: UserRole.list(params), userRoleInstanceTotal: UserRole.count()]
+        }
+    }
+
+    @Override
+    boolean deleteRole(String userId, String roleName) {
+        def user = UserRecord.get(userId.toLong())
+        def role = RoleRecord.get(roleName)
+
+        UserRole.withNewTransaction {
+            def userRoleInstance = UserRole.findByUserAndRole(user, role)
+            if (!userRoleInstance) {
+                return false
+            }
+            userRoleInstance.delete(flush: true)
+            return true
+        }
+    }
+
     private void streamUserResults(ResultStreamer resultStreamer, ScrollableResults results, session) {
         resultStreamer.init()
         try {
             int count = 0
 
             while (results.next()) {
-                User user = ((User) results.get()[0])
+                UserRecord user = ((UserRecord) results.get()[0])
 
                 resultStreamer.offer(user)
 

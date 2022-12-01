@@ -151,28 +151,43 @@ class RegistrationController {
 
     def startPasswordReset() {
         //check for human
-        boolean captchaValid = simpleCaptchaService.validateCaptcha(params.captcha)
-        if (!captchaValid) {
-            //send password reset link
-            render(view: 'forgottenPassword', model: [email: params.email, captchaInvalid: true])
-        } else {
-            log.info("Starting password reset for email address: " + params.email)
-            def user = userService.getUserById(params.email)
-            if (user) {
-                try {
-                    userService.resetAndSendTemporaryPassword(user, null, null, null, null)
-                    render(view: userService.getPasswordResetView(), model: [email: params.email])
-                } catch (Exception e) {
-                    log.error("Problem starting password reset for email address: " + params.email)
-                    log.error(e.getMessage(), e)
-                    render(view: 'accountError', model: [msg: e.getMessage()])
+        def recaptchaKey = grailsApplication.config.getProperty('recaptcha.secretKey')
+        if (recaptchaKey) {
+            def recaptchaResponse = params['g-recaptcha-response']
+            def call = recaptchaClient.verify(recaptchaKey, recaptchaResponse, request.remoteAddr)
+            def response = call.execute()
+            if (response.isSuccessful()) {
+                def verifyResponse = response.body()
+                if (!verifyResponse.success) {
+                    log.warn('Recaptcha verify reported an error: {}', verifyResponse)
+                    flash.message = 'There was an error with the captcha, please try again'
+                    render(view: 'forgottenPassword', model: [email: params.email, captchaInvalid: true])
+                    return
                 }
             } else {
-                //invalid email address entered
-                log.warn("email address {} is not recognised.", params.email)
-                render(view: 'forgottenPassword', model: [email: params.email, emailInvalid: true])
+                //send password reset link
+                render(view: 'forgottenPassword', model: [email: params.email, captchaInvalid: true])
+                return
             }
         }
+
+        log.info("Starting password reset for email address: " + params.email)
+        def user = userService.getUserById(params.email)
+        if (user) {
+            try {
+                userService.resetAndSendTemporaryPassword(user, null, null, null, null)
+                render(view: userService.getPasswordResetView(), model: [email: params.email])
+            } catch (Exception e) {
+                log.error("Problem starting password reset for email address: " + params.email)
+                log.error(e.getMessage(), e)
+                render(view: 'accountError', model: [msg: e.getMessage()])
+            }
+        } else {
+            //invalid email address entered
+            log.warn("email address {} is not recognised.", params.email)
+            render(view: 'forgottenPassword', model: [email: params.email, emailInvalid: true])
+        }
+
     }
 
     def disableAccount() {

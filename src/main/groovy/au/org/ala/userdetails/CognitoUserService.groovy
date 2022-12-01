@@ -282,7 +282,7 @@ class CognitoUserService implements IUserService {
     User registerUser(GrailsParameterMap params) throws Exception {
         def request = new AdminCreateUserRequest()
         //TODO need to change
-        request.username = RandomStringUtils.randomNumeric(6)
+        request.username = UUID.randomUUID().toString()
         request.userPoolId = poolId
         request.desiredDeliveryMediums = ["EMAIL"]
 

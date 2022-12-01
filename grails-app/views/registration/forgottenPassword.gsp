@@ -22,6 +22,9 @@
         <meta name="breadcrumbParent" content="${g.createLink(controller: 'profile')},My Profile" />
     </g:if>
     <asset:stylesheet src="application.css" />
+    <g:if test="${grailsApplication.config.getProperty('recaptcha.siteKey')}">
+        <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    </g:if>
 </head>
 <body>
 
@@ -48,11 +51,10 @@
                     <input id="email" name="email" type="text" class="form-control" value="${params.email ?: email}"/>
                 </div>
 
-                <img src="${createLink(controller: 'simpleCaptcha', action: 'captcha')}"/>
-                <div class="form-group">
-                    <label for="captcha"><g:message code="forgotten.password.captcha" /></label>
-                    <g:textField name="captcha" class="form-control"/>
-                </div>
+                <g:if test="${grailsApplication.config.getProperty('recaptcha.siteKey')}">
+                    <div class="g-recaptcha" data-sitekey="${grailsApplication.config.getProperty('recaptcha.siteKey')}"></div>
+                    <br/>
+                </g:if>
 
                 <br/>
                 <g:submitButton id="submitResetBtn" class="btn btn-primary" name="submit" value="${message(code:'forgotten.password.reset.link')}"/>

@@ -1,0 +1,113 @@
+/*
+ * Copyright (C) 2022 Atlas of Living Australia
+ * All Rights Reserved.
+ *
+ * The contents of this file are subject to the Mozilla Public
+ * License Version 1.1 (the "License"); you may not use this file
+ * except in compliance with the License. You may obtain a copy of
+ * the License at http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS
+ * IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+ * implied. See the License for the specific language governing
+ * rights and limitations under the License.
+ */
+
+package au.org.ala.userdetails
+
+import au.org.ala.auth.PreAuthorise
+import au.org.ala.users.RoleRecord
+import au.org.ala.users.UserRecord
+import au.org.ala.users.UserRoleRecord
+import grails.converters.JSON
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.dao.DataIntegrityViolationException
+
+@PreAuthorise
+class UserRoleController {
+
+    static allowedMethods = [save: "POST", update: "POST", delete: "POST"]
+
+    @Autowired
+    @Qualifier('userService')
+    IUserService userService
+
+    def index() {
+        redirect(action: "list", params: params)
+    }
+
+    def create() {
+
+        UserRecord user = userService.getUserById(params['user.id'])
+
+        def roles = userService.listRoles()
+
+        //remove existing roles this user has
+        def usersRoles = user.getUserRoles()
+
+        def acquiredRoles = []
+        usersRoles.each { acquiredRoles << it.role}
+
+        roles.removeAll(acquiredRoles)
+
+        [user: user, roles:roles]
+    }
+
+    def list(Integer max) {
+
+        Map model = userService.findUserRoles(params.role, params)
+//        if(params.role){
+//            def role = userService.findUserRoles(params.role, params) // RoleRecord.findByRole(params.role)
+//            if(role){
+//                params.max = Math.min(max ?: 100, 1000)
+//                def list = UserRoleRecord.findAllByRole(role,params)
+//                model = [userRoleInstanceList: list, userRoleInstanceTotal: UserRoleRecord.findAllByRole(role).size()]
+//            } else {
+//                model = [userRoleInstanceList: [], userRoleInstanceTotal: 0]
+//            }
+//        } else {
+//            params.max = Math.min(max ?: 100, 1000)
+//            model = [userRoleInstanceList: UserRoleRecord.list(params), userRoleInstanceTotal: UserRoleRecord.count()]
+//        }
+        withFormat {
+
+            html { model }
+            json {
+                Map toRender = [users:model.userRoleInstanceList.collect{it.user}, count:model.userRoleInstanceTotal]
+                render toRender as JSON
+            }
+        }
+    }
+
+    def addRole() {
+
+        log.debug(params.userId + " - " + params.role.id)
+
+        def user = userService.getUserById(params['user.id'])
+//        def role = RoleRecord.findByRole(params.role.id)
+
+        userService.addUserRole(params['user.id'], params.role.id)
+
+        redirect(action: "show", controller: 'user', id: user.userId)
+    }
+
+    def deleteRole() {
+
+        try {
+            def result = userService.deleteRole(params.userId, params.role)
+            if (result) {
+                flash.message = message(code: 'default.deleted.message', args: [message(code: 'userRole.label', default: 'UserRole'), params.role])
+                redirect(controller:"user", action: "edit", id:params.userId)
+            } else {
+                flash.message = message(code: 'default.not.found.message', args: [message(code: 'userRole.label', default: 'UserRole'), params.role])
+                redirect(controller:"user", action: "edit", id:params.userId)
+            }
+        } catch (Exception e) {
+            flash.message = message(code: 'default.not.deleted.message', args: [message(code: 'userRole.label', default: 'UserRole'), params.role])
+            redirect(controller:"user", action: "edit", id: params.userId)
+        }
+
+
+    }
+}

@@ -130,9 +130,9 @@ interface IUserService {
 
     def sendAccountActivation(UserRecord user)
 
-    def getSecretForMfa(HttpSession session)
+    String getSecretForMfa()
 
-    def verifyUserCode(HttpSession session, String userCode)
+    boolean verifyUserCode(String userCode)
 
-    def enableMfa(String userId, boolean enable)
+    void enableMfa(String userId, boolean enable)
 }

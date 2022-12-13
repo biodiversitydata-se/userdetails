@@ -22,14 +22,12 @@ import au.org.ala.userdetails.IUserService
 import au.org.ala.userdetails.LocationService
 import au.org.ala.userdetails.PasswordService
 import au.org.ala.userdetails.ResultStreamer
-//import au.org.ala.users.Password
 import au.org.ala.users.RoleRecord
 import au.org.ala.users.UserPropertyRecord
 import au.org.ala.users.UserRecord
 import au.org.ala.users.UserRoleRecord
 import au.org.ala.web.AuthService
 import au.org.ala.ws.service.WebService
-import com.google.common.base.Preconditions
 import grails.converters.JSON
 import grails.core.GrailsApplication
 import grails.plugin.cache.Cacheable
@@ -44,7 +42,6 @@ import org.grails.orm.hibernate.cfg.GrailsHibernateUtil
 import org.hibernate.ScrollableResults
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.MessageSource
-import org.springframework.dao.DataIntegrityViolationException
 
 import javax.servlet.http.HttpSession
 
@@ -134,7 +131,7 @@ class GormUserService implements IUserService {
     }
 
     @Transactional
-    boolean activateAccount(User user, GrailsParameterMap params) {
+    boolean activateAccount(UserRecord user, GrailsParameterMap params) {
         assert user instanceof User
         //check the activation key
         if (user.tempAuthKey == params.authKey) {
@@ -691,7 +688,7 @@ class GormUserService implements IUserService {
     }
 
     @Override
-    boolean resetPassword(User user, String newPassword, boolean isPermanent, String confirmationCode) {
+    boolean resetPassword(UserRecord user, String newPassword, boolean isPermanent, String confirmationCode) {
         passwordService.resetPassword(user, newPassword)
         return true
     }
@@ -702,16 +699,16 @@ class GormUserService implements IUserService {
     }
 
     @Override
-    def sendAccountActivation(User user) {
+    def sendAccountActivation(UserRecord user) {
         emailService.sendAccountActivation(user, user.tempAuthKey)
     }
 
     @Override
-    def getSecretForMfa(HttpSession session){}
+    String getSecretForMfa() {}
 
     @Override
-    def verifyUserCode(HttpSession session, String userCode){}
+    boolean verifyUserCode(String userCode){}
 
     @Override
-    def enableMfa(String userId, boolean enable){}
+    void enableMfa(String userId, boolean enable){}
 }

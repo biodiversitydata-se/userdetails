@@ -100,7 +100,7 @@ class RegistrationController {
     }
 
     def updateCognitoPassword(UpdateCognitoPasswordCommand cmd) {
-        User user = userService.getUserByEmail(cmd.email)
+        UserRecord user = userService.getUserByEmail(cmd.email)
         if (cmd.hasErrors()) {
             render(view: 'passwordResetCognito', model: [email: cmd.email, code: cmd.code, errors:cmd.errors, passwordMatchFail: true])
         }
@@ -335,19 +335,29 @@ class RegistrationController {
     }
 
     def getSecretForMfa() {
-        def response = userService.getSecretForMfa(session)
+        try {
+            def response = [success: true, code: userService.getSecretForMfa()]
+        } catch (e) {
+            def response = [success: false, error: e.message]
+        }
         render(response as JSON)
     }
 
     def verifyAndActivateMfa() {
-        def response = userService.verifyUserCode(session, params.userCode)
-        if(response.success) {
-            def mfaResponse = userService.enableMfa(params.userId, true)
-            render(mfaResponse as JSON)
+        try  {
+            def success = userService.verifyUserCode(params.userCode)
+            if (success) {
+                userService.enableMfa(params.userId, true)
+                render([success: true] as JSON)
+            }
+            else {
+                render([success: false] as JSON)
+            }
+        } catch (e) {
+            def result = [success: false, error: e.message]
+            render result as JSON
         }
-        else {
-            render(response as JSON)
-        }
+
     }
 
     def disableMfa() {

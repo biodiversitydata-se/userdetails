@@ -35,14 +35,11 @@ import com.nimbusds.oauth2.sdk.token.AccessToken
 import com.amazonaws.services.cognitoidp.model.VerifySoftwareTokenRequest
 import grails.web.servlet.mvc.GrailsParameterMap
 import groovy.util.logging.Slf4j
-import org.apache.commons.lang3.RandomStringUtils
+import org.apache.commons.codec.digest.HmacAlgorithms
+import org.apache.commons.codec.digest.HmacUtils
 import org.apache.commons.lang3.NotImplementedException
 import org.springframework.beans.factory.annotation.Value
 
-import javax.crypto.Mac
-import javax.crypto.spec.SecretKeySpec
-import javax.servlet.http.HttpSession
-import java.nio.charset.StandardCharsets
 import java.util.stream.Stream
 
 @Slf4j
@@ -399,7 +396,7 @@ class CognitoUserService implements IUserService {
                 .collect {
                         new UserPropertyRecord(name: it.name, value: it.value)
                 }
-            userProperties.add(new UserProperty(name: "enableMFA", value: userResponse.getUserMFASettingList()?.size() > 0))
+            userProperties.add(new UserPropertyRecord(name: "enableMFA", value: userResponse.getUserMFASettingList()?.size() > 0))
 
 
         UserRecord user = new UserRecord(
@@ -594,7 +591,7 @@ class CognitoUserService implements IUserService {
     }
 
     @Override
-    boolean resetPassword(User user, String newPassword, boolean isPermanent, String confirmationCode) {
+    boolean resetPassword(UserRecord user, String newPassword, boolean isPermanent, String confirmationCode) {
         if(!user || !newPassword) {
             return false
         }
@@ -630,66 +627,59 @@ class CognitoUserService implements IUserService {
     }
 
     @Override
-    def sendAccountActivation(User user) {
+    def sendAccountActivation(UserRecord user) {
         //this email can be sent via cognito
         //emailService.sendCognitoAccountActivation(user)
     }
 
     @Override
-    def getSecretForMfa(HttpSession session){
-        try {
-            AssociateSoftwareTokenRequest request = new AssociateSoftwareTokenRequest()
-            request.accessToken = session.getAttribute("pac4jUserProfiles").getAt("OidcClient").getAt("accessToken").value
-            def response = cognitoIdp.associateSoftwareToken(request)
-            return [success: response.sdkHttpMetadata.httpStatusCode == 200, code: response.secretCode]
+    String getSecretForMfa() {
+        AccessToken accessToken = tokenService.getAuthToken(true)
+
+        if (accessToken == null) {
+            throw new IllegalStateException("No current user available")
         }
-        catch (Exception e) {
-            return [success: false, error: e.getMessage()]
+        AssociateSoftwareTokenRequest request = new AssociateSoftwareTokenRequest()
+        request.accessToken = accessToken.value
+        def response = cognitoIdp.associateSoftwareToken(request)
+        if (response.secretCode) {
+            return response.secretCode
+        } else {
+            throw new RuntimeException()
         }
     }
 
     @Override
-    def verifyUserCode(HttpSession session, String userCode){
-        try {
-            VerifySoftwareTokenRequest request = new VerifySoftwareTokenRequest()
-            request.accessToken = session.getAttribute("pac4jUserProfiles").getAt("OidcClient").getAt("accessToken").value
-            request.userCode = userCode
-            def response= cognitoIdp.verifySoftwareToken(request)
-            return [success: response.sdkHttpMetadata.httpStatusCode == 200 && response.status == "SUCCESS"]
+    boolean verifyUserCode(String userCode) {
+        AccessToken accessToken = tokenService.getAuthToken(true)
+
+        if (accessToken == null) {
+            throw new IllegalStateException("No current user available")
         }
-        catch (Exception e) {
-            return [success: false, error: e.getMessage()]
-        }
+        VerifySoftwareTokenRequest request = new VerifySoftwareTokenRequest()
+        request.accessToken = accessToken.value
+        request.userCode = userCode
+        def response= cognitoIdp.verifySoftwareToken(request)
+        return response.status == "SUCCESS"
     }
 
     @Override
-    def enableMfa(String userId, boolean enable){
-        try{
-            AdminSetUserMFAPreferenceRequest mfaRequest = new AdminSetUserMFAPreferenceRequest().withUserPoolId(poolId)
-                    .withUsername(userId)
-            mfaRequest.setSoftwareTokenMfaSettings(new SoftwareTokenMfaSettingsType(enabled: enable))
-            def response = cognitoIdp.adminSetUserMFAPreference(mfaRequest)
-            return [success: response.sdkHttpMetadata.httpStatusCode == 200]
-        }
-        catch (Exception e) {
-            return [success: false, error: e.getMessage()]
+    void enableMfa(String userId, boolean enable) {
+        AdminSetUserMFAPreferenceRequest mfaRequest = new AdminSetUserMFAPreferenceRequest().withUserPoolId(poolId)
+                .withUsername(userId)
+        mfaRequest.setSoftwareTokenMfaSettings(new SoftwareTokenMfaSettingsType(enabled: enable))
+        def response = cognitoIdp.adminSetUserMFAPreference(mfaRequest)
+        if (response.sdkHttpMetadata.httpStatusCode != 200) {
+            throw new RuntimeException("Couldn't set MFA preference")
         }
     }
 
     static String calculateSecretHash(String userPoolClientId, String userPoolClientSecret, String userName) {
-        final String HMAC_SHA256_ALGORITHM = "HmacSHA256";
-
-        SecretKeySpec signingKey = new SecretKeySpec(
-                userPoolClientSecret.getBytes(StandardCharsets.UTF_8),
-                HMAC_SHA256_ALGORITHM);
         try {
-            Mac mac = Mac.getInstance(HMAC_SHA256_ALGORITHM);
-            mac.init(signingKey);
-            mac.update(userName.getBytes(StandardCharsets.UTF_8));
-            byte[] rawHmac = mac.doFinal(userPoolClientId.getBytes(StandardCharsets.UTF_8));
-            return Base64.getEncoder().encodeToString(rawHmac);
+            byte[] rawHmac = new HmacUtils(HmacAlgorithms.HMAC_SHA_256, userPoolClientSecret).hmac("$userName$userPoolClientId")
+            return Base64.getEncoder().encodeToString(rawHmac)
         } catch (Exception e) {
-            throw new RuntimeException("Error while calculating ");
+            throw new RuntimeException("Error while calculating ")
         }
     }
 

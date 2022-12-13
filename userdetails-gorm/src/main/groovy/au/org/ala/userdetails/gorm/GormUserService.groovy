@@ -61,6 +61,7 @@ class GormUserService implements IUserService {
     LocationService locationService
     MessageSource messageSource
     WebService webService
+    ProfileService profileService
 
     @Value('${password.encoder}')
     String passwordEncoderType = 'bcrypt'
@@ -730,4 +731,76 @@ class GormUserService implements IUserService {
 
     @Override
     void enableMfa(String userId, boolean enable){}
+    boolean removeUserRole(User user, Role role) {
+        return false
+    }
+
+    @Override
+    User findByUserNameOrEmail(String userName) {
+        return User.findByUserNameOrEmail(userName, userName)
+    }
+
+    @Override
+    def findUsersByRole(String roleName, List numberIds, List userIds, String pageOrToken) {
+        ScrollableResults results = null
+        // stream the results just in case someone requests ROLE_USER or something
+        User.withStatelessSession { session ->
+            Role role = Role.findByRole(roleName)
+            if (!role) {
+                return [error: "Role not found"]
+            }
+
+            def c = User.createCriteria()
+            results = c.scroll {
+                or {
+                    if (numberIds) {
+                        inList('id', numberIds*.toLong())
+                    }
+                    if (userIds) {
+                        inList('userName', userIds)
+                        inList('email', userIds)
+                    }
+                }
+                userRoles {
+                    eq("role", role)
+                }
+            } as ScrollableResults
+        }
+        return [results: results]
+    }
+
+    def getUserDetailsFromIdList(List idList){
+        def c = User.createCriteria()
+        def results = c.list() {
+            'in'("id", idList.collect { userId -> userId as long } )
+        }
+        return results
+    }
+
+    def searchByUsernameOrEmail(String q, int max){
+
+        ScrollableResults results = null
+
+        User.withStatelessSession { session ->
+            def c = User.createCriteria()
+            results = c.scroll {
+                or {
+                    ilike('userName', "%$q%")
+                    ilike('email', "%$q%")
+                    ilike('displayName', "%$q%")
+                }
+                maxResults(max)
+            } as ScrollableResults
+        }
+        return [results: results]
+    }
+
+    def saveCustomUserProperty(User user, String name, String value){
+        UserProperty property = profileService.saveUserProperty(user, name, value)
+        return property.hasErrors() ? null: property
+    }
+
+    def getCustomUserProperty(User user, String name){
+        return profileService.getUserProperty(user, name);
+    }
 }

@@ -272,7 +272,6 @@ class UserDetailsController {
                 user = userService.getUserById(userName)
             } else {
                 user = userService.findByUserNameOrEmail(userName)
-//                user = UserRecord.findByUserNameOrEmail(userName, userName)
             }
         } else {
             render status:400, text: "Missing parameter: userName"
@@ -422,12 +421,9 @@ class UserDetailsController {
         if (req && req.userIds) {
 
             try {
-                List<Long> idList = req.userIds.collect { userId -> userId as long }
+                List idList = req.userIds
 
-                def c = UserRecord.createCriteria()
-                def results = c.list() {
-                    'in'("id", idList)
-                }
+                def results = userService.getUserDetailsFromIdList(idList)
                 String jsonConfig = includeProps ? UserMarshaller.WITH_PROPERTIES_CONFIG : null
                 try {
 
@@ -435,11 +431,11 @@ class UserDetailsController {
 
                     def resultsMap = [users:[:], invalidIds:[], success: true]
                     results.each { user ->
-                        resultsMap.users[user.id] = user
+                        resultsMap.users[user.userId] = user
                     }
 
                     idList.each {
-                        if (!resultsMap.users[it]) {
+                        if (!resultsMap.users[it.toString()]) {
                             resultsMap.invalidIds << it
                         }
                     }

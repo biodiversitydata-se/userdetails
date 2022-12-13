@@ -30,13 +30,19 @@ class UserDetailsWebServicesInterceptor {
     }
 
     boolean before() {
-        if (!authorisedSystemService.isAuthorisedRequest(request, response, null, 'users/read')) {
-            log.warn("Denying access to $actionName from remote addr: ${request.remoteAddr}, remote host: ${request.remoteHost}")
-            response.sendError(HttpStatus.SC_UNAUTHORIZED)
+        try {
+            if (!authorisedSystemService.isAuthorisedRequest(request, response, null, 'users/read')) {
+                log.warn("Denying access to $actionName from remote addr: ${request.remoteAddr}, remote host: ${request.remoteHost}")
+                response.sendError(HttpStatus.SC_UNAUTHORIZED)
 
+                return false
+            }
+            return true
+        }
+        catch (Exception e){
+            response.sendError(HttpStatus.SC_UNAUTHORIZED, e.getMessage())
             return false
         }
-        return true
     }
 
     boolean after() { true }

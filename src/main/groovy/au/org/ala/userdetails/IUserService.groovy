@@ -21,6 +21,8 @@ import au.org.ala.users.Role
 import au.org.ala.users.User
 import grails.web.servlet.mvc.GrailsParameterMap
 
+import javax.servlet.http.HttpServletResponse
+
 interface IUserService {
 
     boolean updateUser(GrailsParameterMap params)
@@ -83,4 +85,16 @@ interface IUserService {
     boolean addUserRole(User user, Role role)
 
     boolean removeUserRole(User user, Role role)
+
+    User findByUserNameOrEmail(String userName)
+
+    def findUsersByRole(String roleName, List numberIds, List userIds, String pageOrToken)
+
+    def getUserDetailsFromIdList(List idList)
+
+    def searchByUsernameOrEmail(String q, int max)
+
+    def saveCustomUserProperty(User user, String name, String value)
+
+    def getCustomUserProperty(User user, String name)
 }

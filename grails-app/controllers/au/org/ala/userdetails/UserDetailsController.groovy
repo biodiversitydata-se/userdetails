@@ -93,18 +93,20 @@ class UserDetailsController {
             render(status: 401, text: 'q parameter is required')
         }
         def max = params.int('max', 10)
-        User.withStatelessSession { session ->
-            def c = User.createCriteria()
-            ScrollableResults results = c.scroll {
-                or {
-                    ilike('userName', "%$q%")
-                    ilike('email', "%$q%")
-                    ilike('displayName', "%$q%")
-                }
-                maxResults(max)
-            }
-            streamResults(session, results, UserMarshaller.WITH_PROPERTIES_CONFIG)
+        def searchResults = userService.searchByUsernameOrEmail(q as String, max)
+        if(searchResults.results instanceof ScrollableResults) {
+            streamResults(null, searchResults.results, UserMarshaller.WITH_PROPERTIES_CONFIG)
         }
+        else{
+            try {
+                JSON.use(UserMarshaller.WITH_PROPERTIES_CONFIG)
+                render searchResults.results as JSON
+                return
+            }finally {
+                JSON.use(null) // resets to default config
+            }
+        }
+
     }
 
     @Operation(
@@ -130,6 +132,12 @@ class UserDetailsController {
                             in = QUERY,
                             description = "Whether to include additional user properties or not",
                             required = false
+                    ),
+                    @Parameter(
+                            name = "cognitoNextToken",
+                            in = QUERY,
+                            description = "Cognito token to retrieve next set of results",
+                            required = false
                     )
             ],
             responses = [
@@ -152,36 +160,30 @@ class UserDetailsController {
         def ids = params.list('id')
         def roleName = params.get('role', 'ROLE_USER')
         def includeProps = params.boolean('includeProps', false)
+        String cognitoNextToken = params.cognitoNextToken
 
         def things = ids.groupBy { it.isLong() }
         def userIds = things[false]
         def numberIds = things[true]
 
-        // stream the results just in case someone requests ROLE_USER or something
-        User.withStatelessSession { session ->
-            Role role = Role.findByRole(roleName)
-            if (!role) {
-                response.sendError(404, "Role not found")
-                return
+        def searchResults = userService.findUsersByRole(roleName, numberIds, userIds, cognitoNextToken)
+        if(searchResults.error){
+            response.sendError(404, searchResults.error)
+            return
+        }
+        else{
+            if(searchResults.results instanceof ScrollableResults) {
+                streamResults(null, searchResults.results, includeProps ? UserMarshaller.WITH_PROPERTIES_CONFIG : 'default')
             }
-
-            def c = User.createCriteria()
-            ScrollableResults results = c.scroll {
-                or {
-                    if (numberIds) {
-                        inList('id', numberIds*.toLong())
-                    }
-                    if (userIds) {
-                        inList('userName', userIds)
-                        inList('email', userIds)
-                    }
-                }
-                userRoles {
-                    eq("role", role)
+            else{
+                try {
+                    JSON.use(includeProps ? UserMarshaller.WITH_PROPERTIES_CONFIG : 'default')
+                    render searchResults as JSON
+                    return
+                }finally {
+                    JSON.use(null) // resets to default config
                 }
             }
-
-            streamResults(session, results, includeProps ? UserMarshaller.WITH_PROPERTIES_CONFIG : 'default')
         }
     }
 
@@ -265,7 +267,7 @@ class UserDetailsController {
             if (userName.isLong()) {
                 user = userService.getUserById(userName)
             } else {
-                user = User.findByUserNameOrEmail(userName, userName)
+                user = userService.findByUserNameOrEmail(userName)
             }
         } else {
             render status:400, text: "Missing parameter: userName"
@@ -414,12 +416,9 @@ class UserDetailsController {
         if (req && req.userIds) {
 
             try {
-                List<Long> idList = req.userIds.collect { userId -> userId as long }
+                List idList = req.userIds
 
-                def c = User.createCriteria()
-                def results = c.list() {
-                    'in'("id", idList)
-                }
+                def results = userService.getUserDetailsFromIdList(idList)
                 String jsonConfig = includeProps ? UserMarshaller.WITH_PROPERTIES_CONFIG : null
                 try {
 
@@ -427,11 +426,11 @@ class UserDetailsController {
 
                     def resultsMap = [users:[:], invalidIds:[], success: true]
                     results.each { user ->
-                        resultsMap.users[user.id] = user
+                        resultsMap.users[user.userId] = user
                     }
 
                     idList.each {
-                        if (!resultsMap.users[it]) {
+                        if (!resultsMap.users[it.toString()]) {
                             resultsMap.invalidIds << it
                         }
                     }

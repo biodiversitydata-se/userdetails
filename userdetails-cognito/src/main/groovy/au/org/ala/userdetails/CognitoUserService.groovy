@@ -61,56 +61,6 @@ class CognitoUserService implements IUserService {
     public static final String TEMP_AUTH_KEY = 'tempAuthKey'
 
     @Override
-    boolean updateUser(GrailsParameterMap params) {
-
-        AccessToken accessToken = tokenService.getAuthToken(true)
-
-
-//        def emailRecipients = [ user.email ]
-//        if (params.email != user.email) {
-//            emailRecipients << params.email
-//        }
-
-        try {
-//            user.setProperties(params)
-//            user.activated = true
-//            user.locked = false
-
-//            Collection<AttributeType> userAttributes = user.userProperties.collect { new AttributeType().withName(it.name).withValue(it.value) }
-            Collection<AttributeType> userAttributes = new ArrayList<>()
-
-//            userAttributes.add(new AttributeType().withName('email').withValue(user.email))
-////            userAttributes.add(new AttributeType().withName('userName').withValue(user.userName))
-////        userAttributes.add(new AttributeType().withName('userid').withValue(record.id))
-//            userAttributes.add(new AttributeType().withName('given_name').withValue(user.firstName))
-//            userAttributes.add(new AttributeType().withName('family_name').withValue(user.lastName))
-
-//            userAttributes.add(new AttributeType().withName('email').withValue(user.email))
-//            userAttributes.add(new AttributeType().withName('email_verified').withValue('false'))
-
-            userAttributes.add(new AttributeType().withName('email').withValue(params.email))
-            userAttributes.add(new AttributeType().withName('email_verified').withValue('false'))
-            userAttributes.add(new AttributeType().withName('given_name').withValue(params.firstName))
-            userAttributes.add(new AttributeType().withName('family_name').withValue(params.lastName))
-
-//            params.findAll {customAttrs.contains(it.key) }
-//                .each {userAttributes.add(new AttributeType().withName("custom:${it.key}").withValue(it.value)) }
-
-            UpdateUserAttributesResult result = cognitoIdp.updateUserAttributes(new UpdateUserAttributesRequest()
-                    .withAccessToken(accessToken as String)
-                    .withUserAttributes(userAttributes))
-
-//            emailService.sendUpdateProfileSuccess(user, emailRecipients)
-            return true
-
-        } catch (Exception e) {
-            log.error(e.getMessage(), e)
-        }
-
-        return false
-    }
-
-    @Override
     boolean updateUser(String userId, GrailsParameterMap params) {
 
         UserRecord user = getUserById(userId)
@@ -165,12 +115,6 @@ class CognitoUserService implements IUserService {
         }
 
         return false
-    }
-
-    private AdminUpdateUserAttributesRequest updateUserAttributesRequest(UserRecord record) {
-
-
-        return request
     }
 
     @Override

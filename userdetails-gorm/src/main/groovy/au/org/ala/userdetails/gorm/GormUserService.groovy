@@ -17,6 +17,8 @@ package au.org.ala.userdetails.gorm
 
 import au.org.ala.auth.BulkUserLoadResults
 import au.org.ala.auth.PasswordResetFailedException
+import au.org.ala.cas.encoding.BcryptPasswordEncoder
+import au.org.ala.cas.encoding.LegacyPasswordEncoder
 import au.org.ala.userdetails.EmailService
 import au.org.ala.userdetails.IUserService
 import au.org.ala.userdetails.LocationService
@@ -49,6 +51,9 @@ import javax.servlet.http.HttpSession
 @Transactional
 class GormUserService implements IUserService {
 
+    static final String BCRYPT_ENCODER_TYPE = 'bcrypt'
+    static final String LEGACY_ENCODER_TYPE = 'legacy'
+
     EmailService emailService
     PasswordService passwordService
     AuthService authService
@@ -57,13 +62,17 @@ class GormUserService implements IUserService {
     MessageSource messageSource
     WebService webService
 
+    @Value('${password.encoder}')
+    String passwordEncoderType = 'bcrypt'
+    @Value('${bcrypt.strength}')
+    Integer bcryptStrength = 10
+    @Value('${encoding.algorithm}')
+    String legacyAlgorithm
+    @Value('${encoding.salt}')
+    String legacySalt
+
     @Value('${attributes.affiliations.enabled:false}')
     boolean affiliationsEnabled = false
-
-    @Override
-    boolean updateUser(GrailsParameterMap params) {
-
-    }
 
     boolean updateUser(String userId, GrailsParameterMap params) {
 
@@ -244,7 +253,7 @@ class GormUserService implements IUserService {
                 }
 
                 roles?.each { role ->
-                    def userRole = new UserRoleRecord(user: userInstance, role: role)
+                    def userRole = new UserRole(user: userInstance, role: role)
                     userRole.save(failOnError: true)
                 }
 
@@ -283,15 +292,6 @@ class GormUserService implements IUserService {
         properties.keySet().each { String propName ->
             def propValue = properties[propName] ?: ''
             setUserProperty(user, propName, propValue)
-        }
-    }
-
-    @Override
-    void clearTempAuthKey(User user) {
-        if (user) {
-            //set the temp auth key
-            user.tempAuthKey = null
-            user.save(flush: true)
         }
     }
 
@@ -373,6 +373,7 @@ class GormUserService implements IUserService {
         }
     }
 
+    @Override
     void clearTempAuthKey(UserRecord user) {
         assert user instanceof User
         if (user) {
@@ -689,7 +690,25 @@ class GormUserService implements IUserService {
 
     @Override
     boolean resetPassword(UserRecord user, String newPassword, boolean isPermanent, String confirmationCode) {
-        passwordService.resetPassword(user, newPassword)
+        assert user instanceof User
+        Password.findAllByUser(user).each {
+            it.delete()
+        }
+
+        boolean isBcrypt = passwordEncoderType.equalsIgnoreCase(BCRYPT_ENCODER_TYPE)
+
+        def encoder = isBcrypt ? new BcryptPasswordEncoder(bcryptStrength) : new LegacyPasswordEncoder(legacySalt, legacyAlgorithm, true)
+        def encodedPassword = encoder.encode(newPassword)
+
+        //reuse object if old password
+        def password = new Password()
+        password.user = user
+        password.password = encodedPassword
+        password.type = isBcrypt ? BCRYPT_ENCODER_TYPE : LEGACY_ENCODER_TYPE
+        password.created = new Date().toTimestamp()
+        password.expiry = null
+        password.status = "CURRENT"
+        password.save(failOnError: true)
         return true
     }
 

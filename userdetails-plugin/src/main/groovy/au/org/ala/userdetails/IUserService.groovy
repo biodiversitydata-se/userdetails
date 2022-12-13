@@ -27,8 +27,6 @@ import javax.servlet.http.HttpSession
 
 interface IUserService {
 
-    boolean updateUser(GrailsParameterMap params)
-
     boolean updateUser(String userId, GrailsParameterMap params)
 
     boolean disableUser(UserRecord user)

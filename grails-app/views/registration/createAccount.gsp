@@ -1,7 +1,21 @@
+%{--
+  - Copyright (C) 2022 Atlas of Living Australia
+  - All Rights Reserved.
+  -
+  - The contents of this file are subject to the Mozilla Public
+  - License Version 1.1 (the "License"); you may not use this file
+  - except in compliance with the License. You may obtain a copy of
+  - the License at http://www.mozilla.org/MPL/
+  -
+  - Software distributed under the License is distributed on an "AS
+  - IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+  - implied. See the License for the specific language governing
+  - rights and limitations under the License.
+  --}%
 <!doctype html>
 <html>
 <head>
-    <meta name="layout" content="${grailsApplication.config.skin.layout}"/>
+    <meta name="layout" content="${grailsApplication.config.getProperty('skin.layout')}"/>
     <meta name="section" content="home"/>
     <g:if test="${!alreadyRegistered && edit}">
         <g:set var="title"><g:message code="create.account.edit.account" /></g:set>
@@ -13,7 +27,7 @@
     <title>${title}</title>
     <asset:stylesheet src="application.css" />
     <asset:stylesheet src="createAccount.css" />
-    <g:if test="${grailsApplication.config.recaptcha.siteKey}">
+    <g:if test="${grailsApplication.config.getProperty('recaptcha.siteKey')}">
         <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     </g:if>
 </head>
@@ -34,12 +48,26 @@
                     </p>
 
                     <p>
-                        <g:message code="create.account.if.error" args="[grailsApplication.config.supportEmail]" />
+                        <g:message code="create.account.if.error" args="[grailsApplication.config.getProperty('supportEmail')]" />
                     </p>
                 </div>
             </div>
         </div>
     </g:if>
+    <g:elseif test="${lockedUser}">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="well">
+                    <p class="text-danger"><g:message code="create.account.locked" args="[params.email]" />
+                    </p>
+
+                    <p>
+                        <g:message code="create.account.if.error" args="[grailsApplication.config.getProperty('supportEmail')]" />
+                    </p>
+                </div>
+            </div>
+        </div>
+    </g:elseif>
     <g:elseif test="${alreadyRegistered}">
         <div class="row">
             <div class="col-sm-12">
@@ -47,8 +75,7 @@
                     <p class="text-danger"><g:message code="create.account.already.registered" /> <strong>${params.email}</strong>.</p>
 
                     <p>
-                        <g:message code="create.account.login.with.username" /> <a
-                            href="${grailsApplication.config.security.cas.loginUrl}"><g:message code="create.account.click.here" /></a>.<br/>
+                        <g:message code="create.account.login.with.username" /> <g:link controller="login"><g:message code="create.account.click.here" /></g:link>.<br/>
                         <g:message code="create.account.resetting.your.password" /> <g:link controller="registration"
                                                                                  action="forgottenPassword"
                                                                                  params="${[email: params.email]}"><g:message code="create.account.click.here" /></g:link>.
@@ -78,9 +105,18 @@
                 <p>
                     <g:message code="create.account.your.email.will.be.your.account.login"
                                args="[grailsApplication.config.skin.orgNameShort]" />
+                    <g:if test="${grailsApplication.config.getProperty('registration.showAlaMessage')}">
+                        <g:message code="create.account.your.email.will.be.your.account.login.ala" args="[grailsApplication.config.getProperty('registration.resetPasswordArticle'), grailsApplication.config.getProperty('registration.alertArticle')]" />
+                    </g:if>
                 </p>
+                <g:if test="${grailsApplication.config.getProperty('registration.showAlaMessage')}">
+                    <p><b><g:message code="create.account.your.email.will.be.your.account.confirm.ala" /></b></p>
+                </g:if>
                 <g:if test="${!edit}">
-                    <p><g:message code="create.account.activation.description" /></p>
+                    <p><g:message code="create.account.activation.description" />
+                    <g:if test="${grailsApplication.config.getProperty('registration.showAlaMessage')}">
+                        <g:message code="create.account.activation.description.ala" args="[grailsApplication.config.getProperty('registration.activationArticle')]" />
+                    </g:if></p>
                 </g:if>
 
                 <g:if test="${!edit}">
@@ -91,13 +127,13 @@
                 <h2><g:message code="create.account.policy.title" /></h2>
                 <p>
                     <g:message code="create.account.privacy.title" />
-                    <a href="${grailsApplication.config.privacyPolicy}">
+                    <a href="${grailsApplication.config.getProperty('privacyPolicy')}">
                     <g:message code="create.account.privacy.link" /></a>.
                 </p>
                 <h2><g:message code="create.account.tos.title" /></h2>
                 <p>
                     <g:message code="create.account.tos.description"
-                               args="[grailsApplication.config.skin.orgNameShort, grailsApplication.config.termsOfUse]" />
+                               args="[grailsApplication.config.getProperty('skin.orgNameShort'), grailsApplication.config.getProperty('termsOfUse')]" />
                 </p>
             </div>
         </div>
@@ -117,6 +153,14 @@
                     <input id="email" name="email" type="text" class="form-control" value="${user?.email}"
                            data-validation-engine="validate[required,custom[email]]"
                            data-errormessage-value-missing="${message(code:'create.account.email.is.required')}"
+                    />
+                </div>
+                <div class="form-group">
+                    <label for="confirm-email"><g:message code="create.account.confirm.email.address" /></label>
+                    <input id="confirm-email" name="confirm-email" type="text" class="form-control" value="${user?.email}"
+                           data-validation-engine="validate[required,custom[email],equals[email]]"
+                           data-errormessage-value-missing="${message(code:'create.account.confirm.email.is.required')}"
+                           data-errormessage-pattern-mismatch="${message(code:'create.account.confirm.email.mismatch')}"
                     />
                 </div>
 
@@ -144,30 +188,47 @@
                     />
                     </div>
                 </g:if>
+                <g:if test="${grailsApplication.config.getProperty('attributes.affiliations.enabled', Boolean, false)}">
+                    <div class="form-group">
+                        <label for="affiliation"><g:message code="create.account.affiliation" default="What is your primary affiliation?" /> *</label>
+                        <g:select id="affiliation" name="affiliation"
+                                  class="form-control"
+                                  value="${props?.affiliation}"
+                                  from="${l.affiliations()}"
+                                  optionKey="key"
+                                  optionValue="value"
+                                  noSelection="${['': message(code:'create.account.choose.affiliation', default: '-- Choose one --')]}"
+                                  data-validation-engine="validate[required]"
+                        />
+                    </div>
+                </g:if>
                 <div class="form-group">
                     <label for="organisation"><g:message code="create.account.organisation" /></label>
                     <input id="organisation" name="organisation" type="text" class="form-control" value="${props?.organisation}"/>
                 </div>
                 <div class="form-group">
-                    <label for="country"><g:message code="create.account.country" /></label>
+                    <label for="country"><g:message code="create.account.country" /> *</label>
                     <g:select id="country" name="country"
                               class="form-control chosen-select"
+                              autocomplete="off"
                               value="${props?.country ?: 'AU'}"
                               keys="${l.countries()*.isoCode}"
                               from="${l.countries()*.name}"
                               noSelection="${['': message(code:'create.account.choose.your.country')]}"
-                              valueMessagePrefix="ala.country."
+                              valueMessagePrefix="ala.country"
+                              data-validation-engine="validate[required]"
                     />
                 </div>
                 <div class="form-group">
                     <label for="state"><g:message code="create.account.state.province" /></label>
                     <g:select id="state" name="state"
                               class="form-control chosen-select"
+                              autocomplete="off"
                               value="${props?.state}"
                               keys="${l.states(country: props?.country ?: 'AU')*.isoCode}"
                               from="${l.states(country: props?.country ?: 'AU')*.name}"
                               noSelection="${['': message(code:'create.account.choose.your.state')]}"
-                              valueMessagePrefix="ala.state."
+                              valueMessagePrefix="ala.state"
                     />
                 </div>
                 <div class="form-group">
@@ -193,8 +254,8 @@
                     <button id="disableAccountSubmit" class="btn btn-danger"><g:message code="create.account.disable.account" /></button>
                 </g:if>
                 <g:else>
-                    <g:if test="${grailsApplication.config.recaptcha.siteKey}">
-                        <div class="g-recaptcha" data-sitekey="${grailsApplication.config.recaptcha.siteKey}"></div>
+                    <g:if test="${grailsApplication.config.getProperty('recaptcha.siteKey')}">
+                        <div class="g-recaptcha" data-sitekey="${grailsApplication.config.getProperty('recaptcha.siteKey')}"></div>
                         <br/>
                     </g:if>
                     <button id="updateAccountSubmit" class="btn btn-primary"><g:message code="create.account.btn" /></button>
@@ -237,7 +298,7 @@
 
             $("#disableAccountSubmit").attr('disabled','disabled');
 
-            var valid = confirm(${message(code: 'default.button.delete.user.confirm.message', default: "Are you sure want to disable your account? You won't be able to login again. You will have to contact support@ala.org.au in the future if you want to reactivate your account.")});
+            var valid = confirm("${message(code: 'default.button.delete.user.confirm.message', default: 'Are you sure want to disable your account? You won\'t be able to login again. You will have to contact us in the future if you want to reactivate your account.')}");
 
             if (valid) {
                 $('#updateAccountForm').validationEngine('detach');

@@ -1,3 +1,18 @@
+/*
+ * Copyright (C) 2022 Atlas of Living Australia
+ * All Rights Reserved.
+ *
+ * The contents of this file are subject to the Mozilla Public
+ * License Version 1.1 (the "License"); you may not use this file
+ * except in compliance with the License. You may obtain a copy of
+ * the License at http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS
+ * IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+ * implied. See the License for the specific language governing
+ * rights and limitations under the License.
+ */
+
 package au.org.ala.userdetails
 
 import au.org.ala.recaptcha.RecaptchaClient
@@ -9,6 +24,8 @@ import org.passay.RuleResult
 import org.passay.RuleResultDetail
 import retrofit2.mock.Calls
 
+
+//@Mock([User, Role, UserRole, UserProperty])
 class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUnitTest<RegistrationController>, DataTest {
 
     def passwordService = Mock(PasswordService)
@@ -440,4 +457,46 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
         model.msg == "Failed to update user profile - unknown error"
         view == '/registration/accountError'
     }
+
+    void "A new email address must not be in use by others"() {
+        setup:
+        User currentUser = new User()
+        currentUser.email = 'currentUser@example.org'
+        userService.currentUser >> currentUser
+        params.email = 'in.use@example.org'
+
+        when:
+        controller.update()
+
+        then:
+        1 * userService.isEmailInUse(params.email, currentUser) >> true
+        model.msg.indexOf("A user is already registered") != -1
+        view == '/registration/accountError'
+    }
+
+    void "Account is updated when a valid new email address is supplied"() {
+        setup:
+        User currentUser = new User()
+        currentUser.email = 'currentUser@example.org'
+        userService.currentUser >> currentUser
+
+        params.email = 'test@example.org'
+        params.firstName = 'Test'
+        params.lastName = 'Test'
+        params['organisation'] = 'Org'
+        params.country = 'AU'
+        params.state = 'ACT'
+        params.city = 'Canberra'
+        params.password = 'password'
+        params.reenteredPassword = 'password'
+
+        when:
+        controller.update()
+
+        then:
+        1 * userService.updateUser(_, _) >> true
+        1 * userService.isEmailInUse(params.email, currentUser) >> false
+        response.redirectedUrl == '/profile'
+    }
+
 }

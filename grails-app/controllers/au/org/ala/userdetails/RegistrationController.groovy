@@ -1,3 +1,18 @@
+/*
+ * Copyright (C) 2022 Atlas of Living Australia
+ * All Rights Reserved.
+ *
+ * The contents of this file are subject to the Mozilla Public
+ * License Version 1.1 (the "License"); you may not use this file
+ * except in compliance with the License. You may obtain a copy of
+ * the License at http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS
+ * IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+ * implied. See the License for the specific language governing
+ * rights and limitations under the License.
+ */
+
 package au.org.ala.userdetails
 
 import au.org.ala.auth.UpdatePasswordCommand
@@ -100,11 +115,11 @@ class RegistrationController {
 
     /** Displayed as a result of a password update with a duplicate form submission. */
     def duplicateSubmit() {
-        [serverUrl: grailsApplication.config.grails.serverURL + '/myprofile']
+        [serverUrl: grailsApplication.config.getProperty('grails.serverURL') + '/myprofile']
     }
 
     def passwordResetSuccess() {
-        [serverUrl: grailsApplication.config.grails.serverURL + '/myprofile']
+        [serverUrl: grailsApplication.config.getProperty('grails.serverURL') + '/myprofile']
     }
 
     def startPasswordReset() {
@@ -119,15 +134,15 @@ class RegistrationController {
             if (user) {
                 try {
                     userService.resetAndSendTemporaryPassword(user, null, null, null)
-                    [:]
+                    render(view: 'startPasswordReset', model: [email: params.email])
                 } catch (Exception e) {
                     log.error("Problem starting password reset for email address: " + params.email)
                     log.error(e.getMessage(), e)
                     render(view: 'accountError', model: [msg: e.getMessage()])
                 }
             } else {
-                //send password reset link
-                render(view: 'forgottenPassword', model: [email: params.email, captchaInvalid: false, invalidEmail: true])
+                //invalid email address entered
+                log.warn("email address {} is not recognised.", params.email)
             }
         }
     }
@@ -140,8 +155,7 @@ class RegistrationController {
             def success = userService.disableUser(user)
 
             if (success) {
-                redirect(controller: 'logout', action: 'logout', params: [casUrl: grailsApplication.config.security.cas.logoutUrl,
-                                                                          appUrl: grailsApplication.config.grails.serverURL + '/registration/accountDisabled'])
+                redirect(controller: 'logout', action: 'logout', params: [appUrl: grailsApplication.config.getProperty('grails.serverURL') + '/registration/accountDisabled'])
             } else {
                 render(view: "accountError", model: [msg: "Failed to disable user profile - unknown error"])
             }
@@ -156,7 +170,13 @@ class RegistrationController {
 
         if (user) {
             if (params.email != user.email) {
-                // email address has changed, and username and email address must be kept in sync
+                // email address has changed
+                if (userService.isEmailInUse(params.email, user)) {
+                    def msg = message(code: "update.account.failure.msg", default: "Failed to update user profile - A user is already registered with the email address.")
+                    render(view: "accountError", model: [msg: msg])
+                    return
+                }
+                // and username and email address must be kept in sync
                 params.userName = params.email
             }
 
@@ -170,6 +190,7 @@ class RegistrationController {
             def success = userService.updateUser(user, params)
             if (success) {
                 redirect(controller: 'profile')
+                log.info("Account details updated for user: " + user.id + " username: " + user.userName)
             } else {
                 render(view: "accountError", model: [msg: "Failed to update user profile - unknown error"])
             }
@@ -207,7 +228,8 @@ class RegistrationController {
             //create user account...
             if (!paramsEmail || userService.isEmailRegistered(paramsEmail)) {
                 def inactiveUser = !userService.isActive(paramsEmail)
-                render(view: 'createAccount', model: [edit: false, user: params, props: params, alreadyRegistered: true, inactiveUser: inactiveUser])
+                def lockedUser = userService.isLocked(paramsEmail)
+                render(view: 'createAccount', model: [edit: false, user: params, props: params, alreadyRegistered: true, inactiveUser: inactiveUser, lockedUser: lockedUser])
             } else {
 
                 def passwordValidation = passwordService.validatePassword(paramsEmail, paramsPassword)
@@ -237,6 +259,8 @@ class RegistrationController {
                     render(view: "accountError", model: [msg: e.getMessage()])
                 }
             }
+        }.invalidToken {
+            redirect action: 'createAccount'
         }
     }
 

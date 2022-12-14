@@ -1,6 +1,24 @@
+/*
+ * Copyright (C) 2022 Atlas of Living Australia
+ * All Rights Reserved.
+ *
+ * The contents of this file are subject to the Mozilla Public
+ * License Version 1.1 (the "License"); you may not use this file
+ * except in compliance with the License. You may obtain a copy of
+ * the License at http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS
+ * IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+ * implied. See the License for the specific language governing
+ * rights and limitations under the License.
+ */
+
 package au.org.ala.userdetails
 
 import au.org.ala.auth.PreAuthorise
+import com.opencsv.CSVWriter
+import com.opencsv.CSVWriterBuilder
+import com.opencsv.RFC4180ParserBuilder
 import org.springframework.web.multipart.MultipartFile
 import org.springframework.web.multipart.MultipartHttpServletRequest
 
@@ -41,7 +59,7 @@ class AdminController {
 
         render(view: 'exportUsers',
                 model: [roles        : Role.list(),
-                        primaryFields: grailsApplication.config.admin.export.csv.primary.fields,
+                        primaryFields: grailsApplication.config.getProperty('admin.export.csv.primary.fields'),
                         extraFields  : extraFields])
     }
 
@@ -62,7 +80,7 @@ class AdminController {
             def userList = userService.findUsersForExport(roleList, params?.includeInactiveUsers)
 
             //2. Then prepare the format options
-            String primaryFieldsProperty = grailsApplication.config.admin.export.csv.primary.fields
+            String primaryFieldsProperty = grailsApplication.config.getProperty('admin.export.csv.primary.fields')
             def primaryFields = primaryFieldsProperty ? primaryFieldsProperty.split(',').collect { it as String } : []
             def fields = primaryFields
 
@@ -114,12 +132,12 @@ class AdminController {
                 }
 
                 def firstRow = (boolean) params.firstRowHasFieldNames
-                def primaryUsage = params.primaryUsage as String
+                def affiliation = params.affiliation as String
                 def subject = params.emailSubject as String
                 def title = params.emailTitle as String
                 def body = params.emailBody as String
 
-                def results = userService.bulkRegisterUsersFromFile(f.inputStream, firstRow, primaryUsage, subject, title, body)
+                def results = userService.bulkRegisterUsersFromFile(f.inputStream, firstRow, affiliation, subject, title, body)
                 render(view:'loadUsersResults', model:[results: results])
                 return
             } else {
@@ -127,6 +145,18 @@ class AdminController {
             }
         }
         redirect(action:"bulkUploadUsers")
+    }
+
+    def surveyResults() {
+        def results = userService.countByProfileAttribute('affiliation', null, request.locale)
+        def csvWriter = new CSVWriterBuilder(response.writer)
+                .withParser(new RFC4180ParserBuilder().build())
+                .build()
+        response.status = 200
+        response.contentType = 'text/csv'
+        response.setHeader('Content-Disposition', "attachment; filename=user-survey-${new Date()}.csv")
+        csvWriter.writeAll(results)
+        csvWriter.flush()
     }
 
 }

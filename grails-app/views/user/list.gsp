@@ -1,8 +1,23 @@
+%{--
+  - Copyright (C) 2022 Atlas of Living Australia
+  - All Rights Reserved.
+  -
+  - The contents of this file are subject to the Mozilla Public
+  - License Version 1.1 (the "License"); you may not use this file
+  - except in compliance with the License. You may obtain a copy of
+  - the License at http://www.mozilla.org/MPL/
+  -
+  - Software distributed under the License is distributed on an "AS
+  - IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+  - implied. See the License for the specific language governing
+  - rights and limitations under the License.
+  --}%
+
 <%@ page import="au.org.ala.userdetails.User" %>
 <!DOCTYPE html>
 <html>
 <head>
-    <meta name="layout" content="${grailsApplication.config.skin.layout}">
+    <meta name="layout" content="${grailsApplication.config.getProperty('skin.layout')}">
     <g:set var="entityName" value="${message(code: 'user.label', default: 'User')}"/>
     <title><g:message code="default.list.label" args="[entityName]"/></title>
     <meta name="breadcrumbParent" content="${createLink(controller:'admin', action:'index')},Administration" />
@@ -37,22 +52,22 @@
     <table class="table table-bordered table-striped table-condensed">
         <thead>
         <tr>
-            <g:sortableColumn property="id" title="${message(code: 'user.id.label', default: 'ID')}"/>
+            <g:sortableColumn property="id" title="${message(code: 'user.id.label', default: 'ID')}" mapping="adminUserList"/>
 
-            <g:sortableColumn property="email" title="${message(code: 'user.email.label', default: 'Email')}"/>
+            <g:sortableColumn property="email" title="${message(code: 'user.email.label', default: 'Email')}" mapping="adminUserList"/>
 
             <g:sortableColumn property="firstName"
-                              title="${message(code: 'user.firstName.label', default: 'First Name')}"/>
+                              title="${message(code: 'user.firstName.label', default: 'First Name')}" mapping="adminUserList"/>
 
             <g:sortableColumn property="lastName"
-                              title="${message(code: 'user.lastName.label', default: 'Last Name')}"/>
+                              title="${message(code: 'user.lastName.label', default: 'Last Name')}" mapping="adminUserList"/>
 
             <g:sortableColumn property="activated"
-                              title="${message(code: 'user.activated.label', default: 'Activated')}"/>
+                              title="${message(code: 'user.activated.label', default: 'Activated')}" mapping="adminUserList"/>
 
-            <g:sortableColumn property="locked" title="${message(code: 'user.locked.label', default: 'Locked')}"/>
+            <g:sortableColumn property="locked" title="${message(code: 'user.locked.label', default: 'Locked')}" mapping="adminUserList"/>
 
-            <g:sortableColumn property="created" title="${message(code: 'user.dateCreated.label', default: 'Created')}"/>
+            <g:sortableColumn property="dateCreated" title="${message(code: 'user.dateCreated.label', default: 'Created')}" mapping="adminUserList"/>
 
         </tr>
         </thead>

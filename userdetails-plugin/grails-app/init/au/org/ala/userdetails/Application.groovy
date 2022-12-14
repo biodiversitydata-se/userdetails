@@ -22,6 +22,7 @@ import grails.plugins.metadata.PluginSource
 import groovy.util.logging.Slf4j
 import okhttp3.OkHttpClient
 import org.springframework.boot.actuate.mongo.MongoHealthIndicator
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration
 import org.springframework.boot.autoconfigure.mongo.MongoProperties
@@ -63,6 +64,12 @@ class Application extends GrailsAutoConfiguration {
         MongoHealthIndicator mongoHealthIndicator(MongoTemplate mongoTemplate) {
             new MongoHealthIndicator(mongoTemplate)
         }
+    }
+
+    @Bean('authorisedSystemRepository')
+    @ConditionalOnMissingBean(name = 'authorisedSystemRepository')
+    IAuthorisedSystemRepository authorisedSystemRepository() {
+        new ConfigAuthorisedSystemRepository(grailsApplication: grailsApplication)
     }
 
 }

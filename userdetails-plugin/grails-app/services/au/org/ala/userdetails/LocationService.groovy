@@ -29,7 +29,7 @@ class LocationService {
     @Autowired
     MessageSource messageSource
 
-    @Value('${attributes.states.path}')
+    @Value('${attributes.states.path:classpath:states.json}')
     Resource states
 
     @NotTransactional

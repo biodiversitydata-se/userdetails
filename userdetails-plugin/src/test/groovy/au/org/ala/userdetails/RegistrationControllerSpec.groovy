@@ -17,10 +17,7 @@ package au.org.ala.userdetails
 
 import au.org.ala.recaptcha.RecaptchaClient
 import au.org.ala.recaptcha.RecaptchaResponse
-import au.org.ala.users.RoleRecord
-import au.org.ala.users.UserPropertyRecord
 import au.org.ala.users.UserRecord
-import au.org.ala.users.UserRoleRecord
 import grails.testing.gorm.DataTest
 import grails.testing.web.controllers.ControllerUnitTest
 import org.grails.web.servlet.mvc.SynchronizerTokensHolder

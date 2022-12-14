@@ -425,7 +425,7 @@ class CognitoUserService implements IUserService {
 
     @Override
     Collection<RoleRecord> listRoles() {
-        return null
+        return []
     }
 
     @Override
@@ -471,7 +471,8 @@ class CognitoUserService implements IUserService {
 
     @Override
     void addRoles(Collection<RoleRecord> roleRecords) {
-        throw new NotImplementedException()
+//        throw new NotImplementedException()
+        log.warn("CognitoUserService.addRoles() not implemented yet")
     }
 
     @Override

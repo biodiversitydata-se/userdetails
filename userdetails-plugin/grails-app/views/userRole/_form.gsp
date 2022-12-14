@@ -15,6 +15,6 @@
 		<g:message code="userRole.user.label" default="User" />
 		<span class="required-indicator">*</span>
 	</label>
-	<g:select id="user" name="user.id" from="${ud.userList()}" optionKey="id" required="" value="${userRoleInstance?.user?.id}" class="form-control many-to-one"/>
+	<g:select id="user" name="user.id" from="${ud.userList()}" optionKey="id" required="" value="${userRoleInstance?.user?.uiId}" class="form-control many-to-one"/>
 </div>
 

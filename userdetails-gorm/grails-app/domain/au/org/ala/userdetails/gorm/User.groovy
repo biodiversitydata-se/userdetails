@@ -51,8 +51,10 @@ class User extends UserRecord implements Serializable {
     Collection<UserRole> userRoles
     Collection<UserProperty> userProperties
 
-
-
+    @Override
+    String getUiId() {
+        return id
+    }
     static mapping = {
         table 'users'
 

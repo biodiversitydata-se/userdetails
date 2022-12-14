@@ -22,11 +22,13 @@ import au.org.ala.users.UserRecord
 import au.org.ala.users.UserRoleRecord
 import grails.converters.JSON
 import grails.testing.gorm.DataTest
+import spock.lang.Ignore
 
 /**
  * Tests the UserMarshaller
  */
-//@Mock([UserRecord, RoleRecord, UserRoleRecord, UserPropertyRecord])
+//@Mock([User, Role, UserRole, UserProperty])
+@Ignore
 class UserMarshallerSpec extends UserDetailsSpec implements DataTest {
 
     private UserRecord user

@@ -61,21 +61,16 @@ class UserController {
 
     @Transactional
     def save() {
-        def userInstance = new UserRecord(params)
-        if (params.locked == null) userInstance.locked = false
-        if (params.activated == null) userInstance.activated = false
-        // Keep the username and email address in sync
-        userInstance.userName = userInstance.email
+        UserRecord user = userService.registerUser(params)
 
-        if (!userInstance.save(flush: true)) {
-            render(view: "create", model: [userInstance: userInstance])
+        if (!user) {
+            render(view: "create", model: [userInstance: new UserRecord()])
             return
         }
+        userService.sendAccountActivation(user)
 
-        userService.updateProperties(userInstance, params)
-
-        flash.message = message(code: 'default.created.message', args: [message(code: 'user.label', default: 'UserRecord'), userInstance.id])
-        redirect(action: "show", id: userInstance.id)
+        flash.message = message(code: 'default.created.message', args: [message(code: 'user.label', default: 'User'), user.id])
+        redirect(action: "show", id: user.id)
     }
 
     def show(String id) {
@@ -159,5 +154,10 @@ class UserController {
             redirect(action: "show", id: id)
         }
 
+    }
+
+    def disableMfa() {
+        userService.enableMfa(params.userId, false)
+        redirect(action: "edit", id: params.userId)
     }
 }

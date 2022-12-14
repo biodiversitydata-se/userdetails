@@ -39,6 +39,7 @@ class UserDetailsWebServicesInterceptorSpec extends Specification implements Int
 
     def setup() {
         defineBeans {
+            authorisedSystemRepository(InstanceFactoryBean, Mock(IAuthorisedSystemRepository), IAuthorisedSystemRepository)
             jwtProperties(JwtProperties) {
                 enabled = true
                 fallbackToLegacyBehaviour = true

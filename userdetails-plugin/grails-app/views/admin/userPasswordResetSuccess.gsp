@@ -18,6 +18,7 @@
     <meta name="layout" content="${grailsApplication.config.getProperty('skin.layout')}"/>
     <meta name="section" content="home"/>
     <title>Please check your email | ${grailsApplication.config.getProperty('skin.orgNameLong')} </title>
+    <meta name="breadcrumbParent" content="${createLink(controller:'admin', action:'index')},Administration" />
     <asset:stylesheet src="application.css" />
 </head>
 <body>
@@ -27,6 +28,9 @@
         <div class="col-md-12">
             <p class="well">
                 The password has been reset for <strong>${email}</strong> and an email has been sent to the user containing the new password.
+            </p>
+            <p class="well">
+                The new password: <strong>${password}</strong>
             </p>
         </div>
    </div>

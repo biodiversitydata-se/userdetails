@@ -23,3 +23,19 @@
 .chosen-container-active .chosen-single {
     border-color: rgba(82, 168, 236, 0.8);
 }
+
+#qrcode, #instruction, #secret, #code, #buttonsDiv, #codeLabel {
+    padding-top: 10px;
+}
+
+#secret {
+    color: blue;
+}
+
+#code {
+    width: 20%;
+}
+
+#message {
+    color: red;
+}

@@ -15,7 +15,6 @@
 
 package au.org.ala.userdetails
 
-import au.org.ala.users.AuthorisedSystem
 import au.org.ala.ws.security.JwtProperties
 import org.pac4j.core.config.Config
 import org.pac4j.core.context.WebContext
@@ -37,6 +36,8 @@ class AuthorisedSystemService {
     Config config
     @Autowired(required = false)
     DirectBearerAuthClient directBearerAuthClient
+    @Autowired
+    IAuthorisedSystemRepository authorisedSystemRepository
 
     def isAuthorisedSystem(HttpServletRequest request){
         def host = request.getRemoteAddr()
@@ -44,7 +45,8 @@ class AuthorisedSystemService {
         log.debug("RemoteAddr: " + request.getRemoteAddr())
         log.debug("host using: " + host)
 
-        return host != null && AuthorisedSystem.findByHost(host)
+        return authorisedSystemRepository.findByHost(host)
+//        return host != null && authorisedSystemRepository.findByHost(host)
     }
 
     /**

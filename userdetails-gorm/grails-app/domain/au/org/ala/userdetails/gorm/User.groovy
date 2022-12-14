@@ -116,7 +116,12 @@ class User extends UserRecord implements Serializable {
     def propsAsMap(){
         def map = [:]
         this.getUserProperties().each {
-            map.put(it.name.startsWith('custom:') ? it.name.substring(7) : it.name,  it.value)
+            if(it.name == "enableMFA"){
+                map.put(it.name, it.value.toBoolean())
+            }
+            else {
+                map.put(it.name.startsWith('custom:') ? it.name.substring(7) : it.name, it.value)
+            }
         }
         map
     }

@@ -16,6 +16,7 @@
 package au.org.ala.userdetails.gorm
 
 import au.org.ala.userdetails.EmailService
+import au.org.ala.userdetails.IAuthorisedSystemRepository
 import au.org.ala.userdetails.IUserService
 import au.org.ala.userdetails.LocationService
 import au.org.ala.userdetails.PasswordService
@@ -69,6 +70,11 @@ class Application extends GrailsAutoConfiguration {
         userService.affiliationsEnabled = grailsApplication.config.getProperty('attributes.affiliations.enabled', Boolean, false)
 
         return userService
+    }
+
+    @Bean('authorisedSystemRepository')
+    IAuthorisedSystemRepository authorisedSystemRepository() {
+        new GormAuthorisedSystemRepository()
     }
 
 }

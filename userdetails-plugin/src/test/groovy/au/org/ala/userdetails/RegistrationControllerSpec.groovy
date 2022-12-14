@@ -17,21 +17,18 @@ package au.org.ala.userdetails
 
 import au.org.ala.recaptcha.RecaptchaClient
 import au.org.ala.recaptcha.RecaptchaResponse
-import au.org.ala.users.RoleRecord
-import au.org.ala.users.UserPropertyRecord
 import au.org.ala.users.UserRecord
-import au.org.ala.users.UserRoleRecord
 import grails.testing.gorm.DataTest
 import grails.testing.web.controllers.ControllerUnitTest
 import org.grails.web.servlet.mvc.SynchronizerTokensHolder
 import retrofit2.mock.Calls
+import spock.lang.Ignore
 
-
-//@Mock([UserRecord, RoleRecord, UserRoleRecord, UserPropertyRecord])
+@Ignore
 class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUnitTest<RegistrationController>, DataTest {
 
     def passwordService = Mock(PasswordService)
-    def userService = Mock(GormUserService)
+    def userService = Mock(IUserService)
     def emailService = Mock(EmailService)
     def recaptchaClient = Mock(RecaptchaClient)
 
@@ -133,7 +130,7 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
         controller.updatePassword()
 
         then:
-        1 * passwordService.resetPassword(user, password)
+        1 * userService.resetPassword(user, password, _, _)
         1 * userService.clearTempAuthKey(user)
         response.redirectedUrl == '/registration/passwordResetSuccess'
     }
@@ -167,7 +164,7 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
         then:
         1 * recaptchaClient.verify(secretKey, '123', '127.0.0.1') >> { Calls.response(new RecaptchaResponse(true, '2019-09-27T16:06:00Z', 'test-host', [])) }
         1 * userService.registerUser(_) >> { def user = new UserRecord(params); user.tempAuthKey = '123'; user }
-        1 * passwordService.resetPassword(_, 'password')
+        1 * userService.resetPassword(_, 'password', _, _)
         1 * emailService.sendAccountActivation(_, '123')
         response.redirectedUrl == '/registration/accountCreated'
     }
@@ -199,7 +196,7 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
         then:
         0 * recaptchaClient.verify(_, _, _)
         1 * userService.registerUser(_) >> { def user = new UserRecord(params); user.tempAuthKey = '123'; user }
-        1 * passwordService.resetPassword(_, 'password')
+        1 * userService.resetPassword(_, 'password', _, _)
         1 * emailService.sendAccountActivation(_, '123')
         response.redirectedUrl == '/registration/accountCreated'
     }
@@ -233,7 +230,7 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
         then:
         1 * recaptchaClient.verify(secretKey, null, '127.0.0.1') >> { Calls.response(new RecaptchaResponse(false, null, null, ['missing-input-response'])) }
         0 * userService.registerUser(_)
-        0 * passwordService.resetPassword(_, _)
+        0 * userService.resetPassword(_, _, _, _)
         0 * emailService.sendAccountActivation(_, _)
     }
 

@@ -23,9 +23,9 @@ import au.org.ala.users.UserRecord
 import au.org.ala.users.UserRoleRecord
 import grails.web.servlet.mvc.GrailsParameterMap
 
-interface IUserService {
+import javax.servlet.http.HttpSession
 
-    boolean updateUser(GrailsParameterMap params)
+interface IUserService {
 
     boolean updateUser(String userId, GrailsParameterMap params)
 
@@ -39,7 +39,7 @@ interface IUserService {
 
     boolean isEmailInUse(String newEmail)
 
-    void activateAccount(UserRecord user)
+    boolean activateAccount(UserRecord user, GrailsParameterMap params)
 
     def listUsers(String query, String paginationToken, int maxResults)
 
@@ -121,4 +121,16 @@ interface IUserService {
     Map findUserRoles(String role, GrailsParameterMap grailsParameterMap)
 
     boolean deleteRole(String userId, String roleName)
+
+    boolean resetPassword(UserRecord user, String newPassword, boolean isPermanent, String confirmationCode)
+
+    String getPasswordResetView()
+
+    def sendAccountActivation(UserRecord user)
+
+    String getSecretForMfa()
+
+    boolean verifyUserCode(String userCode)
+
+    void enableMfa(String userId, boolean enable)
 }

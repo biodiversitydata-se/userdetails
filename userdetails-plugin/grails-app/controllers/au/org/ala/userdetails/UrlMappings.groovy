@@ -39,6 +39,7 @@ class UrlMappings {
         "/registration/$action?/$id?"(controller: 'registration')
 
         "/registration/activateAccount/$userId/$authKey"(controller:'registration', action: 'activateAccount')
+        "/registration/activateAccount/$userId"(controller:'registration', action: 'activateAccount')
         "/registration/resetPassword/$userId/$authKey"(controller:'registration', action: 'passwordReset')
 
         "/registration/forgottenPassword"(controller:'registration', action: 'forgottenPassword')

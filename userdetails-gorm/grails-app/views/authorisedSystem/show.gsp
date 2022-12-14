@@ -14,7 +14,7 @@
   - rights and limitations under the License.
   --}%
 
-<%@ page import="au.org.ala.users.AuthorisedSystem" %>
+<%@ page import="au.org.ala.userdetails.gorm.AuthorisedSystem" %>
 <!DOCTYPE html>
 <html>
 	<head>

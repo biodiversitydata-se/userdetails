@@ -1,6 +1,5 @@
 package au.org.ala.userdetails
 
-import au.org.ala.users.AuthorisedSystem
 import au.org.ala.ws.security.JwtProperties
 import grails.testing.gorm.DataTest
 import grails.testing.services.ServiceUnitTest

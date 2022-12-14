@@ -1,4 +1,4 @@
-<%@ page import="au.org.ala.users.AuthorisedSystem" %>
+<%@ page import="au.org.ala.userdetails.gorm.AuthorisedSystem" %>
 
 <div class="form-group fieldcontain ${hasErrors(bean: authorisedSystemInstance, field: 'host', 'error')} ">
 	<label for="host">

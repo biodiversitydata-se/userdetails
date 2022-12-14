@@ -133,4 +133,14 @@ interface IUserService {
     boolean verifyUserCode(String userCode)
 
     void enableMfa(String userId, boolean enable)
+
+    def findUsersByRole(String roleName, List numberIds, List userIds, String pageOrToken)
+
+    def getUserDetailsFromIdList(List idList)
+
+    def searchByUsernameOrEmail(String q, int max)
+
+    def saveCustomUserProperty(UserRecord user, String name, String value)
+
+    def getCustomUserProperty(UserRecord user, String name)
 }

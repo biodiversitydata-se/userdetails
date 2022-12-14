@@ -23,6 +23,7 @@ import au.org.ala.userdetails.EmailService
 import au.org.ala.userdetails.IUserService
 import au.org.ala.userdetails.LocationService
 import au.org.ala.userdetails.PasswordService
+import au.org.ala.userdetails.ProfileService
 import au.org.ala.userdetails.ResultStreamer
 import au.org.ala.users.RoleRecord
 import au.org.ala.users.UserPropertyRecord
@@ -613,7 +614,7 @@ class GormUserService implements IUserService {
     }
 
     @Override
-    User findByUserNameOrEmail(String username) {
+    UserRecord findByUserNameOrEmail(String username) {
         return User.findByUserNameOrEmail(username, username)
     }
 
@@ -736,11 +737,6 @@ class GormUserService implements IUserService {
     }
 
     @Override
-    User findByUserNameOrEmail(String userName) {
-        return User.findByUserNameOrEmail(userName, userName)
-    }
-
-    @Override
     def findUsersByRole(String roleName, List numberIds, List userIds, String pageOrToken) {
         ScrollableResults results = null
         // stream the results just in case someone requests ROLE_USER or something
@@ -795,12 +791,12 @@ class GormUserService implements IUserService {
         return [results: results]
     }
 
-    def saveCustomUserProperty(User user, String name, String value){
+    def saveCustomUserProperty(UserRecord user, String name, String value){
         UserProperty property = profileService.saveUserProperty(user, name, value)
         return property.hasErrors() ? null: property
     }
 
-    def getCustomUserProperty(User user, String name){
+    def getCustomUserProperty(UserRecord user, String name){
         return profileService.getUserProperty(user, name);
     }
 }

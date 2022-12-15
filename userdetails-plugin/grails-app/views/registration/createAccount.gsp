@@ -104,7 +104,8 @@
                 </g:if>
                 <h2><g:message code="create.account.your.account.title" /></h2>
                 <p>
-                    <g:message code="create.account.your.email.will.be.your.account.login" args="[grailsApplication.config.getProperty('skin.orgNameShort')]" />
+                    <g:message code="create.account.your.email.will.be.your.account.login"
+                               args="[grailsApplication.config.skin.orgNameShort]" />
                     <g:if test="${grailsApplication.config.getProperty('registration.showAlaMessage')}">
                         <g:message code="create.account.your.email.will.be.your.account.login.ala" args="[grailsApplication.config.getProperty('registration.resetPasswordArticle'), grailsApplication.config.getProperty('registration.alertArticle')]" />
                     </g:if>
@@ -118,14 +119,22 @@
                         <g:message code="create.account.activation.description.ala" args="[grailsApplication.config.getProperty('registration.activationArticle')]" />
                     </g:if></p>
                 </g:if>
+
+                <g:if test="${!edit}">
+                    <g:render template="passwordPolicy"
+                              model="[passwordPolicy: passwordPolicy]"/>
+                </g:if>
+
                 <h2><g:message code="create.account.policy.title" /></h2>
                 <p>
                     <g:message code="create.account.privacy.title" />
-                    <a href="${grailsApplication.config.getProperty('privacyPolicy')}"><g:message code="create.account.privacy.link" /></a>.
+                    <a href="${grailsApplication.config.getProperty('privacyPolicy')}">
+                    <g:message code="create.account.privacy.link" /></a>.
                 </p>
                 <h2><g:message code="create.account.tos.title" /></h2>
                 <p>
-                    <g:message code="create.account.tos.description" args="[grailsApplication.config.getProperty('skin.orgNameShort'), grailsApplication.config.getProperty('termsOfUse')]" />
+                    <g:message code="create.account.tos.description"
+                               args="[grailsApplication.config.getProperty('skin.orgNameShort'), grailsApplication.config.getProperty('termsOfUse')]" />
                 </p>
                 <g:if test="${edit}">
                     <h2><g:message code="user.enableMFA.title" /></h2>
@@ -261,6 +270,20 @@
                             <g:link controller="Registration" action="disableMfa" params="[userId:user?.email]">Disable MFA</g:link>
                         </g:if>
                     </div>
+                    <div class="form-group">
+                        <label for="confirmUserPassword">
+                            <g:message code="create.account.confirm.password" />
+                        </label>
+                        <input id="confirmUserPassword"
+                               name="confirmUserPassword"
+                               class="form-control"
+                               value=""
+                               data-validation-engine="validate[required, minSize[8]]"
+                               data-errormessage-value-missing="Password is required!"
+                               type="password"
+                               autocomplete="current-password"/>
+                    </div>
+
                     <button id="updateAccountSubmit" class="btn btn-primary"><g:message code="create.account.update.account" /></button>
                     <button id="disableAccountSubmit" class="btn btn-danger"><g:message code="create.account.disable.account" /></button>
                 </g:if>

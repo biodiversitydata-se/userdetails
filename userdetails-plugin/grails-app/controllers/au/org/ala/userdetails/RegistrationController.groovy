@@ -23,6 +23,9 @@ import au.org.ala.ws.service.WebService
 import grails.converters.JSON
 
 import org.springframework.beans.factory.annotation.Qualifier
+import org.passay.RuleResult
+import org.springframework.context.i18n.LocaleContextHolder
+import org.springframework.validation.Errors
 
 /**
  * Controller that handles the interactions with general public.
@@ -37,7 +40,6 @@ class RegistrationController {
 
     def simpleCaptchaService
     def emailService
-    def authService
     def passwordService
 
     @Qualifier('userService')
@@ -45,12 +47,17 @@ class RegistrationController {
     def locationService
     RecaptchaClient recaptchaClient
     WebService webService
+    def messageSource
 
     def index() {
         redirect(action: 'createAccount')
     }
 
-    def createAccount() {}
+    def createAccount() {
+        render(view: 'createAccount', model: [
+                passwordPolicy: passwordService.buildPasswordPolicy(),
+        ])
+    }
 
     def editAccount() {
         def user = userService.currentUser
@@ -63,7 +70,7 @@ class RegistrationController {
             render(view: 'accountError', model: [msg: "UserRecord not found with ID ${params.userId}"])
         } else if (user.tempAuthKey == params.authKey) {
             //keys match, so lets reset password
-            render(view: 'passwordReset', model: [user: user, authKey: params.authKey])
+            render(view: 'passwordReset', model: [user: user, authKey: params.authKey, passwordPolicy: passwordService.buildPasswordPolicy()])
         } else {
             render(view: 'authKeyExpired')
         }
@@ -71,12 +78,18 @@ class RegistrationController {
 
     def updatePassword(UpdatePasswordCommand cmd) {
         UserRecord user = userService.getUserById(cmd.userId as String)
+
+        // since the email address is the user name, use the part before the @ as the username
+        def username = user?.userName ?: user?.email ?: ''
+        def validationResult = passwordService.validatePassword(username, cmd?.password)
+        buildErrorMessages(validationResult, cmd.errors)
+
         if (cmd.hasErrors()) {
             render(view: 'passwordReset', model: [user: user, authKey: cmd.authKey, errors:cmd.errors, passwordMatchFail: true])
         }
         else {
             withForm {
-                if (user.tempAuthKey == params.authKey) {
+                if (user.tempAuthKey == cmd.authKey) {
                     //update the password
                     try {
                         userService.resetPassword(user, cmd.password, true, null)
@@ -226,6 +239,13 @@ class RegistrationController {
 //                params.userName = params.email
             }
 
+            def isCorrectPassword = passwordService.checkUserPassword(user, params.confirmUserPassword)
+            if (!isCorrectPassword) {
+                flash.message = 'Incorrect password. Could not update account details. Please try again.'
+                render(view: 'createAccount', model: [edit: true, user: user, props: user?.propsAsMap()])
+                return
+            }
+
             def success = userService.updateUser(user.userId, params)
 
             if (success) {
@@ -240,6 +260,8 @@ class RegistrationController {
     }
 
     def register() {
+        def paramsEmail = params?.email?.toString()
+        def paramsPassword = params?.password?.toString()
         withForm {
 
             def recaptchaKey = grailsApplication.config.getProperty('recaptcha.secretKey')
@@ -264,11 +286,19 @@ class RegistrationController {
             }
 
             //create user account...
-            if (!params.email || userService.isEmailRegistered(params.email)) {
-                def inactiveUser = !userService.isActive(params.email)
-                def lockedUser = userService.isLocked(params.email)
+            if (!paramsEmail || userService.isEmailRegistered(paramsEmail)) {
+                def inactiveUser = !userService.isActive(paramsEmail)
+                def lockedUser = userService.isLocked(paramsEmail)
                 render(view: 'createAccount', model: [edit: false, user: params, props: params, alreadyRegistered: true, inactiveUser: inactiveUser, lockedUser: lockedUser])
             } else {
+
+                def passwordValidation = passwordService.validatePassword(paramsEmail, paramsPassword)
+                if (!passwordValidation.valid) {
+                    log.warn("The password for user name '${paramsEmail}' did not meet the validation criteria '${passwordValidation}'")
+                    flash.message = "The selected password does not meet the password policy. Please try again with a different password. ${buildErrorMessages(passwordValidation)}"
+                    render(view: 'createAccount', model: [edit: false, user: params, props: params])
+                    return
+                }
 
                 try {
                     //does a user with the supplied email address exist
@@ -363,5 +393,26 @@ class RegistrationController {
     def disableMfa() {
         userService.enableMfa(params.userId, false)
         redirect(action: 'editAccount')
+    }
+
+    private String buildErrorMessages(RuleResult validationResult, Errors errors = null) {
+        if (validationResult.valid) {
+            return null
+        }
+        def results = []
+        if (!validationResult.valid) {
+            def details = validationResult.details
+            for (def detail in details) {
+                for (String errorCode in detail.errorCodes) {
+                    def fullErrorCode = "user.password.error.${errorCode?.toLowerCase()}"
+                    def errorValues = detail.values as Object[]
+                    if (errors) {
+                        errors.rejectValue('password', fullErrorCode, errorValues, "Invalid password.")
+                    }
+                    results.add(messageSource.getMessage(fullErrorCode, errorValues, "Invalid password.", LocaleContextHolder.locale))
+                }
+            }
+        }
+        return results.unique().sort().join(' ')
     }
 }

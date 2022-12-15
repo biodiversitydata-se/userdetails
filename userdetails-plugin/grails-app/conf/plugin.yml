@@ -186,6 +186,24 @@ spring:
 
 password:
     encoder: bcrypt # or legacy
+    generatedLength: 10
+    # Passwords must satisfy this policy.
+    # The minLength policy is always required, even when the policy is disabled. It has a default value of 8.
+    # To remove / disable an aspect of the policy, either remove the item or set to 0 / false, whichever is relevant.
+    policy:
+      minLength: 8
+      enabled: true
+      maxLength: 64
+      excludeUsername: true
+      excludeUsQwertyKeyboardSequence: true
+      excludeCommonPasswords: true
+      charGroupMinRequired: 3
+      charGroupMinUpperCase: 1
+      charGroupMinLowerCase: 1
+      charGroupMinUpperOrLowerCase: 0
+      charGroupMinDigit: 1
+      charGroupMinSpecial: 1
+
 bcrypt:
     strength: 10
 
@@ -325,3 +343,8 @@ environments:
             cas:
                 appServerName: "https://auth.ala.org.au"
 
+# Allow to disable some tools for non-ALA Portals
+myProfile:
+  useDigiVol: true
+  useSandbox: true
+  useBiocollect: true

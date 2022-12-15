@@ -61,10 +61,10 @@ abstract class UserDetailsSpec extends Specification {
     }
 
     void cleanup() {
-        UserRecord.deleteAll()
-        RoleRecord.deleteAll()
-        UserRoleRecord.deleteAll()
-        UserPropertyRecord.deleteAll()
+//        UserRecord.deleteAll()
+//        RoleRecord.deleteAll()
+//        UserRoleRecord.deleteAll()
+//        UserPropertyRecord.deleteAll()
     }
 
 

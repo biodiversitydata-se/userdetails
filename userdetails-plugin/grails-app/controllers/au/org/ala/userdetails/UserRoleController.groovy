@@ -16,13 +16,11 @@
 package au.org.ala.userdetails
 
 import au.org.ala.auth.PreAuthorise
-import au.org.ala.users.RoleRecord
 import au.org.ala.users.UserRecord
 import au.org.ala.users.UserRoleRecord
 import grails.converters.JSON
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.dao.DataIntegrityViolationException
 
 @PreAuthorise
 class UserRoleController {
@@ -54,9 +52,9 @@ class UserRoleController {
         [user: user, roles:roles]
     }
 
-    def list(Integer max) {
+    def list() {
 
-        Map model = userService.findUserRoles(params.role, params)
+        PagedResult<UserRoleRecord> model = userService.findUserRoles(params.role, params)
 //        if(params.role){
 //            def role = userService.findUserRoles(params.role, params) // RoleRecord.findByRole(params.role)
 //            if(role){
@@ -72,9 +70,9 @@ class UserRoleController {
 //        }
         withFormat {
 
-            html { model }
+            html { [userRoleInstanceList: model.list, userRoleInstanceTotal: model.count, nextToken: model.nextPageToken] }
             json {
-                Map toRender = [users:model.userRoleInstanceList.collect{it.user}, count:model.userRoleInstanceTotal]
+                Map toRender = [users:model.list.collect{it.user}, count:model.count, nextToken: model.nextPageToken]
                 render toRender as JSON
             }
         }
@@ -95,7 +93,7 @@ class UserRoleController {
     def deleteRole() {
 
         try {
-            def result = userService.deleteRole(params.userId, params.role)
+            def result = userService.removeUserRole(params.userId, params.role)
             if (result) {
                 flash.message = message(code: 'default.deleted.message', args: [message(code: 'userRole.label', default: 'UserRole'), params.role])
                 redirect(controller:"user", action: "edit", id:params.userId)

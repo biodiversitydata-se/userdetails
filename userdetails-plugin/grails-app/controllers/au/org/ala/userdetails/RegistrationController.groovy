@@ -165,24 +165,10 @@ class RegistrationController {
 
     def startPasswordReset() {
         //check for human
-        def recaptchaKey = grailsApplication.config.getProperty('recaptcha.secretKey')
-        if (recaptchaKey) {
-            def recaptchaResponse = params['g-recaptcha-response']
-            def call = recaptchaClient.verify(recaptchaKey, recaptchaResponse, request.remoteAddr)
-            def response = call.execute()
-            if (response.isSuccessful()) {
-                def verifyResponse = response.body()
-                if (!verifyResponse.success) {
-                    log.warn('Recaptcha verify reported an error: {}', verifyResponse)
-                    flash.message = 'There was an error with the captcha, please try again'
-                    render(view: 'forgottenPassword', model: [email: params.email, captchaInvalid: true])
-                    return
-                }
-            } else {
-                //send password reset link
-                render(view: 'forgottenPassword', model: [email: params.email, captchaInvalid: true])
-                return
-            }
+        if (!recaptchaVerify()) {
+            flash.message = 'There was an error with the captcha, please try again'
+            render(view: 'forgottenPassword', model: [email: params.email, captchaInvalid: true])
+            return
         }
 
         log.info("Starting password reset for email address: " + params.email)
@@ -264,25 +250,10 @@ class RegistrationController {
         def paramsPassword = params?.password?.toString()
         withForm {
 
-            def recaptchaKey = grailsApplication.config.getProperty('recaptcha.secretKey')
-            if (recaptchaKey) {
-                def recaptchaResponse = params['g-recaptcha-response']
-                def call = recaptchaClient.verify(recaptchaKey, recaptchaResponse, request.remoteAddr)
-                def response = call.execute()
-                if (response.isSuccessful()) {
-                    def verifyResponse = response.body()
-                    if (!verifyResponse.success) {
-                        log.warn('Recaptcha verify reported an error: {}', verifyResponse)
-                        flash.message = 'There was an error with the captcha, please try again'
-                        render(view: 'createAccount', model: [edit: false, user: params, props: params])
-                        return
-                    }
-                } else {
-                    log.warn("error from recaptcha {}", response)
-                    flash.message = 'There was an error with the captcha, please try again'
-                    render(view: 'createAccount', model: [edit: false, user: params, props: params])
-                    return
-                }
+            if (!recaptchaVerify()) {
+                flash.message = 'There was an error with the captcha, please try again'
+                render(view: 'createAccount', model: [edit: false, user: params, props: params])
+                return
             }
 
             //create user account...
@@ -414,5 +385,28 @@ class RegistrationController {
             }
         }
         return results.unique().sort().join(' ')
+    }
+
+    private boolean recaptchaVerify() {
+        boolean result
+        def recaptchaKey = grailsApplication.config.getProperty('recaptcha.secretKey')
+        if (recaptchaKey) {
+            def recaptchaResponse = params['g-recaptcha-response']
+            def call = recaptchaClient.verify(recaptchaKey, recaptchaResponse, request.remoteAddr)
+            def response = call.execute()
+            if (response.isSuccessful()) {
+                def verifyResponse = response.body()
+                result = verifyResponse.success
+                if (!result) {
+                    log.debug('Recaptcha verify reported an error: {}', verifyResponse)
+                }
+            }  else {
+                log.debug('Recaptcha verify response failure: {}, {}', response.message(), response.errorBody().toString())
+                result = false
+            }
+        } else {
+            result = true
+        }
+        return result
     }
 }

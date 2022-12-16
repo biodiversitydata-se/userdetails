@@ -537,11 +537,7 @@ class CognitoUserService implements IUserService {
 
     @Override
     void addRoles(Collection<RoleRecord> roleRecords) {
-
         roleRecords.each { addRole(it) }
-
-//        throw new NotImplementedException()
-        log.warn("CognitoUserService.addRoles() not implemented yet")
     }
 
     @Override
@@ -620,7 +616,7 @@ class CognitoUserService implements IUserService {
                         new ListUsersInGroupRequest()
                                 .withGroupName(role)
                                 .withLimit(max)
-                                .withNextToken(params.token) // TODO
+                                .withNextToken(params.token)
                                 .withUserPoolId(poolId)
                 )
                 if (isSuccessful(listUsersInGroupResult)) {

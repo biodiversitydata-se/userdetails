@@ -111,6 +111,10 @@ grails:
             ehcacheXmlLocation: 'classpath:userdetails-ehcache.xml'
             reloadable: false
 
+security:
+  oidc:
+    scope: openid profile email ala/attrs ala/roles aws.cognito.signin.user.admin
+
 openapi:
   title: UserDetails REST services
   description: REST services for interacting with the user details webapp

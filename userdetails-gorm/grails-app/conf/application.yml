@@ -125,6 +125,13 @@ grails:
             ehcacheXmlLocation: 'classpath:userdetails-ehcache.xml'
             reloadable: false
 
+security:
+  oidc:
+    scope: openid profile email ala roles
+    allowUnsignedIdTokens: true # Disable once CAS no longer suggests the none algorithm
+  jwt:
+    fallbackToLegacyBehaviour: true # Reset to false once legacy api keys no longer supported
+
 openapi:
   title: UserDetails REST services
   description: REST services for interacting with the user details webapp

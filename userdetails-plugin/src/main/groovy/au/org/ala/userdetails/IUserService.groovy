@@ -41,7 +41,7 @@ interface IUserService {
 
     boolean activateAccount(UserRecord user, GrailsParameterMap params)
 
-    def listUsers(String query, String paginationToken, int maxResults)
+    List<UserRecord> listUsers(String query, String paginationToken, int maxResults)
 
     Collection<UserRecord> listUsers()
 
@@ -82,21 +82,78 @@ interface IUserService {
 
     Collection<RoleRecord> listRoles()
 
-    Collection<RoleRecord> listRoles(String paginationToken, int maxResults)
+    /**
+     * Retrieve a list of roles, paged by the params in the argument.
+     *
+     * The following paging params are always supported:
+     *  - max: Maximum number of items to retrieve at a time
+     * The following paging params are supported in GORM:
+     *  - offset: The number of items to skip forward
+     *  - sort: the field to sort results by
+     *  - order: whether to sort 'asc'ending or 'desc'ending
+     * The following paging params are supported in Cognito:
+     *  - token: The paging token provided by the back end API
+     *
+     * @param params The parameters that may be used in the search
+     * @return A result with the list of roles and either the total count or the next page token.
+     */
+    PagedResult<RoleRecord> listRoles(GrailsParameterMap params)
 
-//    RoleRecord createRole(GrailsParameterMap params)
-
+    /**
+     * Add a role with `rolename` to user identified by `userid`
+     *
+     * @param userId The users id
+     * @param roleName The name of the role to add
+     * @return True if the operation succeeded or false otherwise
+     */
     boolean addUserRole(String userId, String roleName)
 
-//    boolean removeUserRole(UserRecord user, RoleRecord role)
+    /**
+     * Remove a role with `rolename` from user identified by `userid`
+     *
+     * @param userId The users id
+     * @param roleName The name of the role to add
+     * @return True if the operation succeeded or false otherwise
+     */
+    boolean removeUserRole(String userId, String roleName)
+
+    /**
+     * Add a list of roles to the system.
+     *
+     * @param roleRecords The list of RoleRecords to add
+     */
+    void addRoles(Collection<RoleRecord> roleRecords)
+
+    /**
+     * Add a single role to the system.
+     *
+     * @param roleRecord The RoleRecord to add
+     */
+
+    RoleRecord addRole(RoleRecord roleRecord)
+
+    /**
+     * Find a list of users for a given role.
+     *
+     * The following paging params are always supported:
+     *  - max: Maximum number of items to retrieve at a time
+     * The following paging params are supported in GORM:
+     *  - offset: The number of items to skip forward
+     *  - sort: the field to sort results by
+     *  - order: whether to sort 'asc'ending or 'desc'ending
+     * The following paging params are supported in Cognito:
+     *  - token: The paging token provided by the back end API
+     *
+     * @param role The role name to get the list of users for
+     * @param params The paging parameters for the request
+     */
+    PagedResult<UserRoleRecord> findUserRoles(String role, GrailsParameterMap params)
 
     // TODO return type and implementation
     void findScrollableUsersByUserName(String username, int maxResults, ResultStreamer resultStreamer)
 
     // TODO return type and implementation
     void findScrollableUsersByIdsAndRole(List<String> ids, String roleName, ResultStreamer resultStreamer)
-
-    void addRoles(Collection<RoleRecord> roleRecords)
 
     List<UserPropertyRecord> findAllAttributesByName(String s)
 
@@ -108,8 +165,6 @@ interface IUserService {
 
     List getAllAvailableProperties()
 
-    RoleRecord addRole(RoleRecord roleRecord)
-
     UserRecord findByUserNameOrEmail(String username)
 
     List<String[]> listNamesAndEmails()
@@ -117,10 +172,6 @@ interface IUserService {
     List<String[]> listIdsAndNames()
 
     List<String[]> listUserDetails()
-
-    Map findUserRoles(String role, GrailsParameterMap grailsParameterMap)
-
-    boolean deleteRole(String userId, String roleName)
 
     boolean resetPassword(UserRecord user, String newPassword, boolean isPermanent, String confirmationCode)
 

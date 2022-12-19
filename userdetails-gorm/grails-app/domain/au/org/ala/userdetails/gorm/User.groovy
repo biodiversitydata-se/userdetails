@@ -21,7 +21,7 @@ import groovy.transform.EqualsAndHashCode
 import java.sql.Timestamp
 
 @EqualsAndHashCode(includes = 'id')
-class User extends UserRecord implements Serializable {
+class User extends UserRecord<Long> implements Serializable {
 
     static hasMany =  [
             userRoles: UserRole,
@@ -50,8 +50,6 @@ class User extends UserRecord implements Serializable {
 
     Collection<UserRole> userRoles
     Collection<UserProperty> userProperties
-
-
 
     static mapping = {
         table 'users'

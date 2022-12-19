@@ -64,7 +64,7 @@ class AdminController {
         String extraFields =  secondaryFields.join(",")
 
         render(view: 'exportUsers',
-                model: [roles        : userService.listRoles(),//RoleRecord.list(),
+                model: [roles        : userService.listRoles(),
                         primaryFields: grailsApplication.config.getProperty('admin.export.csv.primary.fields'),
                         extraFields  : extraFields])
     }

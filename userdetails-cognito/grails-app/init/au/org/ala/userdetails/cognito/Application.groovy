@@ -56,7 +56,7 @@ class Application extends GrailsAutoConfiguration {
     }
 
     @Bean
-    AWSCognitoIdentityProviderClient cognitoIdpClient(AWSCredentialsProvider awsCredentialsProvider) {
+    AWSCognitoIdentityProvider cognitoIdpClient(AWSCredentialsProvider awsCredentialsProvider) {
         def region = grailsApplication.config.getProperty('cognito.region')
 
         AWSCognitoIdentityProvider cognitoIdp = AWSCognitoIdentityProviderClientBuilder.standard()

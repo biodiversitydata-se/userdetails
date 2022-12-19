@@ -23,12 +23,14 @@ import java.sql.Timestamp
 
 @EqualsAndHashCode()
 //@EqualsAndHashCode(includes = 'id')
-class UserRecord implements WebDataBinding, Serializable {
+class UserRecord<T> implements WebDataBinding, Serializable {
 
     static hasMany =  [
             userRoles: UserRoleRecord,
             userProperties: UserPropertyRecord
     ]
+
+    T id
 
     String userId
 

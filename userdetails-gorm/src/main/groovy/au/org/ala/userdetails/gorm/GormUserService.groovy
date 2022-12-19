@@ -22,12 +22,12 @@ import au.org.ala.cas.encoding.LegacyPasswordEncoder
 import au.org.ala.userdetails.EmailService
 import au.org.ala.userdetails.IUserService
 import au.org.ala.userdetails.LocationService
+import au.org.ala.userdetails.PagedResult
 import au.org.ala.userdetails.PasswordService
 import au.org.ala.userdetails.ResultStreamer
 import au.org.ala.users.RoleRecord
 import au.org.ala.users.UserPropertyRecord
 import au.org.ala.users.UserRecord
-import au.org.ala.users.UserRoleRecord
 import au.org.ala.web.AuthService
 import au.org.ala.ws.service.WebService
 import grails.converters.JSON
@@ -44,8 +44,6 @@ import org.grails.orm.hibernate.cfg.GrailsHibernateUtil
 import org.hibernate.ScrollableResults
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.MessageSource
-
-import javax.servlet.http.HttpSession
 
 @Slf4j
 @Transactional
@@ -162,7 +160,7 @@ class GormUserService implements IUserService {
     }
 
     @Override
-    def listUsers(String query, String paginationToken, int maxResults) {
+    List<User> listUsers(String query, String paginationToken, int maxResults) {
 
         if (query) {
 
@@ -498,8 +496,10 @@ class GormUserService implements IUserService {
     }
 
     @Override
-    Collection<RoleRecord> listRoles(String paginationToken, int maxResults) {
-        Role.list([offset: paginationToken as int, max: maxResults ])
+    PagedResult<RoleRecord> listRoles(GrailsParameterMap params) {
+        params.max = Math.min(params.int('max', 100), 1000)
+        def roles = Role.list(params)
+        return new PagedResult<RoleRecord>(list: roles, count: Role.count(), nextPageToken: null)
     }
 
 //    Role createRole(GrailsParameterMap params) {
@@ -515,11 +515,6 @@ class GormUserService implements IUserService {
 
          new UserRole(user: user, role: role).save()
     }
-
-//    @Override
-//    boolean removeUserRole(UserRecord user, RoleRecord role) {
-//        return false
-//    }
 
     @Override
     void findScrollableUsersByUserName(String username, int max, ResultStreamer resultStreamer) {
@@ -608,7 +603,7 @@ class GormUserService implements IUserService {
 
     @Override
     RoleRecord addRole(RoleRecord roleRecord) {
-        return new Role(role: roleRecord.role).save(flush: true)
+        return new Role(role: roleRecord.role, description: roleRecord.description).save(flush: true)
     }
 
     @Override
@@ -637,34 +632,34 @@ class GormUserService implements IUserService {
 //    }
 
     @Override
-    Map findUserRoles(String roleName, GrailsParameterMap params) {
+    PagedResult<Role> findUserRoles(String roleName, GrailsParameterMap params) {
         params.max = Math.min(params.int('max', 100), 1000)
         if (roleName) {
             def role = Role.findByRole(roleName)
             if(role) {
                 def list = UserRole.findAllByRole(role, params)
-                return [userRoleInstanceList: list, userRoleInstanceTotal: UserRole.findAllByRole(role).size()]
+                return new PagedResult<Role>(list: list, count: UserRole.countByRole(role))
             } else {
-                return [userRoleInstanceList: [], userRoleInstanceTotal: 0]
+                return new PagedResult<Role>(list: [], count: 0)
             }
         } else {
-            return [userRoleInstanceList: UserRole.list(params), userRoleInstanceTotal: UserRole.count()]
+            return new PagedResult<Role>(list: UserRole.list(params), count: UserRole.count())
         }
     }
 
     @Override
-    boolean deleteRole(String userId, String roleName) {
-        def user = UserRecord.get(userId.toLong())
-        def role = RoleRecord.get(roleName)
+    boolean removeUserRole(String userId, String roleName) {
+        def user = User.get(userId.toLong())
+        def role = Role.get(roleName)
 
-        UserRole.withNewTransaction {
+//        UserRole.withNewTransaction {
             def userRoleInstance = UserRole.findByUserAndRole(user, role)
             if (!userRoleInstance) {
                 return false
             }
             userRoleInstance.delete(flush: true)
             return true
-        }
+//        }
     }
 
     private void streamUserResults(ResultStreamer resultStreamer, ScrollableResults results, session) {

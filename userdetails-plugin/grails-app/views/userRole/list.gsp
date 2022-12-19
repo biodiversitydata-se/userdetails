@@ -56,7 +56,7 @@
 						</tbody>
 					</table>
 					<div class="text-center">
-						<hf:paginate total="${userRoleInstanceTotal}" params="${params}"/>
+						<ud:paginate action="list" total="${userRoleInstanceTotal}" nextToken="${nextToken}" params="${params}" />
 					</div>
 				</div>
 			</div>

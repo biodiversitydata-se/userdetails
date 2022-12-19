@@ -28,7 +28,7 @@ class UserMarshaller {
 
     private Map toMap(UserRecord user) {
         [
-                userId: user.id.toString(),
+                userId: user.uiId.toString(),
                 userName: user.userName,
                 firstName: user.firstName,
                 lastName: user.lastName,

@@ -229,7 +229,8 @@ class CognitoUserService implements IUserService {
                         new UserPropertyRecord(name: it.name, value: it.value)
                     }
 
-            new UserRecord(
+            new UserRecord<String>(
+                    id: attributes['name'] ?: userType.username,
                     userId: userType.username,
                     dateCreated: userType.userCreateDate, lastUpdated: userType.userLastModifiedDate,
                     activated: userType.userStatus == "CONFIRMED", locked: !userType.enabled,
@@ -294,7 +295,8 @@ class CognitoUserService implements IUserService {
                 }
 
 
-        UserRecord user = new UserRecord(
+        UserRecord user = new UserRecord<String>(
+                id: attributes['name'] ?: userResponse.username,
                 userId: userResponse.username,
                 dateCreated: userResponse.userCreateDate, lastUpdated: userResponse.userLastModifiedDate,
                 activated: userResponse.userStatus == "CONFIRMED", locked: !userResponse.enabled,
@@ -326,7 +328,8 @@ class CognitoUserService implements IUserService {
                 }
 
 
-        UserRecord user = new UserRecord(
+        UserRecord user = new UserRecord<String>(
+                id: attributes['name'] ?: userResponse.username,
                 userId: userResponse.username,
 //                dateCreated: userResponse.userCreateDate, lastUpdated: userResponse.userLastModifiedDate,
 //                activated: userResponse.userStatus == "CONFIRMED", locked: !userResponse.enabled,

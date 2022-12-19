@@ -55,10 +55,6 @@ class UserRecord<T> implements WebDataBinding, Serializable {
     Collection<UserRoleRecord> userRoles
     Collection<UserPropertyRecord> userProperties
 
-    String getUiId() {
-        return id?.toString() ?: ''
-    }
-
     static constraints = {
         email nullable: true
         firstName  nullable: true

@@ -114,7 +114,7 @@
                 <td><g:link controller="userRole"
                             action="deleteRole"
                             class="btn btn-warning btn-xs"
-                            params="[userId:u.user.uiId,role:u.role.role]"
+                            params="[userId:u.user.id,role:u.role.role]"
                             onclick="return confirm('${message(code: 'default.button.delete.confirm.message', default: 'Are you sure?')}');">
                         ${message(code: 'default.button.delete.label', default: 'Delete')}
                     </g:link>
@@ -125,7 +125,7 @@
 
     <g:link controller="userRole" action="create"
             class="btn btn-default"
-                    params="['user.id': userInstance?.uiId]">${message(code: 'default.add.label', args: [message(code: 'userRole.label', default: 'UserRoleRecord')])}</g:link>
+                    params="['user.id': userInstance?.id]">${message(code: 'default.add.label', args: [message(code: 'userRole.label', default: 'UserRoleRecord')])}</g:link>
 
 </div>
 

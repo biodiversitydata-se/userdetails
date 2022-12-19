@@ -29,7 +29,7 @@
 				<h1>Add role for ${user}</h1>
 				<g:form action="addRole" >
 					<fieldset class="form">
-						<input type="hidden" id="userId" name="userId" value="${user.uiId}"/>
+						<input type="hidden" id="userId" name="userId" value="${user.id}"/>
 						<div class="form-group">
 							<label for="role">
 								<g:message code="userRole.role.label" default="Role" />

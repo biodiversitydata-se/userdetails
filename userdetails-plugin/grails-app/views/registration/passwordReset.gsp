@@ -65,7 +65,7 @@
 
         <g:form useToken="true" name="resetPasswordForm" controller="registration" action="updatePassword">
             <input id="authKey" type="hidden" name="authKey" value="${authKey}"/>
-            <input id="userId" type="hidden" name="userId" value="${user.uiId}"/>
+            <input id="userId" type="hidden" name="userId" value="${user.id}"/>
 
             <div class="form-group">
                 <label for="password">Your new password</label>

@@ -17,7 +17,8 @@
 <head>
     <meta name="layout" content="${grailsApplication.config.getProperty('skin.layout')}"/>
     <meta name="section" content="home"/>
-    <title>Reset my password |  ${grailsApplication.config.getProperty('skin.orgNameLong')}</title>
+    <title>Reset user password |  ${grailsApplication.config.getProperty('skin.orgNameLong')}</title>
+    <meta name="breadcrumbParent" content="${createLink(controller:'admin', action:'index')},Administration" />
     <asset:stylesheet src="application.css" />
 </head>
 <body>

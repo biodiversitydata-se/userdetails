@@ -45,6 +45,7 @@ Base functionality for the userdetails application
 
     Closure doWithSpring() { {->
             // TODO Implement runtime spring config (optional)
+            userdetailsGrailsPluginConfiguration(UserDetailsGrailsPluginConfiguration)
             customObjectMarshallers(CustomObjectMarshallers){
                 marshallers =[
                         new UserPropertyMarshaller(),

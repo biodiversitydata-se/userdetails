@@ -45,12 +45,12 @@ class AdminController {
 
     def sendPasswordResetEmail(){
 
-        def user = userService.getUserByEmail(params.email) // UserRecord.findByEmail(params.email)
+        def user = userService.getUserById(params.email)
         if (user) {
             def password = passwordService.generatePassword(user)
             //email to user
             emailService.sendGeneratedPassword(user, password)
-            render(view:'userPasswordResetSuccess', model:[email:params.email])
+            render(view:'userPasswordResetSuccess', model:[email:params.email, password: password])
        } else {
            render(view:'resetPasswordForUser', model:[email:params.email, emailNotRecognised:true])
        }

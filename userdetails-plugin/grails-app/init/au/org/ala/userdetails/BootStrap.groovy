@@ -45,20 +45,20 @@ class BootStrap {
     def addRoles() {
         if (userService.listRoles().size() == 0) {
             userService.addRoles([
-                (new RoleRecord([role:'ROLE_ABRS_ADMIN', description:'']))
-                (new RoleRecord([role:'ROLE_ADMIN', description:'']))
-                (new RoleRecord([role:'ROLE_COLLECTION_ADMIN', description:'']))
-                (new RoleRecord([role:'ROLE_COLLECTION_EDITOR', description:'']))
-                (new RoleRecord([role:'ROLE_COLLECTORS_ADMIN', description:'']))
-                (new RoleRecord([role:'ROLE_SYSTEM_ADMIN', description:'']))
-                (new RoleRecord([role:'ROLE_USER', description:'']))
-                (new RoleRecord([role:'ROLE_AVH_CLUB', description:'']))
-                (new RoleRecord([role:'ROLE_VP_ADMIN', description:'']))
-                (new RoleRecord([role:'ROLE_ABRS_INSTITUTION', description:'']))
-                (new RoleRecord([role:'ROLE_SPATIAL_ADMIN', description:'']))
-                (new RoleRecord([role:'ROLE_VP_VALIDATOR', description:'']))
-                (new RoleRecord([role:'ROLE_IMAGE_ADMIN', description:'']))
-                (new RoleRecord([role:'ROLE_AVH_ADMIN', description:'']))
+                new RoleRecord(role:'ROLE_ABRS_ADMIN', description:''),
+                new RoleRecord(role:'ROLE_ADMIN', description:''),
+                new RoleRecord(role:'ROLE_COLLECTION_ADMIN', description:''),
+                new RoleRecord(role:'ROLE_COLLECTION_EDITOR', description:''),
+                new RoleRecord(role:'ROLE_COLLECTORS_ADMIN', description:''),
+                new RoleRecord(role:'ROLE_SYSTEM_ADMIN', description:''),
+                new RoleRecord(role:'ROLE_USER', description:''),
+                new RoleRecord(role:'ROLE_AVH_CLUB', description:''),
+                new RoleRecord(role:'ROLE_VP_ADMIN', description:''),
+                new RoleRecord(role:'ROLE_ABRS_INSTITUTION', description:''),
+                new RoleRecord(role:'ROLE_SPATIAL_ADMIN', description:''),
+                new RoleRecord(role:'ROLE_VP_VALIDATOR', description:''),
+                new RoleRecord(role:'ROLE_IMAGE_ADMIN', description:''),
+                new RoleRecord(role:'ROLE_AVH_ADMIN', description:'')
             ])
         }
 

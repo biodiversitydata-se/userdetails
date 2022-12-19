@@ -18,7 +18,13 @@
     <meta name="layout" content="${grailsApplication.config.getProperty('skin.layout')}"/>
     <meta name="section" content="home"/>
     <title><g:message code="forgotten.password.title" /></title>
+    <g:if test="${currentUser}">
+        <meta name="breadcrumbParent" content="${g.createLink(controller: 'profile')},My Profile" />
+    </g:if>
     <asset:stylesheet src="application.css" />
+    <g:if test="${grailsApplication.config.getProperty('recaptcha.siteKey')}">
+        <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    </g:if>
 </head>
 <body>
 
@@ -33,17 +39,22 @@
             </p>
             </g:if>
 
+            <g:if test="${emailInvalid}">
+                <p class="well text-danger">
+                    <g:message code="forgotten.password.don.t.recognise.email" />
+                </p>
+            </g:if>
+
             <g:form action="startPasswordReset" method="POST" onsubmit="submitResetBtn.disabled = true; return true;">
                 <div class="form-group">
                     <label for="email"><g:message code="forgotten.password.email" /></label>
                     <input id="email" name="email" type="text" class="form-control" value="${params.email ?: email}"/>
                 </div>
 
-                <img src="${createLink(controller: 'simpleCaptcha', action: 'captcha')}"/>
-                <div class="form-group">
-                    <label for="captcha"><g:message code="forgotten.password.captcha" /></label>
-                    <g:textField name="captcha" class="form-control"/>
-                </div>
+                <g:if test="${grailsApplication.config.getProperty('recaptcha.siteKey')}">
+                    <div class="g-recaptcha" data-sitekey="${grailsApplication.config.getProperty('recaptcha.siteKey')}"></div>
+                    <br/>
+                </g:if>
 
                 <br/>
                 <g:submitButton id="submitResetBtn" class="btn btn-primary" name="submit" value="${message(code:'forgotten.password.reset.link')}"/>

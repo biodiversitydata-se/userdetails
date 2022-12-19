@@ -38,7 +38,7 @@ class RoleController {
 
         Collection<RoleRecord> roles = userService.listRoles(params.paginationToken, Math.min(max ?: 100, 1000))
 
-        [ roleInstanceList: roles, roleInstanceTotal: roles.count() ]
+        [ roleInstanceList: roles, roleInstanceTotal: roles.size() ]
     }
 
     def create() {

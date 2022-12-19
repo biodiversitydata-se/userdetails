@@ -23,10 +23,12 @@ import au.org.ala.ws.security.JwtProperties
 import grails.converters.JSON
 import grails.testing.gorm.DataTest
 import grails.testing.web.controllers.ControllerUnitTest
+import spock.lang.Ignore
 
 /**
  * Tests the UserDetailsController and the filtering behaviour associated with it.
  */
+@Ignore
 //@TestFor(UserDetailsController)
 //@TestMixin(InterceptorUnitTestMixin)
 //@Mock([UserDetailsWebServicesInterceptor, UserRecord, RoleRecord, UserRoleRecord, UserPropertyRecord])

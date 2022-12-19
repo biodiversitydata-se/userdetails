@@ -65,7 +65,7 @@ class ExternalSiteController {
             flickrUsers(flickrIds) { UserPropertyRecord flickrId ->
                 id flickrId.user.id.toString()
                 externalId flickrId.value
-                externalUsername flickrId.user.propsAsMap().flickrUsername
+                externalUsername flickrId.user.userProperties.find { it.name == 'flickrUsername' }?.value
                 externalUrl 'http://www.flickr.com/photos/' + flickrId.value
             }
         }

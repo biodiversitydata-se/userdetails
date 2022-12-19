@@ -17,21 +17,23 @@ class AuthorisedSystemServiceSpec extends Specification implements ServiceUnitTe
 //        mockDomains(AuthorisedSystem)
     }
 
-    Closure doWithSpring() {{ ->
-        pac4jConfig(InstanceFactoryBean, Stub(Config), Config)
-        directBearerAuthClient(InstanceFactoryBean, Stub(DirectBearerAuthClient), DirectBearerAuthClient)
-        jwtProperties(JwtProperties) {
-            enabled = true
-            fallbackToLegacyBehaviour = true
+    def setup() {
+        defineBeans {
+            authorisedSystemRepository(InstanceFactoryBean, Mock(IAuthorisedSystemRepository), IAuthorisedSystemRepository)
+            pac4jConfig(InstanceFactoryBean, Stub(Config), Config)
+            directBearerAuthClient(InstanceFactoryBean, Stub(DirectBearerAuthClient), DirectBearerAuthClient)
+            jwtProperties(JwtProperties) {
+                enabled = true
+                fallbackToLegacyBehaviour = true
+            }
         }
-    }}
+    }
 
     def "test isAuthorisedRequest legacy"(String remoteAddr, boolean result) {
         given:
         service.jwtProperties.enabled = false
         service.config = null
         service.directBearerAuthClient = null
-        new AuthorisedSystem(host: '123.123.123.123', description: '').save(flush: true)
         def request = new MockHttpServletRequest("GET", "/userdetails/getUserDetails")
         request.remoteAddr = remoteAddr
         request.remoteHost = 'example.org'
@@ -39,6 +41,7 @@ class AuthorisedSystemServiceSpec extends Specification implements ServiceUnitTe
         when:
         def authorised = service.isAuthorisedRequest(request, response, null, null)
         then:
+        1 * service.authorisedSystemRepository.findByHost(remoteAddr) >> result
         authorised == result
 
         where:
@@ -49,7 +52,6 @@ class AuthorisedSystemServiceSpec extends Specification implements ServiceUnitTe
 
     def "test isAuthorisedRequest legacy fallback"(String remoteAddr, boolean result) {
         given:
-        new AuthorisedSystem(host: '123.123.123.123', description: '').save(flush: true)
         def request = new MockHttpServletRequest("GET", "/userdetails/getUserDetails")
         request.remoteAddr = remoteAddr
         request.remoteHost = 'example.org'
@@ -57,6 +59,7 @@ class AuthorisedSystemServiceSpec extends Specification implements ServiceUnitTe
         when:
         def authorised = service.isAuthorisedRequest(request, response, null, null)
         then:
+        1 * service.authorisedSystemRepository.findByHost(remoteAddr) >> result
         authorised == result
 
         where:

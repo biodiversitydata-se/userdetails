@@ -5,12 +5,21 @@ import au.org.ala.auth.PasswordResetFailedException
 import au.org.ala.users.RoleRecord
 import au.org.ala.users.UserPropertyRecord
 import au.org.ala.users.UserRecord
+import au.org.ala.users.UserRoleRecord
 import au.org.ala.ws.tokens.TokenService
 import com.amazonaws.services.cognitoidp.AWSCognitoIdentityProvider
+import com.amazonaws.services.cognitoidp.model.AdminCreateUserRequest
+import com.amazonaws.services.cognitoidp.model.AdminDisableUserRequest
+import com.amazonaws.services.cognitoidp.model.AdminEnableUserRequest
 import com.amazonaws.services.cognitoidp.model.AdminGetUserRequest
 import com.amazonaws.services.cognitoidp.model.AdminGetUserResult
+import com.amazonaws.services.cognitoidp.model.AdminResetUserPasswordRequest
+import com.amazonaws.services.cognitoidp.model.AdminSetUserMFAPreferenceRequest
+import com.amazonaws.services.cognitoidp.model.AdminSetUserPasswordRequest
 import com.amazonaws.services.cognitoidp.model.AdminUpdateUserAttributesRequest
+import com.amazonaws.services.cognitoidp.model.AssociateSoftwareTokenRequest
 import com.amazonaws.services.cognitoidp.model.AttributeType
+import com.amazonaws.services.cognitoidp.model.ConfirmForgotPasswordRequest
 import com.amazonaws.services.cognitoidp.model.GetUserRequest
 import com.amazonaws.services.cognitoidp.model.GetUserResult
 import com.amazonaws.services.cognitoidp.model.ListGroupsRequest
@@ -19,10 +28,15 @@ import com.amazonaws.services.cognitoidp.model.ListUsersRequest
 import com.amazonaws.services.cognitoidp.model.ListUsersResult
 import com.amazonaws.services.cognitoidp.model.UpdateUserAttributesRequest
 import com.amazonaws.services.cognitoidp.model.UpdateUserAttributesResult
+import com.amazonaws.services.cognitoidp.model.SoftwareTokenMfaSettingsType
+import com.amazonaws.services.cognitoidp.model.UserNotFoundException
 import com.amazonaws.services.cognitoidp.model.UserType
 import com.nimbusds.oauth2.sdk.token.AccessToken
+import com.amazonaws.services.cognitoidp.model.VerifySoftwareTokenRequest
 import grails.web.servlet.mvc.GrailsParameterMap
 import groovy.util.logging.Slf4j
+import org.apache.commons.codec.digest.HmacAlgorithms
+import org.apache.commons.codec.digest.HmacUtils
 import org.apache.commons.lang3.NotImplementedException
 import org.springframework.beans.factory.annotation.Value
 
@@ -37,67 +51,20 @@ class CognitoUserService implements IUserService {
 
     EmailService emailService
     TokenService tokenService
+    def grailsApplication
 
     AWSCognitoIdentityProvider cognitoIdp
     String poolId
 
     @Value('${attributes.affiliations.enabled:false}')
     boolean affiliationsEnabled = false
-
-    @Override
-    boolean updateUser(GrailsParameterMap params) {
-
-        AccessToken accessToken = tokenService.getAuthToken(true)
-
-
-//        def emailRecipients = [ user.email ]
-//        if (params.email != user.email) {
-//            emailRecipients << params.email
-//        }
-
-        try {
-//            user.setProperties(params)
-//            user.activated = true
-//            user.locked = false
-
-//            Collection<AttributeType> userAttributes = user.userProperties.collect { new AttributeType().withName(it.name).withValue(it.value) }
-            Collection<AttributeType> userAttributes = new ArrayList<>()
-
-//            userAttributes.add(new AttributeType().withName('email').withValue(user.email))
-////            userAttributes.add(new AttributeType().withName('userName').withValue(user.userName))
-////        userAttributes.add(new AttributeType().withName('userid').withValue(record.id))
-//            userAttributes.add(new AttributeType().withName('given_name').withValue(user.firstName))
-//            userAttributes.add(new AttributeType().withName('family_name').withValue(user.lastName))
-
-//            userAttributes.add(new AttributeType().withName('email').withValue(user.email))
-//            userAttributes.add(new AttributeType().withName('email_verified').withValue('false'))
-
-            userAttributes.add(new AttributeType().withName('email').withValue(params.email))
-            userAttributes.add(new AttributeType().withName('email_verified').withValue('false'))
-            userAttributes.add(new AttributeType().withName('given_name').withValue(params.firstName))
-            userAttributes.add(new AttributeType().withName('family_name').withValue(params.lastName))
-
-//            params.findAll {customAttrs.contains(it.key) }
-//                .each {userAttributes.add(new AttributeType().withName("custom:${it.key}").withValue(it.value)) }
-
-            UpdateUserAttributesResult result = cognitoIdp.updateUserAttributes(new UpdateUserAttributesRequest()
-                    .withAccessToken(accessToken as String)
-                    .withUserAttributes(userAttributes))
-
-//            emailService.sendUpdateProfileSuccess(user, emailRecipients)
-            return true
-
-        } catch (Exception e) {
-            log.error(e.getMessage(), e)
-        }
-
-        return false
-    }
+    public static final String TEMP_AUTH_KEY = 'tempAuthKey'
 
     @Override
     boolean updateUser(String userId, GrailsParameterMap params) {
 
         UserRecord user = getUserById(userId)
+        def isUserLocked = user.locked
 
         def emailRecipients = [ user.email ]
         if (params.email != user.email) {
@@ -121,8 +88,8 @@ class CognitoUserService implements IUserService {
 //            userAttributes.add(new AttributeType().withName('email').withValue(user.email))
 //            userAttributes.add(new AttributeType().withName('email_verified').withValue('false'))
 
-//            params.findAll {customAttrs.contains(it.key) }
-//                    .each {userAttributes.add(new AttributeType().withName("custom:${it.key}").withValue(it.value)) }
+            params.findAll {customAttrs.contains(it.key) }
+                    .each {userAttributes.add(new AttributeType().withName("custom:${it.key}").withValue(it.value)) }
 
             AdminUpdateUserAttributesRequest request =
                     new AdminUpdateUserAttributesRequest()
@@ -131,6 +98,14 @@ class CognitoUserService implements IUserService {
                             .withUserAttributes(userAttributes)
 
             cognitoIdp.adminUpdateUserAttributes(request)
+
+            //disable user
+            if(params.locked && !isUserLocked){
+                disableUser(user)
+            }
+            else if(!params.locked && isUserLocked) {
+                activateAccount(user, params)
+            }
 
             emailService.sendUpdateProfileSuccess(user, emailRecipients)
             return true
@@ -142,30 +117,27 @@ class CognitoUserService implements IUserService {
         return false
     }
 
-    private AdminUpdateUserAttributesRequest updateUserAttributesRequest(UserRecord record) {
-
-
-        return request
-    }
-
     @Override
     boolean disableUser(UserRecord user) {
-        return false
+        def response = cognitoIdp.adminDisableUser(new AdminDisableUserRequest().withUsername(user.email).withUserPoolId(poolId))
+        return response.sdkHttpMetadata.httpStatusCode == 200
     }
 
     @Override
     boolean isActive(String email) {
-        return false
+        def user = getUserByEmail(email)
+        return user?.getActivated()
     }
 
     @Override
     boolean isLocked(String email) {
-        return false
+        def user = getUserByEmail(email)
+        return user?.getLocked()
     }
 
     @Override
     boolean isEmailRegistered(String email) {
-        return false
+        return isEmailInUse(email)
     }
 
     @Override
@@ -180,8 +152,11 @@ class CognitoUserService implements IUserService {
     }
 
     @Override
-    void activateAccount(UserRecord user) {
-
+    boolean activateAccount(UserRecord user, GrailsParameterMap params) {
+        def request = new AdminEnableUserRequest().withUsername(user.email).withUserPoolId(poolId)
+        def response = cognitoIdp.adminEnableUser(request)
+        //TODO update custom activated field
+        return response.getSdkHttpMetadata().httpStatusCode == 200
     }
 
     @Override
@@ -253,38 +228,111 @@ class CognitoUserService implements IUserService {
 
     @Override
     UserRecord registerUser(GrailsParameterMap params) throws Exception {
+        def request = new AdminCreateUserRequest()
+        //TODO need to change
+        request.username = UUID.randomUUID().toString()
+        request.userPoolId = poolId
+        request.desiredDeliveryMediums = ["EMAIL"]
+
+        Collection<AttributeType> userAttributes = new ArrayList<>()
+
+        userAttributes.add(new AttributeType().withName('email').withValue(params.email))
+        userAttributes.add(new AttributeType().withName('given_name').withValue(params.firstName))
+        userAttributes.add(new AttributeType().withName('family_name').withValue(params.lastName))
+        userAttributes.add(new AttributeType().withName('email_verified').withValue('true'))
+
+        params.findAll {customAttrs.contains(it.key) }
+                .each {userAttributes.add(new AttributeType().withName("custom:${it.key}").withValue(it.value as String)) }
+
+        userAttributes.add(new AttributeType().withName('custom:activated').withValue("0"))
+        userAttributes.add(new AttributeType().withName('custom:disabled').withValue("0"))
+        userAttributes.add(new AttributeType().withName('custom:authority').withValue("ROLE_USER"))
+        userAttributes.add(new AttributeType().withName('custom:role').withValue("ROLE_USER"))
+        userAttributes.add(new AttributeType().withName('custom:expired').withValue("0"))
+
+        request.userAttributes = userAttributes
+
+        def userResponse = cognitoIdp.adminCreateUser(request)
+
+        if(userResponse.user) {
+
+            Map<String, String> attributes = userResponse.user.attributes.collectEntries { [(it.name): it.value] }
+            Collection<UserPropertyRecord> userProperties = attributes
+                    .findAll { !mainAttrs.contains(it.key) }
+                    .collect {
+                        if (it.key.startsWith('custom:')) {
+                            new UserPropertyRecord(name: it.key.substring(7), value: it.value)
+                        } else {
+                            new UserPropertyRecord(name: it.key, value: it.value)
+                        }
+                    }
+
+            UserRecord user = new UserRecord(
+                    dateCreated: userResponse.user.userCreateDate,
+                    lastUpdated: userResponse.user.userLastModifiedDate,
+                    activated: userResponse.user.userStatus == "CONFIRMED", locked: !userResponse.user.enabled,
+                    firstName: attributes.find { it.key == 'given_name' }.value,
+                    lastName: attributes.find { it.key == 'family_name' }.value,
+                    email: attributes.find { it.key == 'email' }.value,
+                    userName: userResponse.user.username,
+                    userId: userResponse.user.username,
+                    userProperties: userProperties
+            )
+
+            Collection<UserRoleRecord> userRoles = attributes
+                    .find {it.key == "custom:role" }.value.split(",")
+                    .collect {
+                        new UserRoleRecord(user: user, role: new RoleRecord(role: it, description: it))
+                    }
+
+            user.userRoles = userRoles
+
+            //disable user
+            disableUser(user)
+
+            return user
+        }
         return null
     }
 
     @Override
-    void updateProperties(UserRecord user, GrailsParameterMap params) {
-
-    }
-
-    @Override
-    void deleteUser(UserRecord user) {
-
-    }
-
-    @Override
     void resetAndSendTemporaryPassword(UserRecord user, String emailSubject, String emailTitle, String emailBody, String password) throws PasswordResetFailedException {
+        def request = new AdminResetUserPasswordRequest()
+        request.username = user.email
+        request.userPoolId = poolId
 
+        cognitoIdp.adminResetUserPassword(request)
     }
 
     @Override
     void clearTempAuthKey(UserRecord user) {
+        def request = new AdminUpdateUserAttributesRequest()
+                .withUsername(user.userName)
+                .withUserPoolId(poolId)
+                .withUserAttributes(new AttributeType().withName(TEMP_AUTH_KEY).withValue(null))
+        cognitoIdp.adminUpdateUserAttributes(request)
+    }
 
+    @Override
+    void updateProperties(UserRecord user, GrailsParameterMap params) {
+        throw new NotImplementedException()
+    }
+
+    @Override
+    void deleteUser(UserRecord user) {
+        throw new NotImplementedException()
     }
 
     @Override
     UserRecord getUserById(String userId) {
 
-        if (userId == null) {
+        if (userId == null || userId == "") {
             // Problem. This might mean an expired cookie, or it might mean that this service is not in the authorised system list
             log.debug("Attempt to get current user returned null. This might indicating that this machine is not the authorised system list")
             return null
         }
 
+        try {
         AdminGetUserResult userResponse = cognitoIdp.adminGetUser(new AdminGetUserRequest().withUsername(userId).withUserPoolId(poolId))
 
         Map<String, String> attributes = userResponse.userAttributes.collectEntries { [ (it.name): it.value ] }
@@ -293,6 +341,7 @@ class CognitoUserService implements IUserService {
                 .collect {
                         new UserPropertyRecord(name: it.name, value: it.value)
                 }
+            userProperties.add(new UserPropertyRecord(name: "enableMFA", value: userResponse.getUserMFASettingList()?.size() > 0))
 
 
         UserRecord user = new UserRecord<String>(
@@ -306,42 +355,55 @@ class CognitoUserService implements IUserService {
         )
 
         return user
+        }
+        catch (UserNotFoundException e) {
+            return null
+        }
     }
 
     @Override
     UserRecord getUserByEmail(String email) {
-        return null
+        return getUserById(email)
     }
 
     @Override
     UserRecord getCurrentUser() {
 
-        AccessToken accessToken = tokenService.getAuthToken(true)
+        try {
+            AccessToken accessToken = tokenService.getAuthToken(true)
 
-        GetUserResult userResponse = cognitoIdp.getUser(new GetUserRequest().withAccessToken(accessToken as String))
-
-        Map<String, String> attributes = userResponse.userAttributes.collectEntries { [ (it.name): it.value ] }
-        Collection<UserPropertyRecord> userProperties = userResponse.userAttributes
-                .findAll {!mainAttrs.contains(it.name) }
-                .collect {
-                    new UserPropertyRecord(name: it.name, value: it.value)
-                }
+            if(accessToken == null){
+                return null
+            }
+            GetUserResult userResponse = cognitoIdp.getUser(new GetUserRequest().withAccessToken(accessToken as String))
 
 
-        UserRecord user = new UserRecord<String>(
-                id: attributes['name'] ?: userResponse.username,
-                userId: userResponse.username,
+            Map<String, String> attributes = userResponse.userAttributes.collectEntries { [(it.name): it.value] }
+            Collection<UserPropertyRecord> userProperties = userResponse.userAttributes
+                    .findAll { !mainAttrs.contains(it.name) }
+                    .collect {
+                        new UserPropertyRecord(name: it.name, value: it.value)
+                    }
+            userProperties.add(new UserPropertyRecord(name: "enableMFA", value: userResponse.getUserMFASettingList()?.size() > 0))
+
+
+            UserRecord user = new UserRecord<String>(
+                    id: attributes['name'] ?: userResponse.username,
+                    userId: userResponse.username,
 //                dateCreated: userResponse.userCreateDate, lastUpdated: userResponse.userLastModifiedDate,
 //                activated: userResponse.userStatus == "CONFIRMED", locked: !userResponse.enabled,
-                firstName: attributes['given_name'], lastName: attributes['family_name'],
-                email: attributes['email'], userName: userResponse.username,
+                    firstName: attributes['given_name'], lastName: attributes['family_name'],
+                    email: attributes['email'], userName: userResponse.username,
 //                userRoles: attributes['custom:roles']?.split(','),
-                userProperties: userProperties
-        )
+                    userProperties: userProperties
+            )
 
-        return user
-
-        return getUserById(authService.userId)
+            return user
+        }
+        catch (Exception e){
+            log.error(e.getMessage())
+            return null
+        }
     }
 
     @Override
@@ -366,7 +428,7 @@ class CognitoUserService implements IUserService {
 
     @Override
     Collection<RoleRecord> listRoles() {
-        return null
+        return []
     }
 
     @Override
@@ -412,7 +474,8 @@ class CognitoUserService implements IUserService {
 
     @Override
     void addRoles(Collection<RoleRecord> roleRecords) {
-        throw new NotImplementedException()
+//        throw new NotImplementedException()
+        log.warn("CognitoUserService.addRoles() not implemented yet")
     }
 
     @Override
@@ -474,4 +537,98 @@ class CognitoUserService implements IUserService {
     boolean deleteRole(String userId, String roleName) {
         throw new NotImplementedException()
     }
+
+    @Override
+    boolean resetPassword(UserRecord user, String newPassword, boolean isPermanent, String confirmationCode) {
+        if(!user || !newPassword) {
+            return false
+        }
+
+        try {
+            if (confirmationCode == null) {
+                def request = new AdminSetUserPasswordRequest()
+                request.username = user.email
+                request.userPoolId = poolId
+                request.password = newPassword
+                request.permanent = isPermanent
+
+                def response = cognitoIdp.adminSetUserPassword(request)
+                return response.getSdkHttpMetadata().httpStatusCode == 200
+            } else {
+                def request = new ConfirmForgotPasswordRequest().withUsername(user.email)
+                request.password = newPassword
+                request.confirmationCode = confirmationCode
+                request.clientId = grailsApplication.config.getProperty('security.oidc.client-id')
+                request.secretHash = calculateSecretHash(grailsApplication.config.getProperty('security.oidc.client-id'),
+                        grailsApplication.config.getProperty('security.oidc.secret'), user.email)
+                def response = cognitoIdp.confirmForgotPassword(request)
+                return response.getSdkHttpMetadata().httpStatusCode == 200
+            }
+        }catch(Exception e){
+            return false
+        }
+    }
+
+    @Override
+    String getPasswordResetView() {
+        return "passwordResetCognito"
+    }
+
+    @Override
+    def sendAccountActivation(UserRecord user) {
+        //this email can be sent via cognito
+        //emailService.sendCognitoAccountActivation(user)
+    }
+
+    @Override
+    String getSecretForMfa() {
+        AccessToken accessToken = tokenService.getAuthToken(true)
+
+        if (accessToken == null) {
+            throw new IllegalStateException("No current user available")
+        }
+        AssociateSoftwareTokenRequest request = new AssociateSoftwareTokenRequest()
+        request.accessToken = accessToken.value
+        def response = cognitoIdp.associateSoftwareToken(request)
+        if (response.secretCode) {
+            return response.secretCode
+        } else {
+            throw new RuntimeException()
+        }
+    }
+
+    @Override
+    boolean verifyUserCode(String userCode) {
+        AccessToken accessToken = tokenService.getAuthToken(true)
+
+        if (accessToken == null) {
+            throw new IllegalStateException("No current user available")
+        }
+        VerifySoftwareTokenRequest request = new VerifySoftwareTokenRequest()
+        request.accessToken = accessToken.value
+        request.userCode = userCode
+        def response= cognitoIdp.verifySoftwareToken(request)
+        return response.status == "SUCCESS"
+    }
+
+    @Override
+    void enableMfa(String userId, boolean enable) {
+        AdminSetUserMFAPreferenceRequest mfaRequest = new AdminSetUserMFAPreferenceRequest().withUserPoolId(poolId)
+                .withUsername(userId)
+        mfaRequest.setSoftwareTokenMfaSettings(new SoftwareTokenMfaSettingsType(enabled: enable))
+        def response = cognitoIdp.adminSetUserMFAPreference(mfaRequest)
+        if (response.sdkHttpMetadata.httpStatusCode != 200) {
+            throw new RuntimeException("Couldn't set MFA preference")
+        }
+    }
+
+    static String calculateSecretHash(String userPoolClientId, String userPoolClientSecret, String userName) {
+        try {
+            byte[] rawHmac = new HmacUtils(HmacAlgorithms.HMAC_SHA_256, userPoolClientSecret).hmac("$userName$userPoolClientId")
+            return Base64.getEncoder().encodeToString(rawHmac)
+        } catch (Exception e) {
+            throw new RuntimeException("Error while calculating ")
+        }
+    }
+
 }

@@ -17,19 +17,19 @@ package au.org.ala.userdetails.gorm
 
 import au.org.ala.auth.BulkUserLoadResults
 import au.org.ala.auth.PasswordResetFailedException
+import au.org.ala.cas.encoding.BcryptPasswordEncoder
+import au.org.ala.cas.encoding.LegacyPasswordEncoder
 import au.org.ala.userdetails.EmailService
 import au.org.ala.userdetails.IUserService
 import au.org.ala.userdetails.LocationService
 import au.org.ala.userdetails.PasswordService
 import au.org.ala.userdetails.ResultStreamer
-//import au.org.ala.users.Password
 import au.org.ala.users.RoleRecord
 import au.org.ala.users.UserPropertyRecord
 import au.org.ala.users.UserRecord
 import au.org.ala.users.UserRoleRecord
 import au.org.ala.web.AuthService
 import au.org.ala.ws.service.WebService
-import com.google.common.base.Preconditions
 import grails.converters.JSON
 import grails.core.GrailsApplication
 import grails.plugin.cache.Cacheable
@@ -44,11 +44,15 @@ import org.grails.orm.hibernate.cfg.GrailsHibernateUtil
 import org.hibernate.ScrollableResults
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.MessageSource
-import org.springframework.dao.DataIntegrityViolationException
+
+import javax.servlet.http.HttpSession
 
 @Slf4j
 @Transactional
 class GormUserService implements IUserService {
+
+    static final String BCRYPT_ENCODER_TYPE = 'bcrypt'
+    static final String LEGACY_ENCODER_TYPE = 'legacy'
 
     EmailService emailService
     PasswordService passwordService
@@ -58,13 +62,17 @@ class GormUserService implements IUserService {
     MessageSource messageSource
     WebService webService
 
+    @Value('${password.encoder}')
+    String passwordEncoderType = 'bcrypt'
+    @Value('${bcrypt.strength}')
+    Integer bcryptStrength = 10
+    @Value('${encoding.algorithm}')
+    String legacyAlgorithm
+    @Value('${encoding.salt}')
+    String legacySalt
+
     @Value('${attributes.affiliations.enabled:false}')
     boolean affiliationsEnabled = false
-
-    @Override
-    boolean updateUser(GrailsParameterMap params) {
-
-    }
 
     boolean updateUser(String userId, GrailsParameterMap params) {
 
@@ -132,17 +140,25 @@ class GormUserService implements IUserService {
     }
 
     @Transactional
-    void activateAccount(UserRecord user) {
+    boolean activateAccount(UserRecord user, GrailsParameterMap params) {
         assert user instanceof User
-        Map resp = webService.post("${grailsApplication.config.getProperty('alerts.url')}/api/alerts/user/createAlerts", [:], [userId: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName])
-        if (resp.statusCode == HttpStatus.SC_CREATED) {
-            emailService.sendAccountActivationSuccess(user, resp.resp)
-        } else if (resp.statusCode != HttpStatus.SC_OK) {
-            log.error("Alerts returned ${resp} when trying to create user alerts for " + user.id + " with email: " + user.email)
-        }
+        //check the activation key
+        if (user.tempAuthKey == params.authKey) {
 
-        user.activated = true
-        user.save(flush:true)
+            Map resp = webService.post("${grailsApplication.config.getProperty('alerts.url')}/api/alerts/user/createAlerts", [:], [userId: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName])
+            if (resp.statusCode == HttpStatus.SC_CREATED) {
+                emailService.sendAccountActivationSuccess(user, resp.resp)
+            } else if (resp.statusCode != HttpStatus.SC_OK) {
+                log.error("Alerts returned ${resp} when trying to create user alerts for " + user.id + " with email: " + user.email)
+            }
+
+            user.activated = true
+            user.save(flush:true)
+            return true
+        } else {
+            log.error('Auth keys did not match for user : ' + params.userId + ", supplied: " + params.authKey + ", stored: " + user.tempAuthKey)
+            return false
+        }
     }
 
     @Override
@@ -237,7 +253,7 @@ class GormUserService implements IUserService {
                 }
 
                 roles?.each { role ->
-                    def userRole = new UserRoleRecord(user: userInstance, role: role)
+                    def userRole = new UserRole(user: userInstance, role: role)
                     userRole.save(failOnError: true)
                 }
 
@@ -277,7 +293,6 @@ class GormUserService implements IUserService {
             def propValue = properties[propName] ?: ''
             setUserProperty(user, propName, propValue)
         }
-
     }
 
     private setUserProperty(UserRecord user, String propName, String propValue) {
@@ -346,6 +361,7 @@ class GormUserService implements IUserService {
 
     }
 
+    @Override
     void resetAndSendTemporaryPassword(UserRecord user, String emailSubject, String emailTitle, String emailBody, String password = null) throws PasswordResetFailedException {
         assert user instanceof User
         if (user) {
@@ -357,7 +373,9 @@ class GormUserService implements IUserService {
         }
     }
 
+    @Override
     void clearTempAuthKey(UserRecord user) {
+        assert user instanceof User
         if (user) {
             //set the temp auth key
             user.tempAuthKey = null
@@ -405,6 +423,7 @@ class GormUserService implements IUserService {
     }
 
     @NotTransactional
+    @Override
     String getResetPasswordUrl(UserRecord user) {
         assert user instanceof User
         if(user.tempAuthKey){
@@ -668,4 +687,47 @@ class GormUserService implements IUserService {
         }
         resultStreamer.complete()
     }
+
+    @Override
+    boolean resetPassword(UserRecord user, String newPassword, boolean isPermanent, String confirmationCode) {
+        assert user instanceof User
+        Password.findAllByUser(user).each {
+            it.delete()
+        }
+
+        boolean isBcrypt = passwordEncoderType.equalsIgnoreCase(BCRYPT_ENCODER_TYPE)
+
+        def encoder = isBcrypt ? new BcryptPasswordEncoder(bcryptStrength) : new LegacyPasswordEncoder(legacySalt, legacyAlgorithm, true)
+        def encodedPassword = encoder.encode(newPassword)
+
+        //reuse object if old password
+        def password = new Password()
+        password.user = user
+        password.password = encodedPassword
+        password.type = isBcrypt ? BCRYPT_ENCODER_TYPE : LEGACY_ENCODER_TYPE
+        password.created = new Date().toTimestamp()
+        password.expiry = null
+        password.status = "CURRENT"
+        password.save(failOnError: true)
+        return true
+    }
+
+    @Override
+    String getPasswordResetView() {
+        return "startPasswordReset"
+    }
+
+    @Override
+    def sendAccountActivation(UserRecord user) {
+        emailService.sendAccountActivation(user, user.tempAuthKey)
+    }
+
+    @Override
+    String getSecretForMfa() {}
+
+    @Override
+    boolean verifyUserCode(String userCode){}
+
+    @Override
+    void enableMfa(String userId, boolean enable){}
 }

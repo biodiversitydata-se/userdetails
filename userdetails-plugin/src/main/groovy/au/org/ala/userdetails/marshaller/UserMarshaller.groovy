@@ -44,7 +44,8 @@ class UserMarshaller {
         JSON.createNamedConfig(WITH_PROPERTIES_CONFIG) {
             it.registerObjectMarshaller(UserRecord) { UserRecord user ->
                 Map userMap = toMap(user)
-                userMap.props = user.propsAsMap()
+                userMap.props = user.userProperties.collectEntries { [(it.name): it.value] }
+
                 userMap
             }
         }

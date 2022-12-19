@@ -16,21 +16,23 @@
 package au.org.ala.auth
 
 import grails.validation.Validateable
-/**
- * Data binding and validation for the password update action.
- */
-class UpdatePasswordCommand implements Validateable {
 
-    Long userId
+/**
+ * Data binding and validation for the cognito password update action.
+ */
+class UpdateCognitoPasswordCommand implements Validateable {
+
+    String email
     String password
     String reenteredPassword
-    String authKey
+    String code
 
     static constraints = {
-        // note that the password validation is done in the controller actions, not the command
-        password blank: false
-        reenteredPassword validator: { val, cmd -> val == cmd.password }
-        userId nullable: false
-        authKey blank: false
+        password minSize: 8, blank: false, matches: "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@\$!%*?&])[A-Za-z\\d@\$!%*?&]{8,}\$" //TODO need to verify this
+        reenteredPassword validator: {val, cmd -> val == cmd.password}
+        email nullable: false
+        code blank: false
     }
+
+
 }

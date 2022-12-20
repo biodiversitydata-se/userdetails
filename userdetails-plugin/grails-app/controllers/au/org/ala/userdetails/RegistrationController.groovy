@@ -365,12 +365,13 @@ class RegistrationController {
     }
 
     def getSecretForMfa() {
+        def mfaResponse
         try {
-            def response = [success: true, code: userService.getSecretForMfa()]
+            mfaResponse = [success: true, code: userService.getSecretForMfa()]
         } catch (e) {
-            def response = [success: false, error: e.message]
+            mfaResponse = [success: false, error: e.message]
         }
-        render(response as JSON)
+        render(mfaResponse as JSON)
     }
 
     def verifyAndActivateMfa() {

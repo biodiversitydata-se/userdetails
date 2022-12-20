@@ -74,9 +74,9 @@
 
         <div class="form-group checkbox">
             <label>
-                <g:checkBox name="enableMFA" value="${props?.enableMFA}" id="enableMFA" disabled="disabled"/> <g:message code="user.enabledMFA" />
+                <g:checkBox name="enableMFA" value="${props?.enableMFA == 'true'}" id="enableMFA" disabled="disabled"/> <g:message code="user.enabledMFA" />
             </label>
-            <g:if test="${props?.enableMFA}">
+            <g:if test="${props?.enableMFA == 'true'}">
                 <g:link controller="user" action="disableMfa" params="[userId:userInstance?.email]">Disable MFA</g:link>
             </g:if>
         </div>

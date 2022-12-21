@@ -545,7 +545,7 @@ class CognitoUserService implements IUserService {
 
     @Override
     void findScrollableUsersByUserName(String username, int maxResults, ResultStreamer resultStreamer) {
-        throw new NotImplementedException()
+        streamUserResults(resultStreamer, listUsers(username, null, maxResults))
     }
 
     @Override
@@ -574,7 +574,8 @@ class CognitoUserService implements IUserService {
     }
 
     @Override
-    void getUserAttribute(UserRecord userRecord, String attribute) {
+    List getUserAttribute(UserRecord userRecord, String attribute) {
+        //UserPropertyRecord.findAllByUserAndName(user, name)?:[];
         throw new NotImplementedException()
     }
 
@@ -883,6 +884,24 @@ class CognitoUserService implements IUserService {
 
     def getCustomUserProperty(UserRecord user, String name){
         return user.userProperties.findAll{it.name == 'custom:'+ name}.collect{ [property:"$name",value: it.value ] }
+    }
+
+    private void streamUserResults(ResultStreamer resultStreamer, List<UserRecord> results) {
+        resultStreamer.init()
+        try {
+            int count = 0
+
+            for(UserRecord elem : results){
+                resultStreamer.offer(elem)
+
+                if (count++ % 50 == 0) {
+                    break
+                }
+            }
+        } finally {
+            resultStreamer.finalise()
+        }
+        resultStreamer.complete()
     }
 
 }

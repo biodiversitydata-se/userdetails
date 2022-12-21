@@ -171,7 +171,7 @@ class GormUserService implements IUserService {
             return User.findAllByEmailLikeOrLastNameLikeOrFirstNameLike(q, q, q, [offset: paginationToken as int, max: maxResults ])
         }
 
-        return User.list([offset: paginationToken as int, max: maxResults ])
+        return User.list([offset: (paginationToken ?: 0) as int, max: maxResults ])
     }
 
     @Override
@@ -291,7 +291,7 @@ class GormUserService implements IUserService {
 
         properties.keySet().each { String propName ->
             def propValue = properties[propName] ?: ''
-            setUserProperty(user, propName, propValue)
+            setUserProperty(user, propName, propValue as String)
         }
     }
 
@@ -567,7 +567,7 @@ class GormUserService implements IUserService {
 
     @Override
     void addRoles(Collection<RoleRecord> roleRecords) {
-        Role.saveAll(roleRecords.collect { new Role(it.role, it.description) })
+        Role.saveAll(roleRecords.collect { new Role(role:  it.role, description:  it.description) })
 
     }
 
@@ -589,8 +589,8 @@ class GormUserService implements IUserService {
     }
 
     @Override
-    void getUserAttribute(UserRecord userRecord, String attribute) {
-        UserProperty.findAllByUserAndName(userRecord, attribute)
+    List getUserAttribute(UserRecord userRecord, String attribute) {
+        return UserProperty.findAllByUserAndName(userRecord, attribute)
     }
 
     @Override
@@ -727,9 +727,6 @@ class GormUserService implements IUserService {
 
     @Override
     void enableMfa(String userId, boolean enable){}
-    boolean removeUserRole(User user, Role role) {
-        return false
-    }
 
     @Override
     def findUsersByRole(String roleName, List numberIds, List userIds, String pageOrToken) {

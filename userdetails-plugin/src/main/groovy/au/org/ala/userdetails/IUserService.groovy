@@ -161,7 +161,7 @@ interface IUserService {
 
     void removeUserAttributes(UserRecord userRecord, ArrayList<String> attributes)
 
-    void getUserAttribute(UserRecord userRecord, String attribute)
+    List getUserAttribute(UserRecord userRecord, String attribute)
 
     List getAllAvailableProperties()
 

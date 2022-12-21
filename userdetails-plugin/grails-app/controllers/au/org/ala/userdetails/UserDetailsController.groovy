@@ -92,19 +92,7 @@ class UserDetailsController {
         }
         def max = params.int('max', 10)
         def streamer = new ResultStreamer(response: response, jsonConfig: UserMarshaller.WITH_PROPERTIES_CONFIG)
-        userService.findScrollableUsersByUserName(q, max, streamer)
-//        def results = UserRecord.withStatelessSession { session ->
-//            def c = UserRecord.createCriteria()
-//            c.scroll {
-//                or {
-//                    ilike('userName', "%$q%")
-//                    ilike('email', "%$q%")
-//                    ilike('displayName', "%$q%")
-//                }
-//                maxResults(max)
-//            }
-//        }
-//        streamResults(session, results, UserMarshaller.WITH_PROPERTIES_CONFIG)
+        userService.findScrollableUsersByUserName(q as String, max, streamer)
     }
 
     @Operation(

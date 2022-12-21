@@ -82,10 +82,9 @@ class UserRoleController {
 
         log.debug(params.userId + " - " + params.role.id)
 
-        def user = userService.getUserById(params['user.id'])
-//        def role = RoleRecord.findByRole(params.role.id)
+        def user = userService.getUserById(params.userId)
 
-        userService.addUserRole(params['user.id'], params.role.id)
+        userService.addUserRole(params.userId, params.role.id)
 
         redirect(action: "show", controller: 'user', id: user.userId)
     }

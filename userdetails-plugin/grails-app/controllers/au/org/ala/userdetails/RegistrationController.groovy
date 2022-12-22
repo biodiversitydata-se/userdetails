@@ -61,7 +61,7 @@ class RegistrationController {
 
     def editAccount() {
         def user = userService.currentUser
-        render(view: 'createAccount', model: [edit: true, user: user, props: user?.propsAsMap()])
+        render(view: 'createAccount', model: [edit: true, user: user, props: user?.propsAsMap(), passwordPolicy: passwordService.buildPasswordPolicy()])
     }
 
     def passwordReset() {
@@ -85,7 +85,7 @@ class RegistrationController {
         buildErrorMessages(validationResult, cmd.errors)
 
         if (cmd.hasErrors()) {
-            render(view: 'passwordReset', model: [user: user, authKey: cmd.authKey, errors:cmd.errors, passwordMatchFail: true])
+            render(view: 'passwordReset', model: [user: user, authKey: cmd.authKey, errors:cmd.errors, passwordMatchFail: true, passwordPolicy: passwordService.buildPasswordPolicy()])
         }
         else {
             withForm {
@@ -115,7 +115,7 @@ class RegistrationController {
     def updateCognitoPassword(UpdateCognitoPasswordCommand cmd) {
         UserRecord user = userService.getUserByEmail(cmd.email)
         if (cmd.hasErrors()) {
-            render(view: 'passwordResetCognito', model: [email: cmd.email, code: cmd.code, errors:cmd.errors, passwordMatchFail: true])
+            render(view: 'passwordResetCognito', model: [email: cmd.email, code: cmd.code, errors:cmd.errors, passwordMatchFail: true, passwordPolicy: passwordService.buildPasswordPolicy()])
         }
         else {
             withForm {
@@ -190,7 +190,7 @@ class RegistrationController {
         if (user) {
             try {
                 passwordService.resetAndSendTemporaryPassword(user, null, null, null, null)
-                render(view: passwordService.getPasswordResetView(), model: [email: params.email])
+                render(view: passwordService.getPasswordResetView(), model: [email: params.email, passwordPolicy: passwordService.buildPasswordPolicy()])
             } catch (Exception e) {
                 log.error("Problem starting password reset for email address: " + params.email)
                 log.error(e.getMessage(), e)
@@ -242,7 +242,7 @@ class RegistrationController {
             def isCorrectPassword = passwordService.checkUserPassword(user, params.confirmUserPassword)
             if (!isCorrectPassword) {
                 flash.message = 'Incorrect password. Could not update account details. Please try again.'
-                render(view: 'createAccount', model: [edit: true, user: user, props: user?.propsAsMap()])
+                render(view: 'createAccount', model: [edit: true, user: user, props: user?.propsAsMap(), passwordPolicy: passwordService.buildPasswordPolicy()])
                 return
             }
 
@@ -274,13 +274,13 @@ class RegistrationController {
                     if (!verifyResponse.success) {
                         log.warn('Recaptcha verify reported an error: {}', verifyResponse)
                         flash.message = 'There was an error with the captcha, please try again'
-                        render(view: 'createAccount', model: [edit: false, user: params, props: params])
+                        render(view: 'createAccount', model: [edit: false, user: params, props: params, passwordPolicy: passwordService.buildPasswordPolicy()])
                         return
                     }
                 } else {
                     log.warn("error from recaptcha {}", response)
                     flash.message = 'There was an error with the captcha, please try again'
-                    render(view: 'createAccount', model: [edit: false, user: params, props: params])
+                    render(view: 'createAccount', model: [edit: false, user: params, props: params, passwordPolicy: passwordService.buildPasswordPolicy()])
                     return
                 }
             }
@@ -289,14 +289,14 @@ class RegistrationController {
             if (!paramsEmail || userService.isEmailRegistered(paramsEmail)) {
                 def inactiveUser = !userService.isActive(paramsEmail)
                 def lockedUser = userService.isLocked(paramsEmail)
-                render(view: 'createAccount', model: [edit: false, user: params, props: params, alreadyRegistered: true, inactiveUser: inactiveUser, lockedUser: lockedUser])
+                render(view: 'createAccount', model: [edit: false, user: params, props: params, alreadyRegistered: true, inactiveUser: inactiveUser, lockedUser: lockedUser, passwordPolicy: passwordService.buildPasswordPolicy()])
             } else {
 
                 def passwordValidation = passwordService.validatePassword(paramsEmail, paramsPassword)
                 if (!passwordValidation.valid) {
                     log.warn("The password for user name '${paramsEmail}' did not meet the validation criteria '${passwordValidation}'")
                     flash.message = "The selected password does not meet the password policy. Please try again with a different password. ${buildErrorMessages(passwordValidation)}"
-                    render(view: 'createAccount', model: [edit: false, user: params, props: params])
+                    render(view: 'createAccount', model: [edit: false, user: params, props: params, passwordPolicy: passwordService.buildPasswordPolicy()])
                     return
                 }
 

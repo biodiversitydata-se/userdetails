@@ -72,7 +72,6 @@ class PasswordService {
     @Autowired
     IPasswordOperations passwordOperations
 
-    @Override
     void resetAndSendTemporaryPassword(UserRecord user, String emailSubject, String emailTitle, String emailBody, String password) throws PasswordResetFailedException {
         passwordOperations.resetAndSendTemporaryPassword(user, emailSubject, emailTitle, emailBody, password)
     }

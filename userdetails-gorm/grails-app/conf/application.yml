@@ -5,6 +5,7 @@ grails:
         defaultPackage: au.org.ala.userdetails.gorm
     config:
         locations:
+            - file:/data/userdetails/config/userdetails-gorm-config.yml
             - file:/data/userdetails/config/userdetails-config.properties
             - file:/data/userdetails/config/userdetails-config.yml
             - file:/data/userdetails/config/userdetails-config.groovy
@@ -131,6 +132,26 @@ security:
     allowUnsignedIdTokens: true # Disable once CAS no longer suggests the none algorithm
   jwt:
     fallbackToLegacyBehaviour: true # Reset to false once legacy api keys no longer supported
+
+password:
+  encoder: bcrypt # or legacy
+  generatedLength: 10
+  # Passwords must satisfy this policy.
+  # The minLength policy is always required, even when the policy is disabled. It has a default value of 8.
+  # To remove / disable an aspect of the policy, either remove the item or set to 0 / false, whichever is relevant.
+  policy:
+    enabled: false # default to match previous version, override in external config
+#    minLength: 8
+#    maxLength: 64
+#    excludeUsername: false
+#    excludeUsQwertyKeyboardSequence: false
+#    excludeCommonPasswords: false
+#    charGroupMinRequired: 0
+#    charGroupMinUpperCase: 0
+#    charGroupMinLowerCase: 0
+#    charGroupMinUpperOrLowerCase: 0
+#    charGroupMinDigit: 0
+#    charGroupMinSpecial: 0
 
 openapi:
   title: UserDetails REST services

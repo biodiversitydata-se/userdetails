@@ -92,7 +92,7 @@ class RegistrationController {
                 if (user.tempAuthKey == cmd.authKey) {
                     //update the password
                     try {
-                        userService.resetPassword(user, cmd.password, true, null)
+                        passwordService.resetPassword(user, cmd.password, true, null)
                         userService.clearTempAuthKey(user)
                         redirect(controller: 'registration', action: 'passwordResetSuccess')
                         log.info("Password successfully reset for user: " + cmd.userId)
@@ -125,7 +125,7 @@ class RegistrationController {
                 }
                 //update the password
                 try {
-                    def success = userService.resetPassword(user, cmd.password, true, cmd.code)
+                    def success = passwordService.resetPassword(user, cmd.password, true, cmd.code)
                     if(success) {
                         Map resp = webService.get("${grailsApplication.config.getProperty('grails.serverURL')}/logout?")
                         redirect(controller: 'registration', action: 'passwordResetSuccess')
@@ -189,8 +189,8 @@ class RegistrationController {
         def user = userService.getUserById(params.email)
         if (user) {
             try {
-                userService.resetAndSendTemporaryPassword(user, null, null, null, null)
-                render(view: userService.getPasswordResetView(), model: [email: params.email])
+                passwordService.resetAndSendTemporaryPassword(user, null, null, null, null)
+                render(view: passwordService.getPasswordResetView(), model: [email: params.email])
             } catch (Exception e) {
                 log.error("Problem starting password reset for email address: " + params.email)
                 log.error(e.getMessage(), e)
@@ -304,10 +304,10 @@ class RegistrationController {
                     //does a user with the supplied email address exist
                     def user = userService.registerUser(params)
 
-                    if(user) {
+                    if (user) {
                         //store the password
                         try {
-                            userService.resetPassword(user, params.password, true, null)
+                            passwordService.resetPassword(user, params.password, true, null)
                             //store the password
                             userService.sendAccountActivation(user)
                             redirect(action: 'accountCreated', id: user.id)
@@ -315,8 +315,7 @@ class RegistrationController {
                             log.error("Couldn't reset password", e)
                             render(view: "accountError", model: [msg: "Failed to reset password"])
                         }
-                    }
-                    else{
+                    } else {
                         log.error('Couldn\'t create user')
                         render(view: "accountError", model: [msg: 'Couldn\'t create user'])
                     }

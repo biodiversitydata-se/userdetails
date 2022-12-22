@@ -27,6 +27,8 @@ class UserController {
 
     static allowedMethods = [save: "POST", update: "POST", delete: "POST"]
 
+    def passwordService
+
     @Autowired
     @Qualifier('userService')
     IUserService userService
@@ -83,7 +85,7 @@ class UserController {
             return
         }
 
-        String resetPasswordUrl = userService.getResetPasswordUrl(userInstance)
+        String resetPasswordUrl = passwordService.getResetPasswordUrl(userInstance)
 
         [userInstance: userInstance, resetPasswordUrl: resetPasswordUrl]
     }

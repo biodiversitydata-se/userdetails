@@ -25,14 +25,7 @@ import java.sql.Timestamp
 //@EqualsAndHashCode(includes = 'id')
 class UserRecord<T> implements WebDataBinding, Serializable {
 
-    static hasMany =  [
-            userRoles: UserRoleRecord,
-            userProperties: UserPropertyRecord
-    ]
-
     T id
-
-    String userId
 
     String firstName
     String lastName
@@ -50,8 +43,6 @@ class UserRecord<T> implements WebDataBinding, Serializable {
 
     String tempAuthKey
 
-    String displayName
-
     Collection<UserRoleRecord> userRoles
     Collection<UserPropertyRecord> userProperties
 
@@ -63,41 +54,11 @@ class UserRecord<T> implements WebDataBinding, Serializable {
         locked nullable: false
         lastLogin nullable: true
         tempAuthKey nullable: true
-        displayName nullable: true
     }
 
-//    static List<String[]> findNameAndEmailWhereEmailIsNotNull() {
-//        return UserRecord.withCriteria {
-//            isNotNull('email')
-//            projections {
-//                property('email')
-//                property('firstName')
-//                property('lastName')
-//            }
-//        }
-//    }
-//
-//    static List<String[]> findIdFirstAndLastName() {
-//        return UserRecord.withCriteria {
-//            projections {
-//                property('id')
-//                property('firstName')
-//                property('lastName')
-//            }
-//        }
-//    }
-//
-//    static List<String[]> findUserDetails() {
-//        return UserRecord.withCriteria {
-//            projections {
-//                property('id')
-//                property('firstName')
-//                property('lastName')
-//                property('userName')
-//                property('email')
-//            }
-//        }
-//    }
+    String getUserId() {
+        return this.userName
+    }
 
     def propsAsMap(){
         def map = [:]

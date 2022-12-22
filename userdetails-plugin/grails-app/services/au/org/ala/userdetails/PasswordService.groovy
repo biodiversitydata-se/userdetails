@@ -15,13 +15,13 @@
 
 package au.org.ala.userdetails
 
+import au.org.ala.auth.PasswordResetFailedException
 import au.org.ala.users.UserRecord
 import au.org.ala.auth.PasswordPolicy
 import au.org.ala.cas.encoding.BcryptPasswordEncoder
 import au.org.ala.cas.encoding.LegacyPasswordEncoder
 import au.org.ala.cas.encoding.PasswordEncoder
 import grails.core.GrailsApplication
-import grails.gorm.transactions.Transactional
 import org.apache.commons.lang3.RandomStringUtils
 import org.passay.CharacterCharacteristicsRule
 import org.passay.CharacterRule
@@ -41,7 +41,6 @@ import org.passay.dictionary.WordListDictionary
 import org.passay.dictionary.WordLists
 import org.passay.dictionary.sort.ArraysSort
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 
 
@@ -71,8 +70,24 @@ class PasswordService {
     String legacySalt
 
     @Autowired
-    @Qualifier('userService')
-    IUserService userService
+    IPasswordOperations passwordOperations
+
+    @Override
+    void resetAndSendTemporaryPassword(UserRecord user, String emailSubject, String emailTitle, String emailBody, String password) throws PasswordResetFailedException {
+        passwordOperations.resetAndSendTemporaryPassword(user, emailSubject, emailTitle, emailBody, password)
+    }
+
+    boolean resetPassword(UserRecord user, String newPassword, boolean isPermanent, String confirmationCode) {
+        return passwordOperations.resetPassword(user, newPassword, isPermanent, confirmationCode)
+    }
+
+    String getResetPasswordUrl(UserRecord user) {
+        return passwordOperations.getResetPasswordUrl(user)
+    }
+
+    String getPasswordResetView() {
+        return passwordOperations.getPasswordResetView()
+    }
 
     String generatePassword(UserRecord user) {
         if (user == null) {
@@ -80,7 +95,7 @@ class PasswordService {
         }
 
        def newPassword = generateNewPassword(user?.userName ?: user?.email ?: '')
-       userService.resetPassword(user, newPassword, false, null)
+       resetPassword(user, newPassword, false, null)
        return newPassword
     }
 

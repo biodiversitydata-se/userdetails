@@ -177,7 +177,7 @@ class ProfileController {
         }
 
         if (user) {
-            userService.removeUserAttributes(user, attrs)
+            userService.removeUserProperty(user, attrs)
         } else {
             flash.message = 'Failed to retrieve user details!'
         }

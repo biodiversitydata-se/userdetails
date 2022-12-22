@@ -27,6 +27,8 @@ import javax.servlet.http.HttpSession
 
 interface IUserService {
 
+    //    *********** User related services *************
+
     boolean updateUser(String userId, GrailsParameterMap params)
 
     boolean disableUser(UserRecord user)
@@ -34,8 +36,6 @@ interface IUserService {
     boolean isActive(String email)
 
     boolean isLocked(String email)
-
-    boolean isEmailRegistered(String email)
 
     boolean isEmailInUse(String newEmail)
 
@@ -53,10 +53,6 @@ interface IUserService {
 
     void deleteUser(UserRecord user)
 
-    void resetAndSendTemporaryPassword(UserRecord user, String emailSubject, String emailTitle, String emailBody, String password) throws PasswordResetFailedException
-
-    void clearTempAuthKey(UserRecord user)
-
     UserRecord getUserById(String userId)
 
     UserRecord getUserByEmail(String email)
@@ -65,8 +61,6 @@ interface IUserService {
      * This service method returns the UserRecord object for the current user.
      */
     UserRecord getCurrentUser()
-
-    String getResetPasswordUrl(UserRecord user)
 
     Collection<UserRecord> findUsersForExport(List usersInRoles, includeInactive)
 
@@ -79,6 +73,22 @@ interface IUserService {
     Map getUsersCounts(Locale locale)
 
     List<String[]> countByProfileAttribute(String s, Date date, Locale locale)
+
+    void findScrollableUsersByUserName(String username, int maxResults, ResultStreamer resultStreamer)
+
+    void findScrollableUsersByIdsAndRole(List<String> ids, String roleName, ResultStreamer resultStreamer)
+
+    def getUserDetailsFromIdList(List idList)
+
+    UserRecord findByUserNameOrEmail(String username)
+
+    List<String[]> listNamesAndEmails()
+
+    List<String[]> listIdsAndNames()
+
+    List<String[]> listUserDetails()
+
+    //    *********** Role services *************
 
     Collection<RoleRecord> listRoles()
 
@@ -149,29 +159,13 @@ interface IUserService {
      */
     PagedResult<UserRoleRecord> findUserRoles(String role, GrailsParameterMap params)
 
-    // TODO return type and implementation
-    void findScrollableUsersByUserName(String username, int maxResults, ResultStreamer resultStreamer)
+    //    *********** Password and account related services *************
 
-    // TODO return type and implementation
-    void findScrollableUsersByIdsAndRole(List<String> ids, String roleName, ResultStreamer resultStreamer)
+    String getResetPasswordUrl(UserRecord user)
 
-    List<UserPropertyRecord> findAllAttributesByName(String s)
+    void resetAndSendTemporaryPassword(UserRecord user, String emailSubject, String emailTitle, String emailBody, String password) throws PasswordResetFailedException
 
-    void addOrUpdateProperty(UserRecord userRecord, String name, String value)
-
-    void removeUserAttributes(UserRecord userRecord, ArrayList<String> attributes)
-
-    List getUserAttribute(UserRecord userRecord, String attribute)
-
-    List getAllAvailableProperties()
-
-    UserRecord findByUserNameOrEmail(String username)
-
-    List<String[]> listNamesAndEmails()
-
-    List<String[]> listIdsAndNames()
-
-    List<String[]> listUserDetails()
+    void clearTempAuthKey(UserRecord user)
 
     boolean resetPassword(UserRecord user, String newPassword, boolean isPermanent, String confirmationCode)
 
@@ -179,19 +173,19 @@ interface IUserService {
 
     def sendAccountActivation(UserRecord user)
 
+    //    *********** MFA services *************
+
     String getSecretForMfa()
 
     boolean verifyUserCode(String userCode)
 
     void enableMfa(String userId, boolean enable)
 
-    def findUsersByRole(String roleName, List numberIds, List userIds, String pageOrToken)
+//    *********** Property related services *************
 
-    def getUserDetailsFromIdList(List idList)
+    UserPropertyRecord addOrUpdateProperty(UserRecord userRecord, String name, String value)
 
-    def searchByUsernameOrEmail(String q, int max)
+    void removeUserProperty(UserRecord userRecord, ArrayList<String> attributes)
 
-    def saveCustomUserProperty(UserRecord user, String name, String value)
-
-    def getCustomUserProperty(UserRecord user, String name)
+    List<UserPropertyRecord> searchProperty(UserRecord userRecord, String attribute)
 }

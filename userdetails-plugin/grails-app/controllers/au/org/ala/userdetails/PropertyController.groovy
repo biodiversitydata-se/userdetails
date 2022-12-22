@@ -43,7 +43,6 @@ class PropertyController extends BaseController {
     IUserService userService
 
     def profileService
-    def authorisedSystemService
 
     static allowedMethods = [getProperty: "GET", saveProperty: "POST"]
 
@@ -104,9 +103,9 @@ class PropertyController extends BaseController {
             badRequest "name and alaId must be provided";
         } else {
             UserRecord user = userService.getUserById(alaId);
-            List props
+            List<UserPropertyRecord> props
             if (user) {
-                props = userService.getCustomUserProperty(user, name)
+                props = profileService.getUserProperty(user, name)
                 render text: props as JSON, contentType: 'application/json'
             } else {
                 notFound "Could not find user for id: ${alaId}";
@@ -183,7 +182,7 @@ class PropertyController extends BaseController {
             UserRecord user = userService.getUserById(alaId);
             UserPropertyRecord property
             if (user) {
-                property = userService.saveCustomUserProperty(user, name, value);
+                property = profileService.saveUserProperty(user, name, value);
                 if (!property) {
                     saveFailed()
                 } else {

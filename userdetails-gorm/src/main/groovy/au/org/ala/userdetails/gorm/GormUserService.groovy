@@ -130,11 +130,6 @@ class GormUserService implements IUserService {
     }
 
     @Transactional(readOnly = true)
-    boolean isEmailRegistered(String email) {
-        return User.findByEmailOrUserName(email?.toLowerCase(), email?.toLowerCase()) != null
-    }
-
-    @Transactional(readOnly = true)
     boolean isEmailInUse(String newEmail) {
         return User.findByEmailOrUserName(newEmail?.toLowerCase(), newEmail?.toLowerCase())
     }
@@ -571,36 +566,42 @@ class GormUserService implements IUserService {
 
     }
 
-    @Override
-    List<UserPropertyRecord> findAllAttributesByName(String s) {
-        UserProperty.findAllByName("flickrId")
-    }
+//        *********** Property related services *************
 
     @Override
-    void addOrUpdateProperty(UserRecord userRecord, String name, String value) {
+    UserPropertyRecord addOrUpdateProperty(UserRecord userRecord, String name, String value) {
         assert userRecord instanceof User
-        UserProperty.addOrUpdateProperty(userRecord, name, value)
+        return UserProperty.addOrUpdateProperty(userRecord, name, value)
     }
 
     @Override
-    void removeUserAttributes(UserRecord user, ArrayList<String> attrs) {
-        def props = UserProperty.findAllByUserAndNameInList(user, attrs)
+    void removeUserProperty(UserRecord user, ArrayList<String> attrs) {
+        def props = UserProperty.findAllByUserAndNameInList(user as User, attrs)
         if (props) UserProperty.deleteAll(props)
     }
 
     @Override
-    List getUserAttribute(UserRecord userRecord, String attribute) {
-        return UserProperty.findAllByUserAndName(userRecord, attribute)
-    }
+    List<UserPropertyRecord> searchProperty(UserRecord userRecord, String attribute) {
+        List<UserPropertyRecord> propList = []
 
-    @Override
-    List<UserProperty> getAllAvailableProperties() {
-        UserProperty.withCriteria {
-            projections {
-                distinct("name")
-            }
-            order("name")
+        if(userRecord && attribute){
+            List properties = UserProperty.findAllByUserAndName(userRecord as User, attribute)
+            propList =  properties.collect {new UserPropertyRecord(user: userRecord, name: it.name, value: it.value) }
         }
+        else if(attribute){
+            propList = UserProperty.findAllByName(attribute)
+        }
+        else{
+            List properties = UserProperty.withCriteria {
+                projections {
+                    distinct("name")
+                }
+                order("name")
+            } as List
+
+            propList = properties.collect { new UserPropertyRecord(user: it.user, name: it.name, value: it.value) }
+        }
+        return propList
     }
 
     @Override
@@ -719,6 +720,8 @@ class GormUserService implements IUserService {
         emailService.sendAccountActivation(user, user.tempAuthKey)
     }
 
+    //    *********** MFA services *************
+
     @Override
     String getSecretForMfa() {}
 
@@ -728,67 +731,11 @@ class GormUserService implements IUserService {
     @Override
     void enableMfa(String userId, boolean enable){}
 
-    @Override
-    def findUsersByRole(String roleName, List numberIds, List userIds, String pageOrToken) {
-        ScrollableResults results = null
-        // stream the results just in case someone requests ROLE_USER or something
-        User.withStatelessSession { session ->
-            Role role = Role.findByRole(roleName)
-            if (!role) {
-                return [error: "Role not found"]
-            }
-
-            def c = User.createCriteria()
-            results = c.scroll {
-                or {
-                    if (numberIds) {
-                        inList('id', numberIds*.toLong())
-                    }
-                    if (userIds) {
-                        inList('userName', userIds)
-                        inList('email', userIds)
-                    }
-                }
-                userRoles {
-                    eq("role", role)
-                }
-            } as ScrollableResults
-        }
-        return [results: results]
-    }
-
     def getUserDetailsFromIdList(List idList){
         def c = User.createCriteria()
         def results = c.list() {
             'in'("id", idList.collect { userId -> userId as long } )
         }
         return results
-    }
-
-    def searchByUsernameOrEmail(String q, int max){
-
-        ScrollableResults results = null
-
-        User.withStatelessSession { session ->
-            def c = User.createCriteria()
-            results = c.scroll {
-                or {
-                    ilike('userName', "%$q%")
-                    ilike('email', "%$q%")
-                    ilike('displayName', "%$q%")
-                }
-                maxResults(max)
-            } as ScrollableResults
-        }
-        return [results: results]
-    }
-
-    def saveCustomUserProperty(UserRecord user, String name, String value){
-        UserProperty property = profileService.saveUserProperty(user, name, value)
-        return property.hasErrors() ? null: property
-    }
-
-    def getCustomUserProperty(UserRecord user, String name){
-        return profileService.getUserProperty(user, name);
     }
 }

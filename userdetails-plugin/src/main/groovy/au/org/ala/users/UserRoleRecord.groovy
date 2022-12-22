@@ -19,9 +19,7 @@ package au.org.ala.users
 import grails.web.databinding.WebDataBinding
 import groovy.transform.EqualsAndHashCode
 
-//@Entity
-@EqualsAndHashCode()
-//@EqualsAndHashCode(includes = 'id')
+@EqualsAndHashCode
 class UserRoleRecord implements WebDataBinding, Serializable {
 
     UserRecord user

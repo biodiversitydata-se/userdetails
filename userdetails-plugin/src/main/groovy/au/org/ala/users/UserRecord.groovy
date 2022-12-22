@@ -21,8 +21,7 @@ import groovy.transform.EqualsAndHashCode
 
 import java.sql.Timestamp
 
-@EqualsAndHashCode()
-//@EqualsAndHashCode(includes = 'id')
+@EqualsAndHashCode
 class UserRecord<T> implements WebDataBinding, Serializable {
 
     T id

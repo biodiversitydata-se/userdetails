@@ -83,4 +83,8 @@ class Application extends GrailsAutoConfiguration {
         return userService
     }
 
+    @Bean('passwordOperations')
+    IPasswordOperations passwordOperations() {
+        new CognitoPasswordOperations()
+    }
 }

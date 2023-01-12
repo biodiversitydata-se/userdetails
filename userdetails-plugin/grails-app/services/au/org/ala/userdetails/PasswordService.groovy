@@ -15,13 +15,13 @@
 
 package au.org.ala.userdetails
 
+import au.org.ala.auth.PasswordResetFailedException
 import au.org.ala.users.UserRecord
 import au.org.ala.auth.PasswordPolicy
 import au.org.ala.cas.encoding.BcryptPasswordEncoder
 import au.org.ala.cas.encoding.LegacyPasswordEncoder
 import au.org.ala.cas.encoding.PasswordEncoder
 import grails.core.GrailsApplication
-import grails.gorm.transactions.Transactional
 import org.apache.commons.lang3.RandomStringUtils
 import org.passay.CharacterCharacteristicsRule
 import org.passay.CharacterRule
@@ -41,7 +41,6 @@ import org.passay.dictionary.WordListDictionary
 import org.passay.dictionary.WordLists
 import org.passay.dictionary.sort.ArraysSort
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 
 
@@ -53,8 +52,6 @@ class PasswordService {
 
     static final String BCRYPT_ENCODER_TYPE = 'bcrypt'
     static final String LEGACY_ENCODER_TYPE = 'legacy'
-
-    static final String STATUS_CURRENT = 'CURRENT'
 
     private PasswordValidator builtPasswordValidator = null
     private PasswordPolicy builtPasswordPolicy = null
@@ -71,8 +68,23 @@ class PasswordService {
     String legacySalt
 
     @Autowired
-    @Qualifier('userService')
-    IUserService userService
+    IPasswordOperations passwordOperations
+
+    void resetAndSendTemporaryPassword(UserRecord user, String emailSubject, String emailTitle, String emailBody, String password) throws PasswordResetFailedException {
+        passwordOperations.resetAndSendTemporaryPassword(user, emailSubject, emailTitle, emailBody, password)
+    }
+
+    boolean resetPassword(UserRecord user, String newPassword, boolean isPermanent, String confirmationCode) {
+        return passwordOperations.resetPassword(user, newPassword, isPermanent, confirmationCode)
+    }
+
+    String getResetPasswordUrl(UserRecord user) {
+        return passwordOperations.getResetPasswordUrl(user)
+    }
+
+    String getPasswordResetView() {
+        return passwordOperations.getPasswordResetView()
+    }
 
     String generatePassword(UserRecord user) {
         if (user == null) {
@@ -80,7 +92,7 @@ class PasswordService {
         }
 
        def newPassword = generateNewPassword(user?.userName ?: user?.email ?: '')
-       userService.resetPassword(user, newPassword, false, null)
+       resetPassword(user, newPassword, false, null)
        return newPassword
     }
 
@@ -91,26 +103,7 @@ class PasswordService {
      * @return True if the password matches the existing password, otherwise false.
      */
     boolean checkUserPassword(UserRecord user, String password) {
-        if (!password || password.size() < 1) {
-            throw new IllegalArgumentException("The password must not be empty.")
-        }
-        if (user == null) {
-            throw new IllegalArgumentException("Must provide the user to compare a password.")
-        }
-
-        def passwordType = getPasswordType()
-        def passwordStatus = STATUS_CURRENT
-        // TODO Port to userservice
-//        def existingPasswords = Password.findAllByUserAndTypeAndStatus(user, passwordType, passwordStatus)
-
-        def dateTimeNow = new Date().toTimestamp()
-        // TODO Port to userservice
-        def matchPassword = false
-//        def matchingPassword = existingPasswords.find { item ->
-//            comparePasswords(password, item.password) && (item.expiry == null || item.expiry > dateTimeNow)
-//        }
-
-        return matchPassword
+        return passwordOperations.checkUserPassword(user, password)
     }
 
     /**
@@ -125,22 +118,6 @@ class PasswordService {
 
         def encoder = getEncoder()
         def encodedPassword = encoder.encode(password)
-        return encodedPassword
-    }
-
-    /**
-     * Compare a plain-text password to an encoded password.
-     * @param plainPassword The plain-text password.
-     * @param hashedPassword The encoded password.
-     * @return True if the passwords match, otherwise false.
-     */
-    Boolean comparePasswords(String plainPassword, String hashedPassword) {
-        if (!plainPassword || plainPassword.length() < 1 || !hashedPassword || hashedPassword.length() < 1) {
-            throw new IllegalArgumentException("Must supply a plain text password and a hashed password to be compared.")
-        }
-
-        def encoder = getEncoder()
-        def encodedPassword = encoder.matches(plainPassword, hashedPassword)
         return encodedPassword
     }
 
@@ -327,16 +304,5 @@ class PasswordService {
         }
 
         return this.builtPasswordGeneralRules
-    }
-
-    private PasswordEncoder getEncoder() {
-        def encoder = passwordEncoderType.equalsIgnoreCase(BCRYPT_ENCODER_TYPE) ?
-                new BcryptPasswordEncoder(bcryptStrength) :
-                new LegacyPasswordEncoder(legacySalt, legacyAlgorithm, true)
-        return encoder
-    }
-
-    private getPasswordType() {
-        return passwordEncoderType.equalsIgnoreCase(BCRYPT_ENCODER_TYPE) ? BCRYPT_ENCODER_TYPE : LEGACY_ENCODER_TYPE
     }
 }

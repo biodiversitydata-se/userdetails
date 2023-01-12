@@ -18,8 +18,7 @@ package au.org.ala.users
 import grails.web.databinding.WebDataBinding
 import groovy.transform.EqualsAndHashCode
 
-@EqualsAndHashCode()
-//@EqualsAndHashCode(includes = 'id')
+@EqualsAndHashCode
 class AuthorisedSystem implements WebDataBinding, Serializable {
 
     String host

@@ -23,6 +23,7 @@ import au.org.ala.ws.service.WebService
 import grails.converters.JSON
 
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.beans.factory.annotation.Value
 import org.passay.RuleResult
 import org.springframework.context.i18n.LocaleContextHolder
 import org.springframework.validation.Errors
@@ -49,6 +50,9 @@ class RegistrationController {
     WebService webService
     def messageSource
 
+    @Value('${userdetails.features.requirePasswordForUserUpdate:true}')
+    boolean requirePasswordForUserUpdate
+
     def index() {
         redirect(action: 'createAccount')
     }
@@ -61,7 +65,7 @@ class RegistrationController {
 
     def editAccount() {
         def user = userService.currentUser
-        render(view: 'createAccount', model: [edit: true, user: user, props: user?.propsAsMap()])
+        render(view: 'createAccount', model: [edit: true, user: user, props: user?.propsAsMap(), passwordPolicy: passwordService.buildPasswordPolicy()])
     }
 
     def passwordReset() {
@@ -85,14 +89,14 @@ class RegistrationController {
         buildErrorMessages(validationResult, cmd.errors)
 
         if (cmd.hasErrors()) {
-            render(view: 'passwordReset', model: [user: user, authKey: cmd.authKey, errors:cmd.errors, passwordMatchFail: true])
+            render(view: 'passwordReset', model: [user: user, authKey: cmd.authKey, errors:cmd.errors, passwordMatchFail: true, passwordPolicy: passwordService.buildPasswordPolicy()])
         }
         else {
             withForm {
                 if (user.tempAuthKey == cmd.authKey) {
                     //update the password
                     try {
-                        userService.resetPassword(user, cmd.password, true, null)
+                        passwordService.resetPassword(user, cmd.password, true, null)
                         userService.clearTempAuthKey(user)
                         redirect(controller: 'registration', action: 'passwordResetSuccess')
                         log.info("Password successfully reset for user: " + cmd.userId)
@@ -115,7 +119,7 @@ class RegistrationController {
     def updateCognitoPassword(UpdateCognitoPasswordCommand cmd) {
         UserRecord user = userService.getUserByEmail(cmd.email)
         if (cmd.hasErrors()) {
-            render(view: 'passwordResetCognito', model: [email: cmd.email, code: cmd.code, errors:cmd.errors, passwordMatchFail: true])
+            render(view: 'passwordResetCognito', model: [email: cmd.email, code: cmd.code, errors:cmd.errors, passwordMatchFail: true, passwordPolicy: passwordService.buildPasswordPolicy()])
         }
         else {
             withForm {
@@ -125,7 +129,7 @@ class RegistrationController {
                 }
                 //update the password
                 try {
-                    def success = userService.resetPassword(user, cmd.password, true, cmd.code)
+                    def success = passwordService.resetPassword(user, cmd.password, true, cmd.code)
                     if(success) {
                         Map resp = webService.get("${grailsApplication.config.getProperty('grails.serverURL')}/logout?")
                         redirect(controller: 'registration', action: 'passwordResetSuccess')
@@ -189,8 +193,8 @@ class RegistrationController {
         def user = userService.getUserById(params.email)
         if (user) {
             try {
-                userService.resetAndSendTemporaryPassword(user, null, null, null, null)
-                render(view: userService.getPasswordResetView(), model: [email: params.email])
+                passwordService.resetAndSendTemporaryPassword(user, null, null, null, null)
+                render(view: passwordService.getPasswordResetView(), model: [email: params.email, passwordPolicy: passwordService.buildPasswordPolicy()])
             } catch (Exception e) {
                 log.error("Problem starting password reset for email address: " + params.email)
                 log.error(e.getMessage(), e)
@@ -237,11 +241,14 @@ class RegistrationController {
                 }
             }
 
-            def isCorrectPassword = passwordService.checkUserPassword(user, params.confirmUserPassword)
-            if (!isCorrectPassword) {
-                flash.message = 'Incorrect password. Could not update account details. Please try again.'
-                render(view: 'createAccount', model: [edit: true, user: user, props: user?.propsAsMap()])
-                return
+            // TODO might need to remove this for delegated auth?
+            if (requirePasswordForUserUpdate) {
+                def isCorrectPassword = passwordService.checkUserPassword(user, params.confirmUserPassword)
+                if (!isCorrectPassword) {
+                    flash.message = 'Incorrect password. Could not update account details. Please try again.'
+                    render(view: 'createAccount', model: [edit: true, user: user, props: user?.propsAsMap(), passwordPolicy: passwordService.buildPasswordPolicy()])
+                    return
+                }
             }
 
             def success = userService.updateUser(user.userId, params)
@@ -272,13 +279,13 @@ class RegistrationController {
                     if (!verifyResponse.success) {
                         log.warn('Recaptcha verify reported an error: {}', verifyResponse)
                         flash.message = 'There was an error with the captcha, please try again'
-                        render(view: 'createAccount', model: [edit: false, user: params, props: params])
+                        render(view: 'createAccount', model: [edit: false, user: params, props: params, passwordPolicy: passwordService.buildPasswordPolicy()])
                         return
                     }
                 } else {
                     log.warn("error from recaptcha {}", response)
                     flash.message = 'There was an error with the captcha, please try again'
-                    render(view: 'createAccount', model: [edit: false, user: params, props: params])
+                    render(view: 'createAccount', model: [edit: false, user: params, props: params, passwordPolicy: passwordService.buildPasswordPolicy()])
                     return
                 }
             }
@@ -287,7 +294,7 @@ class RegistrationController {
             if (!paramsEmail || userService.isEmailInUse(paramsEmail)) {
                 def inactiveUser = !userService.isActive(paramsEmail)
                 def lockedUser = userService.isLocked(paramsEmail)
-                render(view: 'createAccount', model: [edit: false, user: params, props: params, alreadyRegistered: true, inactiveUser: inactiveUser, lockedUser: lockedUser])
+                render(view: 'createAccount', model: [edit: false, user: params, props: params, alreadyRegistered: true, inactiveUser: inactiveUser, lockedUser: lockedUser, passwordPolicy: passwordService.buildPasswordPolicy()])
             } else {
 
                 def passwordValidation = passwordService.validatePassword(paramsEmail, paramsPassword)
@@ -302,10 +309,10 @@ class RegistrationController {
                     //does a user with the supplied email address exist
                     def user = userService.registerUser(params)
 
-                    if(user) {
+                    if (user) {
                         //store the password
                         try {
-                            userService.resetPassword(user, params.password, true, null)
+                            passwordService.resetPassword(user, params.password, true, null)
                             //store the password
                             userService.sendAccountActivation(user)
                             redirect(action: 'accountCreated', id: user.id)
@@ -313,8 +320,7 @@ class RegistrationController {
                             log.error("Couldn't reset password", e)
                             render(view: "accountError", model: [msg: "Failed to reset password"])
                         }
-                    }
-                    else{
+                    } else {
                         log.error('Couldn\'t create user')
                         render(view: "accountError", model: [msg: 'Couldn\'t create user'])
                     }

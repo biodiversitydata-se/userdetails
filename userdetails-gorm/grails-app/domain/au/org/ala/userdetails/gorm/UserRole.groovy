@@ -18,7 +18,6 @@ package au.org.ala.userdetails.gorm
 import au.org.ala.users.UserRoleRecord
 import groovy.transform.EqualsAndHashCode
 
-@EqualsAndHashCode(includes = 'id')
 class UserRole extends UserRoleRecord implements Serializable {
 
     User user

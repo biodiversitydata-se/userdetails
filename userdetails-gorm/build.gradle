@@ -105,26 +105,6 @@ dependencies {
 
     // Grails plugin dependencies
 
-    implementation "org.grails.plugins:ala-bootstrap3:4.1.0"
-    implementation "org.grails.plugins:ala-ws-plugin:3.1.1"
-    implementation "org.grails.plugins:ala-ws-security-plugin:4.3.5-SNAPSHOT"
-    implementation "org.grails.plugins:ala-auth:5.2.0-CognitoLogoutFix-SNAPSHOT"
-    implementation "org.grails.plugins:ala-admin-plugin:2.3.0"
-
-    implementation 'dk.glasius:external-config:3.1.0'
-    implementation 'org.grails.plugins:http-builder-helper:1.1.0'
-    implementation "org.grails.plugins:csv:1.0.1"
-    implementation 'org.grails.plugins:mail:3.0.0'
-
-    implementation "org.grails.plugins:oauth:4.0.0"
-    // transitive oauth plugin deps used in code
-    implementation "com.github.scribejava:scribejava-core:4.0.0"
-    implementation "com.github.scribejava:scribejava-apis:4.0.0"
-
-    implementation "domurtag.plugins:grails-simple-captcha:1.0.0-grails3"
-    implementation "org.grails.plugins:export:2.0.0"
-    implementation 'org.grails.plugins:grails-markdown:3.0.0'
-
     // Base Userdetails plugin
     implementation project(':userdetails-plugin')
 

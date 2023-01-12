@@ -259,6 +259,11 @@ class CognitoUserService implements IUserService {
 
     @Override
     UserRecord registerUser(GrailsParameterMap params) throws Exception {
+
+        if(!params.email || isEmailInUse(params.email)){
+            return null
+        }
+
         def request = new AdminCreateUserRequest()
         //TODO need to change
         request.username = params.email //UUID.randomUUID().toString()
@@ -280,17 +285,6 @@ class CognitoUserService implements IUserService {
         def userResponse = cognitoIdp.adminCreateUser(request)
 
         if(userResponse.user) {
-
-            Map<String, String> attributes = userResponse.user.attributes.collectEntries { [(it.name): it.value] }
-            Collection<UserPropertyRecord> userProperties = attributes
-                    .findAll { !mainAttrs.contains(it.key) }
-                    .collect {
-                        if (it.key.startsWith('custom:')) {
-                            new UserPropertyRecord(name: it.key.substring(7), value: it.value)
-                        } else {
-                            new UserPropertyRecord(name: it.key, value: it.value)
-                        }
-                    }
 
             UserRecord user = cognitoUserTypeToUserRecord(userResponse.user, true)
 

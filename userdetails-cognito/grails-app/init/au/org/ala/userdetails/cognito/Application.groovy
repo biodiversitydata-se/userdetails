@@ -76,7 +76,6 @@ class Application extends GrailsAutoConfiguration {
 
         userService.emailService = emailService
         userService.tokenService = tokenService
-        userService.grailsApplication = grailsApplication
 
         userService.affiliationsEnabled = grailsApplication.config.getProperty('attributes.affiliations.enabled', Boolean, false)
 

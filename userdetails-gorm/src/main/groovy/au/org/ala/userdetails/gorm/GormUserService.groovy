@@ -302,6 +302,7 @@ class GormUserService implements IUserService {
         }
     }
 
+    @Transactional
     UserRecord registerUser(GrailsParameterMap params) throws Exception {
 
         //does a user with the supplied email address exist

@@ -67,7 +67,7 @@ class UserDetailsTagLib {
             def nextToken = attrs.nextToken
             def max = params.int('max')
 
-            if (!max) max = (attrs.int('max') ?: 5)
+            if (!max) max = (attrs.int('max') ?: 20)
 
             def linkParams = [:]
             if (attrs.params) linkParams.putAll(attrs.params)

@@ -46,7 +46,6 @@ class UserController {
         [userInstance: new UserRecord()]
     }
 
-    @Transactional
     def save() {
         UserRecord user = userService.registerUser(params)
 

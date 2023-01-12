@@ -103,15 +103,6 @@ dependencies {
     // Base userdetails plugin
     implementation project(':userdetails-plugin')
 
-    // transitive dependencies aren't available from plugin
-//    implementation "org.grails.plugins:ala-bootstrap3:4.1.0"
-//    implementation "org.grails.plugins:ala-ws-plugin:3.1.1"
-//    implementation "org.grails.plugins:ala-ws-security-plugin:4.3.3-SNAPSHOT"
-//    implementation "org.grails.plugins:ala-auth:5.1.1"
-//    implementation "org.grails.plugins:ala-admin-plugin:2.3.0"
-//
-//    implementation 'org.grails.plugins:mail:3.0.0'
-
     // regular JAR dependencies
 
     implementation 'com.amazonaws:aws-java-sdk-cognitoidentity:1.12.279'

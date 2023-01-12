@@ -1,7 +1,6 @@
 package au.org.ala.userdetails
 
 import au.org.ala.auth.BulkUserLoadResults
-import au.org.ala.auth.PasswordResetFailedException
 import au.org.ala.users.RoleRecord
 import au.org.ala.users.UserPropertyRecord
 import au.org.ala.users.UserRecord
@@ -20,15 +19,13 @@ import com.amazonaws.services.cognitoidp.model.AdminGetUserRequest
 import com.amazonaws.services.cognitoidp.model.AdminGetUserResult
 import com.amazonaws.services.cognitoidp.model.AdminListGroupsForUserRequest
 import com.amazonaws.services.cognitoidp.model.AdminRemoveUserFromGroupRequest
-import com.amazonaws.services.cognitoidp.model.AdminRemoveUserFromGroupResult
-import com.amazonaws.services.cognitoidp.model.AdminResetUserPasswordRequest
 import com.amazonaws.services.cognitoidp.model.AdminSetUserMFAPreferenceRequest
-import com.amazonaws.services.cognitoidp.model.AdminSetUserPasswordRequest
 import com.amazonaws.services.cognitoidp.model.AdminUpdateUserAttributesRequest
 import com.amazonaws.services.cognitoidp.model.AssociateSoftwareTokenRequest
 import com.amazonaws.services.cognitoidp.model.AttributeType
 import com.amazonaws.services.cognitoidp.model.ConfirmForgotPasswordRequest
 import com.amazonaws.services.cognitoidp.model.DescribeUserPoolRequest
+
 import com.amazonaws.services.cognitoidp.model.CreateGroupRequest
 import com.amazonaws.services.cognitoidp.model.GetGroupRequest
 import com.amazonaws.services.cognitoidp.model.GetUserRequest
@@ -50,8 +47,6 @@ import com.amazonaws.services.cognitoidp.model.VerifySoftwareTokenRequest
 import grails.converters.JSON
 import grails.web.servlet.mvc.GrailsParameterMap
 import groovy.util.logging.Slf4j
-import org.apache.commons.codec.digest.HmacAlgorithms
-import org.apache.commons.codec.digest.HmacUtils
 import org.apache.commons.lang3.NotImplementedException
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -67,7 +62,6 @@ class CognitoUserService implements IUserService {
 
     EmailService emailService
     TokenService tokenService
-    def grailsApplication
 
     AWSCognitoIdentityProvider cognitoIdp
     String poolId
@@ -219,7 +213,6 @@ class CognitoUserService implements IUserService {
 
         def user = new UserRecord<String>(
                 id: attributes['name'] ?: userType.username,
-                userId: userType.username,
                 dateCreated: userType.userCreateDate, lastUpdated: userType.userLastModifiedDate,
                 activated: userType.userStatus == "CONFIRMED", locked: !userType.enabled,
                 firstName: attributes['given_name'], lastName: attributes['family_name'],
@@ -309,15 +302,6 @@ class CognitoUserService implements IUserService {
     }
 
     @Override
-    void resetAndSendTemporaryPassword(UserRecord user, String emailSubject, String emailTitle, String emailBody, String password) throws PasswordResetFailedException {
-        def request = new AdminResetUserPasswordRequest()
-        request.username = user.email
-        request.userPoolId = poolId
-
-        cognitoIdp.adminResetUserPassword(request)
-    }
-
-    @Override
     void clearTempAuthKey(UserRecord user) {
         def request = new AdminUpdateUserAttributesRequest()
                 .withUsername(user.userName)
@@ -368,7 +352,6 @@ class CognitoUserService implements IUserService {
 
             UserRecord user = new UserRecord<String>(
                     id: attributes['name'] ?: userResponse.username,
-                    userId: userResponse.username,
                     dateCreated: userResponse.userCreateDate, lastUpdated: userResponse.userLastModifiedDate,
                     activated: userResponse.userStatus == "CONFIRMED", locked: !userResponse.enabled,
                     firstName: attributes['given_name'], lastName: attributes['family_name'],
@@ -417,7 +400,6 @@ class CognitoUserService implements IUserService {
 
             UserRecord user = new UserRecord<String>(
                     id: attributes['name'] ?: userResponse.username,
-                    userId: userResponse.username,
 //                dateCreated: userResponse.userCreateDate, lastUpdated: userResponse.userLastModifiedDate,
 //                activated: userResponse.userStatus == "CONFIRMED", locked: !userResponse.enabled,
                     firstName: attributes['given_name'], lastName: attributes['family_name'],
@@ -432,11 +414,6 @@ class CognitoUserService implements IUserService {
             log.error(e.getMessage())
             return null
         }
-    }
-
-    @Override
-    String getResetPasswordUrl(UserRecord user) {
-        return null
     }
 
     @Override
@@ -707,42 +684,6 @@ class CognitoUserService implements IUserService {
     }
 
     @Override
-    boolean resetPassword(UserRecord user, String newPassword, boolean isPermanent, String confirmationCode) {
-        if(!user || !newPassword) {
-            return false
-        }
-
-        try {
-            if (confirmationCode == null) {
-                def request = new AdminSetUserPasswordRequest()
-                request.username = user.email
-                request.userPoolId = poolId
-                request.password = newPassword
-                request.permanent = isPermanent
-
-                def response = cognitoIdp.adminSetUserPassword(request)
-                return response.getSdkHttpMetadata().httpStatusCode == 200
-            } else {
-                def request = new ConfirmForgotPasswordRequest().withUsername(user.email)
-                request.password = newPassword
-                request.confirmationCode = confirmationCode
-                request.clientId = grailsApplication.config.getProperty('security.oidc.client-id')
-                request.secretHash = calculateSecretHash(grailsApplication.config.getProperty('security.oidc.client-id'),
-                        grailsApplication.config.getProperty('security.oidc.secret'), user.email)
-                def response = cognitoIdp.confirmForgotPassword(request)
-                return response.getSdkHttpMetadata().httpStatusCode == 200
-            }
-        }catch(Exception e){
-            return false
-        }
-    }
-
-    @Override
-    String getPasswordResetView() {
-        return "passwordResetCognito"
-    }
-
-    @Override
     def sendAccountActivation(UserRecord user) {
         //this email can be sent via cognito
         //emailService.sendCognitoAccountActivation(user)
@@ -789,15 +730,6 @@ class CognitoUserService implements IUserService {
         def response = cognitoIdp.adminSetUserMFAPreference(mfaRequest)
         if (response.sdkHttpMetadata.httpStatusCode != 200) {
             throw new RuntimeException("Couldn't set MFA preference")
-        }
-    }
-
-    static String calculateSecretHash(String userPoolClientId, String userPoolClientSecret, String userName) {
-        try {
-            byte[] rawHmac = new HmacUtils(HmacAlgorithms.HMAC_SHA_256, userPoolClientSecret).hmac("$userName$userPoolClientId")
-            return Base64.getEncoder().encodeToString(rawHmac)
-        } catch (Exception e) {
-            throw new RuntimeException("Error while calculating ")
         }
     }
 

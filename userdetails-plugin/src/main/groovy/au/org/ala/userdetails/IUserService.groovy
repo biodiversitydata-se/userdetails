@@ -16,14 +16,11 @@
 package au.org.ala.userdetails
 
 import au.org.ala.auth.BulkUserLoadResults
-import au.org.ala.auth.PasswordResetFailedException
 import au.org.ala.users.RoleRecord
 import au.org.ala.users.UserPropertyRecord
 import au.org.ala.users.UserRecord
 import au.org.ala.users.UserRoleRecord
 import grails.web.servlet.mvc.GrailsParameterMap
-
-import javax.servlet.http.HttpSession
 
 interface IUserService {
 
@@ -52,6 +49,8 @@ interface IUserService {
     void updateProperties(UserRecord user, GrailsParameterMap params)
 
     void deleteUser(UserRecord user)
+
+    void clearTempAuthKey(UserRecord user)
 
     UserRecord getUserById(String userId)
 
@@ -166,10 +165,6 @@ interface IUserService {
     void resetAndSendTemporaryPassword(UserRecord user, String emailSubject, String emailTitle, String emailBody, String password) throws PasswordResetFailedException
 
     void clearTempAuthKey(UserRecord user)
-
-    boolean resetPassword(UserRecord user, String newPassword, boolean isPermanent, String confirmationCode)
-
-    String getPasswordResetView()
 
     def sendAccountActivation(UserRecord user)
 

@@ -209,6 +209,7 @@ userdetails:
     authorisedSystems: false
     bulkCreate: false
     exportUsers: false
+    requirePasswordForUserUpdate: false # can't be applied to users who have signed in with delegated authentication, so disabled for now
 
 attributes:
     states:

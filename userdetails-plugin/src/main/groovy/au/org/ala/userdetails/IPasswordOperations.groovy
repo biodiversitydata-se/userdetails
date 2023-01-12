@@ -24,4 +24,12 @@ interface IPasswordOperations {
     String getResetPasswordUrl(UserRecord user)
 
     String getPasswordResetView()
+
+    /**
+     * Check that a plain-text password matches a user's existing password.
+     * @param user The user.
+     * @param password The plain-text password to match.
+     * @return True if the password matches the existing password, otherwise false.
+     */
+    boolean checkUserPassword(UserRecord user, String password)
 }

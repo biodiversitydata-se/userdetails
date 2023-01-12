@@ -53,8 +53,6 @@ class PasswordService {
     static final String BCRYPT_ENCODER_TYPE = 'bcrypt'
     static final String LEGACY_ENCODER_TYPE = 'legacy'
 
-    static final String STATUS_CURRENT = 'CURRENT'
-
     private PasswordValidator builtPasswordValidator = null
     private PasswordPolicy builtPasswordPolicy = null
     private List<Rule> builtPasswordGeneralRules = null
@@ -105,26 +103,7 @@ class PasswordService {
      * @return True if the password matches the existing password, otherwise false.
      */
     boolean checkUserPassword(UserRecord user, String password) {
-        if (!password || password.size() < 1) {
-            throw new IllegalArgumentException("The password must not be empty.")
-        }
-        if (user == null) {
-            throw new IllegalArgumentException("Must provide the user to compare a password.")
-        }
-
-        def passwordType = getPasswordType()
-        def passwordStatus = STATUS_CURRENT
-        // TODO Port to userservice
-//        def existingPasswords = Password.findAllByUserAndTypeAndStatus(user, passwordType, passwordStatus)
-
-        def dateTimeNow = new Date().toTimestamp()
-        // TODO Port to userservice
-        def matchPassword = false
-//        def matchingPassword = existingPasswords.find { item ->
-//            comparePasswords(password, item.password) && (item.expiry == null || item.expiry > dateTimeNow)
-//        }
-
-        return matchingPassword
+        return passwordOperations.checkUserPassword(user, password)
     }
 
     /**
@@ -139,22 +118,6 @@ class PasswordService {
 
         def encoder = getEncoder()
         def encodedPassword = encoder.encode(password)
-        return encodedPassword
-    }
-
-    /**
-     * Compare a plain-text password to an encoded password.
-     * @param plainPassword The plain-text password.
-     * @param hashedPassword The encoded password.
-     * @return True if the passwords match, otherwise false.
-     */
-    Boolean comparePasswords(String plainPassword, String hashedPassword) {
-        if (!plainPassword || plainPassword.length() < 1 || !hashedPassword || hashedPassword.length() < 1) {
-            throw new IllegalArgumentException("Must supply a plain text password and a hashed password to be compared.")
-        }
-
-        def encoder = getEncoder()
-        def encodedPassword = encoder.matches(plainPassword, hashedPassword)
         return encodedPassword
     }
 
@@ -341,16 +304,5 @@ class PasswordService {
         }
 
         return this.builtPasswordGeneralRules
-    }
-
-    private PasswordEncoder getEncoder() {
-        def encoder = passwordEncoderType.equalsIgnoreCase(BCRYPT_ENCODER_TYPE) ?
-                new BcryptPasswordEncoder(bcryptStrength) :
-                new LegacyPasswordEncoder(legacySalt, legacyAlgorithm, true)
-        return encoder
-    }
-
-    private getPasswordType() {
-        return passwordEncoderType.equalsIgnoreCase(BCRYPT_ENCODER_TYPE) ? BCRYPT_ENCODER_TYPE : LEGACY_ENCODER_TYPE
     }
 }

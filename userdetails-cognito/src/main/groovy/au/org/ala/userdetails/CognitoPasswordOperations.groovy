@@ -3,13 +3,17 @@ package au.org.ala.userdetails
 import au.org.ala.auth.PasswordResetFailedException
 import au.org.ala.users.UserRecord
 import com.amazonaws.services.cognitoidp.AWSCognitoIdentityProvider
+import com.amazonaws.services.cognitoidp.model.AdminInitiateAuthRequest
 import com.amazonaws.services.cognitoidp.model.AdminResetUserPasswordRequest
 import com.amazonaws.services.cognitoidp.model.AdminSetUserPasswordRequest
+import com.amazonaws.services.cognitoidp.model.AuthFlowType
 import com.amazonaws.services.cognitoidp.model.ConfirmForgotPasswordRequest
 import grails.core.GrailsApplication
+import groovy.util.logging.Slf4j
 import org.apache.commons.codec.digest.HmacAlgorithms
 import org.apache.commons.codec.digest.HmacUtils
 
+@Slf4j
 class CognitoPasswordOperations implements IPasswordOperations {
 
     GrailsApplication grailsApplication
@@ -55,6 +59,31 @@ class CognitoPasswordOperations implements IPasswordOperations {
         request.userPoolId = poolId
 
         cognitoIdp.adminResetUserPassword(request)
+    }
+
+    @Override
+    boolean checkUserPassword(UserRecord user, String password) {
+        // TODO this is untested
+        def clientId = grailsApplication.config.getProperty('security.oidc.client-id')
+        def secret = grailsApplication.config.getProperty('security.oidc.secret')
+        try {
+            def authResult = cognitoIdp.adminInitiateAuth(new AdminInitiateAuthRequest()
+                    .withAuthFlow(AuthFlowType.ADMIN_USER_PASSWORD_AUTH)
+                    .withClientId(clientId)
+                    .withUserPoolId(poolId)
+                    .withAuthParameters([
+                            USERNAME   : user.userName,
+                            PASSWORD   : password,
+                            SECRET_HASH: calculateSecretHash(clientId, secret, user.userName)
+                    ])
+            )
+            // TODO Test this and sign out?
+            return authResult.authenticationResult != null
+        } catch (e) {
+            log.debug("Exception caught while checking user password", e)
+            return false
+        }
+
     }
 
     static String calculateSecretHash(String userPoolClientId, String userPoolClientSecret, String userName) {

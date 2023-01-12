@@ -121,10 +121,10 @@ class UserController {
 
     def delete(Long id) {
 
-        def userInstance = userService.getUserById(id as String)
+        def userInstance = userService.getUserById(params.id as String)
 
         if (!userInstance) {
-            flash.message = message(code: 'default.not.found.message', args: [message(code: 'user.label', default: 'UserRecord'), id])
+            flash.message = message(code: 'default.not.found.message', args: [message(code: 'user.label', default: 'UserRecord'), params.id])
             redirect(action: "list")
             return
         }
@@ -132,11 +132,11 @@ class UserController {
         try {
             log.info("${request.userPrincipal?.name} is attempting to delete user ${userInstance.userName}")
             userService.deleteUser(userInstance)
-            flash.message = message(code: 'default.deleted.message', args: [message(code: 'user.label', default: 'UserRecord'), id])
+            flash.message = message(code: 'default.deleted.message', args: [message(code: 'user.label', default: 'UserRecord'), params.id])
             redirect(action: "list")
         } catch (DataIntegrityViolationException e) {
-            flash.message = message(code: 'default.not.deleted.message', args: [message(code: 'user.label', default: 'UserRecord'), id])
-            redirect(action: "show", id: id)
+            flash.message = message(code: 'default.not.deleted.message', args: [message(code: 'user.label', default: 'UserRecord'), params.id])
+            redirect(action: "show", id: params.id)
         }
 
     }

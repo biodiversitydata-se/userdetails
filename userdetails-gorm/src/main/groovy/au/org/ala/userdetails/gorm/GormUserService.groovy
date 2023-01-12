@@ -17,8 +17,6 @@ package au.org.ala.userdetails.gorm
 
 import au.org.ala.auth.BulkUserLoadResults
 import au.org.ala.auth.PasswordResetFailedException
-import au.org.ala.cas.encoding.BcryptPasswordEncoder
-import au.org.ala.cas.encoding.LegacyPasswordEncoder
 import au.org.ala.userdetails.EmailService
 import au.org.ala.userdetails.IUserService
 import au.org.ala.userdetails.LocationService
@@ -49,9 +47,6 @@ import org.springframework.context.MessageSource
 @Transactional
 class GormUserService implements IUserService {
 
-    static final String BCRYPT_ENCODER_TYPE = 'bcrypt'
-    static final String LEGACY_ENCODER_TYPE = 'legacy'
-
     EmailService emailService
     PasswordService passwordService
     AuthService authService
@@ -59,15 +54,6 @@ class GormUserService implements IUserService {
     LocationService locationService
     MessageSource messageSource
     WebService webService
-
-    @Value('${password.encoder}')
-    String passwordEncoderType = 'bcrypt'
-    @Value('${bcrypt.strength}')
-    Integer bcryptStrength = 10
-    @Value('${encoding.algorithm}')
-    String legacyAlgorithm
-    @Value('${encoding.salt}')
-    String legacySalt
 
     @Value('${attributes.affiliations.enabled:false}')
     boolean affiliationsEnabled = false
@@ -268,7 +254,6 @@ class GormUserService implements IUserService {
                     // Now send a temporary password to the user...
                     try {
                         resetAndSendTemporaryPassword(userInstance, emailSubject, emailTitle, emailBody, password)
-                        passwordService
                     } catch (PasswordResetFailedException ex) {
                         // Catching the checked exception should prevent the transaction from failing
                         log.error("Failed to send temporary password via email!", ex)
@@ -360,18 +345,6 @@ class GormUserService implements IUserService {
     }
 
     @Override
-    void resetAndSendTemporaryPassword(UserRecord user, String emailSubject, String emailTitle, String emailBody, String password = null) throws PasswordResetFailedException {
-        assert user instanceof User
-        if (user) {
-            //set the temp auth key
-            user.tempAuthKey = UUID.randomUUID().toString()
-            user.save(flush: true)
-            //send the email
-            emailService.sendPasswordReset(user, user.tempAuthKey, emailSubject, emailTitle, emailBody, password)
-        }
-    }
-
-    @Override
     void clearTempAuthKey(UserRecord user) {
         assert user instanceof User
         if (user) {
@@ -418,15 +391,6 @@ class GormUserService implements IUserService {
         }
 
         return user
-    }
-
-    @NotTransactional
-    @Override
-    String getResetPasswordUrl(UserRecord user) {
-        assert user instanceof User
-        if(user.tempAuthKey){
-            emailService.getServerUrl() + "resetPassword/" +  user.id +  "/"  + user.tempAuthKey
-        }
     }
 
     @Transactional(readOnly = true)
@@ -565,7 +529,7 @@ class GormUserService implements IUserService {
 
     @Override
     void addRoles(Collection<RoleRecord> roleRecords) {
-        Role.saveAll(roleRecords.collect { new Role(it.role, it.description) })
+        Role.saveAll(roleRecords.collect { new Role(role: it.role, description:  it.description) })
 
     }
 
@@ -681,35 +645,6 @@ class GormUserService implements IUserService {
             resultStreamer.finalise()
         }
         resultStreamer.complete()
-    }
-
-    @Override
-    boolean resetPassword(UserRecord user, String newPassword, boolean isPermanent, String confirmationCode) {
-        assert user instanceof User
-        Password.findAllByUser(user).each {
-            it.delete()
-        }
-
-        boolean isBcrypt = passwordEncoderType.equalsIgnoreCase(BCRYPT_ENCODER_TYPE)
-
-        def encoder = isBcrypt ? new BcryptPasswordEncoder(bcryptStrength) : new LegacyPasswordEncoder(legacySalt, legacyAlgorithm, true)
-        def encodedPassword = encoder.encode(newPassword)
-
-        //reuse object if old password
-        def password = new Password()
-        password.user = user
-        password.password = encodedPassword
-        password.type = isBcrypt ? BCRYPT_ENCODER_TYPE : LEGACY_ENCODER_TYPE
-        password.created = new Date().toTimestamp()
-        password.expiry = null
-        password.status = "CURRENT"
-        password.save(failOnError: true)
-        return true
-    }
-
-    @Override
-    String getPasswordResetView() {
-        return "startPasswordReset"
     }
 
     @Override

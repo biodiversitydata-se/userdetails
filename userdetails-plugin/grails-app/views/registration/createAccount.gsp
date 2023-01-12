@@ -270,19 +270,21 @@
                             <g:link controller="Registration" action="disableMfa" params="[userId:user?.email]">Disable MFA</g:link>
                         </g:if>
                     </div>
-                    <div class="form-group">
-                        <label for="confirmUserPassword">
-                            <g:message code="create.account.confirm.password" />
-                        </label>
-                        <input id="confirmUserPassword"
-                               name="confirmUserPassword"
-                               class="form-control"
-                               value=""
-                               data-validation-engine="validate[required, minSize[8]]"
-                               data-errormessage-value-missing="Password is required!"
-                               type="password"
-                               autocomplete="current-password"/>
-                    </div>
+                    <g:if test="${grailsApplication.config.getProperty('userdetails.features.requirePasswordForUserUpdate', Boolean, true)}">
+                        <div class="form-group">
+                            <label for="confirmUserPassword">
+                                <g:message code="create.account.confirm.password" />
+                            </label>
+                            <input id="confirmUserPassword"
+                                   name="confirmUserPassword"
+                                   class="form-control"
+                                   value=""
+                                   data-validation-engine="validate[required, minSize[8]]"
+                                   data-errormessage-value-missing="Password is required!"
+                                   type="password"
+                                   autocomplete="current-password"/>
+                        </div>
+                    </g:if>
 
                     <button id="updateAccountSubmit" class="btn btn-primary"><g:message code="create.account.update.account" /></button>
                     <button id="disableAccountSubmit" class="btn btn-danger"><g:message code="create.account.disable.account" /></button>

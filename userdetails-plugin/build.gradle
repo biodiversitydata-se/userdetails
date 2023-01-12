@@ -113,7 +113,7 @@ dependencies {
     api "org.grails.plugins:ala-bootstrap3:4.1.0"
     api "org.grails.plugins:ala-ws-plugin:3.1.1"
     api "org.grails.plugins:ala-ws-security-plugin:4.3.3-SNAPSHOT"
-    api "org.grails.plugins:ala-auth:5.1.1"
+    api "org.grails.plugins:ala-auth:5.2.0-SNAPSHOT"
     api "org.grails.plugins:ala-admin-plugin:2.3.0"
 
     api 'dk.glasius:external-config:3.1.0'

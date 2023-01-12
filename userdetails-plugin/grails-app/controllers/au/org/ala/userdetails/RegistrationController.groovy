@@ -23,6 +23,7 @@ import au.org.ala.ws.service.WebService
 import grails.converters.JSON
 
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.beans.factory.annotation.Value
 import org.passay.RuleResult
 import org.springframework.context.i18n.LocaleContextHolder
 import org.springframework.validation.Errors
@@ -48,6 +49,9 @@ class RegistrationController {
     RecaptchaClient recaptchaClient
     WebService webService
     def messageSource
+
+    @Value('${userdetails.features.requirePasswordForUserUpdate:true}')
+    boolean requirePasswordForUserUpdate
 
     def index() {
         redirect(action: 'createAccount')
@@ -239,11 +243,14 @@ class RegistrationController {
 //                params.userName = params.email
             }
 
-            def isCorrectPassword = passwordService.checkUserPassword(user, params.confirmUserPassword)
-            if (!isCorrectPassword) {
-                flash.message = 'Incorrect password. Could not update account details. Please try again.'
-                render(view: 'createAccount', model: [edit: true, user: user, props: user?.propsAsMap(), passwordPolicy: passwordService.buildPasswordPolicy()])
-                return
+            // TODO might need to remove this for delegated auth?
+            if (requirePasswordForUserUpdate) {
+                def isCorrectPassword = passwordService.checkUserPassword(user, params.confirmUserPassword)
+                if (!isCorrectPassword) {
+                    flash.message = 'Incorrect password. Could not update account details. Please try again.'
+                    render(view: 'createAccount', model: [edit: true, user: user, props: user?.propsAsMap(), passwordPolicy: passwordService.buildPasswordPolicy()])
+                    return
+                }
             }
 
             def success = userService.updateUser(user.userId, params)

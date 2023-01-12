@@ -284,14 +284,7 @@ class CognitoUserService implements IUserService {
 
             UserRecord user = cognitoUserTypeToUserRecord(userResponse.user, true)
 
-            //tODO need to change this
-            Collection<UserRoleRecord> userRoles = attributes
-                    .find {it.key == "custom:role" }.value.split(",")
-                    .collect {
-                        new UserRoleRecord(user: user, role: new RoleRecord(role: it, description: it))
-                    }
-
-            user.userRoles = userRoles
+            user.userRoles = rolesForUser(user.userName).collect { new UserRoleRecord(role: it, user: user) }
 
             //disable user
             disableUser(user)

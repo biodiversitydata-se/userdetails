@@ -50,8 +50,6 @@ interface IUserService {
 
     void deleteUser(UserRecord user)
 
-    void clearTempAuthKey(UserRecord user)
-
     UserRecord getUserById(String userId)
 
     UserRecord getUserByEmail(String email)
@@ -158,11 +156,7 @@ interface IUserService {
      */
     PagedResult<UserRoleRecord> findUserRoles(String role, GrailsParameterMap params)
 
-    //    *********** Password and account related services *************
-
-    String getResetPasswordUrl(UserRecord user)
-
-    void resetAndSendTemporaryPassword(UserRecord user, String emailSubject, String emailTitle, String emailBody, String password) throws PasswordResetFailedException
+    //    *********** account related services *************
 
     void clearTempAuthKey(UserRecord user)
 

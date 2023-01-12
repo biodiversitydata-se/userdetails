@@ -40,7 +40,8 @@ class UserDetailsWebServicesInterceptor {
             return true
         }
         catch (Exception e){
-            response.sendError(HttpStatus.SC_UNAUTHORIZED, e.getMessage())
+            log.error(e.getMessage(), e)
+            response.sendError(HttpStatus.SC_UNAUTHORIZED)
             return false
         }
     }

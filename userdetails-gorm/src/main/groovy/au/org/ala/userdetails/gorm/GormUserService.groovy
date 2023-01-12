@@ -250,7 +250,7 @@ class GormUserService implements IUserService {
 
                     // Now send a temporary password to the user...
                     try {
-                        resetAndSendTemporaryPassword(userInstance, emailSubject, emailTitle, emailBody, password)
+                        passwordService.resetAndSendTemporaryPassword(userInstance, emailSubject, emailTitle, emailBody, password)
                     } catch (PasswordResetFailedException ex) {
                         // Catching the checked exception should prevent the transaction from failing
                         log.error("Failed to send temporary password via email!", ex)
@@ -573,7 +573,7 @@ class GormUserService implements IUserService {
     }
 
     @Override
-    UserRecord findByUserNameOrEmail(String username) {
+    User findByUserNameOrEmail(String username) {
         return User.findByUserNameOrEmail(username, username)
     }
 

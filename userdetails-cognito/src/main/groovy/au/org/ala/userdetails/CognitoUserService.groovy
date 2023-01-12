@@ -174,9 +174,14 @@ class CognitoUserService implements IUserService {
 
     @Override
     boolean activateAccount(UserRecord user, GrailsParameterMap params) {
-        def request = new AdminConfirmSignUpRequest().withUsername(user.email).withUserPoolId(poolId)
-        def response = cognitoIdp.adminConfirmSignUp(request)
-        return isSuccessful(response)
+        if(user.locked) {
+            enableUser(user)
+        }
+        if(!user.activated) {
+            def request = new AdminConfirmSignUpRequest().withUsername(user.email).withUserPoolId(poolId)
+            cognitoIdp.adminConfirmSignUp(request)
+        }
+        return true
     }
 
     @Override
@@ -755,8 +760,8 @@ class CognitoUserService implements IUserService {
                 def request = new ConfirmForgotPasswordRequest().withUsername(user.email)
                 request.password = newPassword
                 request.confirmationCode = confirmationCode
-                request.clientId = grailsApplication.config.getProperty('security.oidc.client-id')
-                request.secretHash = calculateSecretHash(grailsApplication.config.getProperty('security.oidc.client-id'),
+                request.clientId = grailsApplication.config.getProperty('security.oidc.clientId')
+                request.secretHash = calculateSecretHash(grailsApplication.config.getProperty('security.oidc.clientId'),
                         grailsApplication.config.getProperty('security.oidc.secret'), user.email)
                 def response = cognitoIdp.confirmForgotPassword(request)
                 return isSuccessful(response)

@@ -160,10 +160,6 @@ interface IUserService {
 
     //    *********** Password and account related services *************
 
-    String getResetPasswordUrl(UserRecord user)
-
-    void resetAndSendTemporaryPassword(UserRecord user, String emailSubject, String emailTitle, String emailBody, String password) throws PasswordResetFailedException
-
     void clearTempAuthKey(UserRecord user)
 
     def sendAccountActivation(UserRecord user)

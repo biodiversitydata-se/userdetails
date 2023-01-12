@@ -41,8 +41,8 @@ class CognitoPasswordOperations implements IPasswordOperations {
                 def request = new ConfirmForgotPasswordRequest().withUsername(user.email)
                 request.password = newPassword
                 request.confirmationCode = confirmationCode
-                request.clientId = grailsApplication.config.getProperty('security.oidc.client-id')
-                request.secretHash = calculateSecretHash(grailsApplication.config.getProperty('security.oidc.client-id'),
+                request.clientId = grailsApplication.config.getProperty('security.oidc.clientId')
+                request.secretHash = calculateSecretHash(grailsApplication.config.getProperty('security.oidc.clientId'),
                         grailsApplication.config.getProperty('security.oidc.secret'), user.email)
                 def response = cognitoIdp.confirmForgotPassword(request)
                 return response.getSdkHttpMetadata().httpStatusCode == 200
@@ -64,7 +64,7 @@ class CognitoPasswordOperations implements IPasswordOperations {
     @Override
     boolean checkUserPassword(UserRecord user, String password) {
         // TODO this is untested
-        def clientId = grailsApplication.config.getProperty('security.oidc.client-id')
+        def clientId = grailsApplication.config.getProperty('security.oidc.clientId')
         def secret = grailsApplication.config.getProperty('security.oidc.secret')
         try {
             def authResult = cognitoIdp.adminInitiateAuth(new AdminInitiateAuthRequest()

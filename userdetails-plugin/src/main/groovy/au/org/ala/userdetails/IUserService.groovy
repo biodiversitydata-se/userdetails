@@ -33,6 +33,8 @@ interface IUserService {
 
     boolean disableUser(UserRecord user)
 
+    boolean enableUser(UserRecord user)
+
     boolean isActive(String email)
 
     boolean isLocked(String email)
@@ -41,7 +43,7 @@ interface IUserService {
 
     boolean activateAccount(UserRecord user, GrailsParameterMap params)
 
-    List<UserRecord> listUsers(String query, String paginationToken, int maxResults)
+    PagedResult<UserRecord> listUsers(GrailsParameterMap params)
 
     Collection<UserRecord> listUsers()
 

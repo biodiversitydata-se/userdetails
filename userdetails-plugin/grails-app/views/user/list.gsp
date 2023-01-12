@@ -98,7 +98,7 @@
 
     <g:if test="${!q}">
         <div class="text-center">
-            <hf:paginate total="${userInstanceTotal}" maxsteps="0" omitLast="false" params="[ q: q ]"/>
+            <ud:paginate action="list" total="${userInstanceTotal}" nextToken="${nextToken}" params="${params}"/>
         </div>
     </g:if>
         </div>

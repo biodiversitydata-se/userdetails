@@ -117,6 +117,18 @@ class GormUserService implements IUserService {
         }
     }
 
+    boolean enableUser(UserRecord user) {
+        assert user instanceof User
+        try {
+            user.activated = true
+            user.save(failOnError: true, flush: true)
+            true
+        } catch (Exception e){
+            log.error(e.getMessage(), e)
+            false
+        }
+    }
+
     @Transactional(readOnly = true)
     boolean isActive(String email) {
         def user = User.findByEmailOrUserName(email?.toLowerCase(), email?.toLowerCase())
@@ -157,16 +169,20 @@ class GormUserService implements IUserService {
     }
 
     @Override
-    List<User> listUsers(String query, String paginationToken, int maxResults) {
+    PagedResult<User> listUsers(GrailsParameterMap params) {
 
-        if (query) {
+        params.max = Math.min(params.int('max', 100), 1000)
 
-            String q = "%${query}%"
+        def users = User.list(params)
 
-            return User.findAllByEmailLikeOrLastNameLikeOrFirstNameLike(q, q, q, [offset: paginationToken as int, max: maxResults ])
+        if (params.q) {
+
+            String q = "%${params.q}%"
+
+            return User.findAllByEmailLikeOrLastNameLikeOrFirstNameLike(q, q, q, params)
         }
 
-        return User.list([offset: (paginationToken ?: 0) as int, max: maxResults ])
+        return  new PagedResult<User>(list:users, count: User.count(), nextPageToken: null)
     }
 
     @Override
@@ -499,11 +515,6 @@ class GormUserService implements IUserService {
         return new PagedResult<RoleRecord>(list: roles, count: Role.count(), nextPageToken: null)
     }
 
-//    Role createRole(GrailsParameterMap params) {
-//
-//
-//    }
-
     @Override
     boolean addUserRole(String userId, String roleId) {
 
@@ -628,11 +639,6 @@ class GormUserService implements IUserService {
     List<String[]> listUserDetails() {
         return User.findUserDetails()
     }
-
-//    @Override
-//    RoleRecord findRole(String role) {
-//        return Role.findByRole(role)
-//    }
 
     @Override
     PagedResult<Role> findUserRoles(String roleName, GrailsParameterMap params) {

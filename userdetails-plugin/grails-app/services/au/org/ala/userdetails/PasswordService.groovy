@@ -110,7 +110,7 @@ class PasswordService {
 //            comparePasswords(password, item.password) && (item.expiry == null || item.expiry > dateTimeNow)
 //        }
 
-        return matchingPassword
+        return matchPassword
     }
 
     /**

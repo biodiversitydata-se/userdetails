@@ -35,28 +35,13 @@ class UserController {
         redirect(action: "list", params: params)
     }
 
-    def list(Integer max) {
-
-        String paginationToken = params.paginationToken
-        int maxResults = Math.min(max ?: 20, 5000)
-
-        if (params.q) {
-
-            def userList = userService.listUsers(params.q, paginationToken, maxResults)
-//            def userList = UserRecord.findAllByEmailLikeOrLastNameLikeOrFirstNameLike(q,q,q)
-            [ userInstanceList: userList, userInstanceTotal: userList.size(), q: params.q ]
-
-        } else {
-
-            def userList = userService.listUsers(null, paginationToken, maxResults)
-
-            [ userInstanceList: userList, userInstanceTotal: userList.size() ]
-//            [ userInstanceList: UserRecord.list(params), userInstanceTotal: UserRecord.count() ]
-        }
+    def list() {
+            def result = userService.listUsers(params)
+            [ userInstanceList: result.list, userInstanceTotal: result.count, nextToken: result.nextPageToken ]
     }
 
     def create() {
-        [userInstance: new UserRecord(params)]
+        [userInstance: new UserRecord()]
     }
 
     @Transactional

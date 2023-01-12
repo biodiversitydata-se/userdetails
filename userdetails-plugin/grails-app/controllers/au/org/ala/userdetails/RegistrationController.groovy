@@ -296,7 +296,7 @@ class RegistrationController {
                 if (!passwordValidation.valid) {
                     log.warn("The password for user name '${paramsEmail}' did not meet the validation criteria '${passwordValidation}'")
                     flash.message = "The selected password does not meet the password policy. Please try again with a different password. ${buildErrorMessages(passwordValidation)}"
-                    render(view: 'createAccount', model: [edit: false, user: params, props: params])
+                    render(view: 'createAccount', model: [edit: false, user: params, props: params, passwordPolicy: passwordService.buildPasswordPolicy()])
                     return
                 }
 

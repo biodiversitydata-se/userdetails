@@ -28,7 +28,7 @@ class UpdateCognitoPasswordCommand implements Validateable {
     String code
 
     static constraints = {
-        password minSize: 8, blank: false, matches: "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@\$!%*?&])[A-Za-z\\d@\$!%*?&]{8,}\$" //TODO need to verify this
+        password minSize: 8, blank: false
         reenteredPassword validator: {val, cmd -> val == cmd.password}
         email nullable: false
         code blank: false

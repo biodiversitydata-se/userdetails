@@ -13,7 +13,7 @@ class UserDetailsTagLib {
 
     static namespace = 'ud'
 
-    static defaultEncodeAs = [taglib:'html']
+    //static defaultEncodeAs = [taglib:'html']
     //static encodeAsForTags = [tagName: [taglib:'html'], otherTagName: [taglib:'none']]
     static returnObjectForTags = ['roleList', 'userList']
 
@@ -63,18 +63,15 @@ class UserDetailsTagLib {
             def locale = RequestContextUtils.getLocale(request)
 
             def action = (attrs.action ? attrs.action : (params.action ? params.action : "index"))
-            def prevToken = extractPrevToken() //attrs.prevToken
+            def prevToken = extractPrevToken() //this gives the token for current search not for previous page
             def nextToken = attrs.nextToken
             def max = params.int('max')
 
-            if (!max) max = (attrs.int('max') ?: 10)
+            if (!max) max = (attrs.int('max') ?: 5)
 
             def linkParams = [:]
             if (attrs.params) linkParams.putAll(attrs.params)
-//            linkParams.offset = offset - max
             linkParams.max = max
-//            if (params.sort) linkParams.sort = params.sort
-//            if (params.order) linkParams.order = params.order
 
             def linkTagAttrs = [action: action]
             if (attrs.namespace) {
@@ -94,7 +91,7 @@ class UserDetailsTagLib {
                 linkTagAttrs.mapping = attrs.mapping
             }
 
-            linkTagAttrs.params = linkParams
+            linkTagAttrs << linkParams
 
             def cssClasses = "pagination"
             if (attrs.class) {
@@ -105,55 +102,46 @@ class UserDetailsTagLib {
             MarkupBuilder mb = new MarkupBuilder(writer)
             mb.nav('aria-label': "Page navigation") {
                 mb.ul('class': cssClasses) {
-                    if (!prevToken) {
-                        mb.li {
-//                            mb.mkp.yieldUnescaped(
+                    mb.li {
+                        mb.mkp.yieldUnescaped(
                             g.link(withParams([token: null], linkTagAttrs)) {
                                 (attrs.start ?: messageSource.getMessage('paginate.start', null, 'First', locale))
                             }
-//                            )
-                        }
-                    } else {
-                        mb.li('class': 'disabled') {
-                            mb.span {
-                                mb.mkp.yield(
-                                        (attrs.start ?: messageSource.getMessage('paginate.start', null, 'First', locale))
-                                )
-                            }
-                        }
+                        )
                     }
 
-                    if (prevToken) {
-                        mb.li {
+                    //I don't know whether this is achievable since prevToken is the token for current search not for previous page
+//                    if (prevToken) {
+//                        mb.li {
 //                            mb.mkp.yieldUnescaped(
-                                    g.link(withParams([token: prevToken], linkTagAttrs)) {
-                                (attrs.prev ?: messageSource.getMessage('paginate.prev', null, '&laquo;', locale))
-                            }
+//                                    g.link(withParams([token: prevToken], linkTagAttrs)) {
+//                                (attrs.prev ?: messageSource.getMessage('paginate.prev', null, '<<', locale))
+//                                }
 //                            )
-                        }
-                    } else {
-                        mb.li('class': 'disabled') {
-                            mb.span {
-                                mb.mkp.yield(
-                                        (attrs.prev ?: messageSource.getMessage('paginate.prev', null, '&laquo;', locale))
-                                )
-                            }
-                        }
-                    }
+//                        }
+//                    } else {
+//                        mb.li('class': 'disabled') {
+//                            mb.span {
+//                                mb.mkp.yield(
+//                                        (attrs.prev ?: messageSource.getMessage('paginate.prev', null, '<<', locale))
+//                                )
+//                            }
+//                        }
+//                    }
 
                     if (nextToken) {
                         mb.li {
-//                            mb.mkp.yieldUnescaped(
+                            mb.mkp.yieldUnescaped(
                                     g.link(withParams([token: nextToken], linkTagAttrs)) {
-                                (attrs.prev ?: messageSource.getMessage('paginate.next', null, '&raquo;', locale))
+                                (attrs.prev ?: messageSource.getMessage('paginate.next', null, '>>', locale))
                             }
-//                            )
+                            )
                         }
                     } else {
                         mb.li('class': 'disabled') {
                             mb.span {
                                 mb.mkp.yield(
-                                        (attrs.prev ?: messageSource.getMessage('paginate.next', null, '&raquo;', locale))
+                                        (attrs.prev ?: messageSource.getMessage('paginate.next', null, '>>', locale))
                                 )
                             }
                         }
@@ -171,6 +159,7 @@ class UserDetailsTagLib {
         if (referrer) {
             try {
                 def params = UriComponentsBuilder.fromHttpUrl(referrer).build().queryParams
+                //this gives the token for current search not for previous page
                 def token = params.getFirst('token')
                 if (token) {
                     result = URLDecoder.decode(token, StandardCharsets.UTF_8)
@@ -183,7 +172,7 @@ class UserDetailsTagLib {
     }
 
     private Map withParams(Map attrs, Map<String, Object> extraParams) {
-        Map params = attrs.params.clone()
+        Map params = attrs.params?.clone()  ?: [:]
         extraParams.each {
             if (it.value == null) {
                 params.remove(it.key)
@@ -193,6 +182,7 @@ class UserDetailsTagLib {
         }
         attrs.clone()
         attrs.params = params
+        attrs.params.token = attrs.token
         attrs
     }
 

@@ -21,6 +21,7 @@
 		<g:set var="entityName" value="${message(code: 'userRole.label', default: 'UserRoleRecord')}" />
 		<title><g:message code="default.create.label" args="[entityName]" /></title>
 		<asset:stylesheet src="application.css" />
+		<meta name="breadcrumbParent" content="${createLink(controller:'user', action:'list')},UserRecord list" />
 	</head>
 	<body>
 	<div class="row">
@@ -32,7 +33,7 @@
 						<input type="hidden" id="userId" name="userId" value="${user.id}"/>
 						<div class="form-group">
 							<label for="role">
-								<g:message code="userRole.role.label" default="Role" />
+								<g:message code="role.label" default="Role" />
 							</label>
 							<g:select id="role" name="role.id" from="${roles}"
 									  optionKey="role"  value="" class="form-control many-to-one"/>

@@ -82,22 +82,6 @@ class EmailService {
         }
     }
 
-    def sendCognitoAccountActivation(user) throws PasswordResetFailedException {
-        try {
-            sendMail {
-                from grailsApplication.config.getProperty('emailSenderTitle') + "<" + grailsApplication.config.getProperty('emailSender') + ">"
-                subject "Activate your account"
-                to user.email
-                body(view: '/email/activateAccount',
-                        plugin: "email-confirmation",
-                        model: [userName: user.firstName, link: getServerUrl() + "activateAccount/" + user.email, orgNameLong: grailsApplication.config.getProperty('skin.orgNameLong')]
-                )
-            }
-        } catch (Exception ex) {
-            throw new PasswordResetFailedException(ex)
-        }
-    }
-
     def sendAccountActivationSuccess(user, activatedAlerts) throws PasswordResetFailedException {
         try {
             sendMail {

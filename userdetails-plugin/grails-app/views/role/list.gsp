@@ -41,7 +41,7 @@
 			<table class="table table-bordered table-striped table-condensed">
 				<thead>
 				<tr>
-					<g:sortableColumn property="role" title="${message(code: 'role.role.label', default: 'Role')}" mapping="adminRoleList"/>
+					<g:sortableColumn property="role" title="${message(code: 'role.label', default: 'Role')}" mapping="adminRoleList"/>
 					<g:sortableColumn property="description" title="${message(code: 'role.description.label', default: 'Description')}" mapping="adminRoleList"/>
 
 					<th><g:message code="user.list.actions" /></th>

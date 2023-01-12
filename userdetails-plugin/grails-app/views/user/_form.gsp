@@ -18,7 +18,7 @@
 <div class="row">
     <div class="col-md-6">
         <div class="form-group fieldcontain ${hasErrors(bean: userInstance, field: 'firstName', 'error')} ">
-            <label for="fi rstName">
+            <label for="firstName">
                 <g:message code="user.firstName.label" default="First Name"/>
             </label>
             <g:textField name="firstName" class="form-control" value="${userInstance?.firstName}"/>
@@ -86,7 +86,7 @@
     <div class="fieldcontain ${hasErrors(bean: userInstance, field: 'activated', 'error')} ">
         <div class="checkbox">
             <label>
-                <g:checkBox name="activated" value="${userInstance?.activated}" disabled="disabled"/> <g:message code="user.form.activated" />
+                <g:checkBox name="activated" value="${userInstance?.activated}"/> <g:message code="user.form.activated" />
             </label>
         </div>
     </div>

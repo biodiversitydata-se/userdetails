@@ -55,19 +55,6 @@ class UserRoleController {
     def list() {
 
         PagedResult<UserRoleRecord> model = userService.findUserRoles(params.role, params)
-//        if(params.role){
-//            def role = userService.findUserRoles(params.role, params) // RoleRecord.findByRole(params.role)
-//            if(role){
-//                params.max = Math.min(max ?: 100, 1000)
-//                def list = UserRoleRecord.findAllByRole(role,params)
-//                model = [userRoleInstanceList: list, userRoleInstanceTotal: UserRoleRecord.findAllByRole(role).size()]
-//            } else {
-//                model = [userRoleInstanceList: [], userRoleInstanceTotal: 0]
-//            }
-//        } else {
-//            params.max = Math.min(max ?: 100, 1000)
-//            model = [userRoleInstanceList: UserRoleRecord.list(params), userRoleInstanceTotal: UserRoleRecord.count()]
-//        }
         withFormat {
 
             html { [userRoleInstanceList: model.list, userRoleInstanceTotal: model.count, nextToken: model.nextPageToken] }
@@ -84,7 +71,7 @@ class UserRoleController {
 
         def user = userService.getUserById(params.userId)
 
-        userService.addUserRole(params.userId, params.role.id)
+        userService.addUserRole(user.userId, params.role.id)
 
         redirect(action: "show", controller: 'user', id: user.userId)
     }

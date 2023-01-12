@@ -146,8 +146,7 @@
                     boolean="${userInstance?.locked}"/></span>
             <br/>
 
-        <h4><g:message code="user.userRoles.label"
-                                                                             default="Roles"/></h4>
+        <h4><g:message code="user.userRoles.label" default="Roles"/></h4>
         <br/>
         <g:if test="${userInstance?.userRoles}">
                 <g:each in="${userInstance.userRoles}" var="u">

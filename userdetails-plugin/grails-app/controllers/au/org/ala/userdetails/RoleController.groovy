@@ -51,7 +51,7 @@ class RoleController {
 
         if(pattern.matcher(params.role).matches()){
             def roleInstance = new RoleRecord(role: params.role, description: params.description)
-            def saved = userService.addRole(roleInstance) // roleInstance.save(flush: true)
+            def saved = userService.addRole(roleInstance)
             if (!saved) {
                 render(view: "create", model: [roleInstance: roleInstance])
                 return

@@ -100,9 +100,6 @@ class CognitoUserService implements IUserService {
             userAttributes.add(new AttributeType().withName('given_name').withValue(user.firstName))
             userAttributes.add(new AttributeType().withName('family_name').withValue(user.lastName))
 
-//            userAttributes.add(new AttributeType().withName('email').withValue(user.email))
-//            userAttributes.add(new AttributeType().withName('email_verified').withValue('false'))
-
             params.findAll {customAttrs.contains(it.key) }
                     .each {userAttributes.add(new AttributeType().withName("custom:${it.key}").withValue(it.value)) }
 

@@ -235,8 +235,6 @@ class RegistrationController {
                     render(view: "accountError", model: [msg: msg])
                     return
                 }
-                // and username and email address must be kept in sync
-//                params.userName = params.email
             }
 
             def isCorrectPassword = passwordService.checkUserPassword(user, params.confirmUserPassword)

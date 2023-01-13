@@ -42,7 +42,7 @@ class RoleController {
     }
 
     def create() {
-        [roleInstance: new RoleRecord(params) ]
+        [roleInstance: new RoleRecord() ]
     }
 
     def save() {
@@ -50,13 +50,13 @@ class RoleController {
         def pattern = ~/[A-Z_]{1,}/
 
         if(pattern.matcher(params.role).matches()){
-            def roleInstance = new RoleRecord(params)
+            def roleInstance = new RoleRecord(role: params.role, description: params.description)
             def saved = userService.addRole(roleInstance) // roleInstance.save(flush: true)
             if (!saved) {
                 render(view: "create", model: [roleInstance: roleInstance])
                 return
             }
-            flash.message = message(code: 'default.created.message', args: [message(code: 'role.label', default: 'Role'), roleInstance.id])
+            flash.message = message(code: 'default.created.message', args: [message(code: 'role.label', default: 'Role'), roleInstance.role])
             redirect(action: "list")
         } else {
             flash.message = 'RoleRecord must consist of uppercase characters and underscores only'

@@ -60,7 +60,7 @@ class ExternalSiteController {
     @Produces("application/json")
     def flickr() {
 
-        def flickrIds = userService.findAllAttributesByName("flickrId") // UserPropertyRecord.findAllByName("flickrId")
+        def flickrIds = userService.searchProperty(null, "flickrId")
         render(contentType: "application/json") {
             flickrUsers(flickrIds) { UserPropertyRecord flickrId ->
                 id flickrId.user.id.toString()

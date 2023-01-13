@@ -43,7 +43,6 @@ class PropertyController extends BaseController {
     IUserService userService
 
     def profileService
-    def authorisedSystemService
 
     static allowedMethods = [getProperty: "GET", saveProperty: "POST"]
 
@@ -64,7 +63,6 @@ class PropertyController extends BaseController {
                             name = "alaId",
                             in = QUERY,
                             description = "The user's ALA ID",
-                            schema = @Schema(implementation = Long),
                             required = true
                     ),
                     @Parameter(
@@ -100,14 +98,14 @@ class PropertyController extends BaseController {
     @PreAuthorise(requiredScope = 'users/read')
     def getProperty() {
         String name = params.name
-        Long alaId = params.long('alaId')
+        String alaId = params.alaId
         if (!name || !alaId) {
             badRequest "name and alaId must be provided";
         } else {
             UserRecord user = userService.getUserById(alaId);
-            List props
+            List<UserPropertyRecord> props
             if (user) {
-                props = profileService.getUserProperty(user, name);
+                props = profileService.getUserProperty(user, name)
                 render text: props as JSON, contentType: 'application/json'
             } else {
                 notFound "Could not find user for id: ${alaId}";
@@ -130,7 +128,6 @@ class PropertyController extends BaseController {
                             name = "alaId",
                             in = QUERY,
                             description = "The user's ALA ID",
-                            schema = @Schema(implementation = Long),
                             required = true
                     ),
                     @Parameter(
@@ -178,7 +175,7 @@ class PropertyController extends BaseController {
     def saveProperty(){
         String name = params.name;
         String value = params.value;
-        Long alaId = params.long('alaId');
+        String alaId = params.alaId
         if (!name || !alaId) {
             badRequest "name and alaId must be provided";
         } else {
@@ -186,7 +183,7 @@ class PropertyController extends BaseController {
             UserPropertyRecord property
             if (user) {
                 property = profileService.saveUserProperty(user, name, value);
-                if (property.hasErrors()) {
+                if (!property) {
                     saveFailed()
                 } else {
                     render text: property as JSON, contentType: 'application/json'

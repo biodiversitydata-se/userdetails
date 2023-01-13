@@ -22,6 +22,7 @@ import au.org.ala.userdetails.IUserService
 import au.org.ala.userdetails.LocationService
 import au.org.ala.userdetails.PagedResult
 import au.org.ala.userdetails.PasswordService
+import au.org.ala.userdetails.ProfileService
 import au.org.ala.userdetails.ResultStreamer
 import au.org.ala.users.RoleRecord
 import au.org.ala.users.UserPropertyRecord
@@ -54,6 +55,7 @@ class GormUserService implements IUserService {
     LocationService locationService
     MessageSource messageSource
     WebService webService
+    ProfileService profileService
 
     @Value('${attributes.affiliations.enabled:false}')
     boolean affiliationsEnabled = false
@@ -114,11 +116,6 @@ class GormUserService implements IUserService {
     }
 
     @Transactional(readOnly = true)
-    boolean isEmailRegistered(String email) {
-        return User.findByEmailOrUserName(email?.toLowerCase(), email?.toLowerCase()) != null
-    }
-
-    @Transactional(readOnly = true)
     boolean isEmailInUse(String newEmail) {
         return User.findByEmailOrUserName(newEmail?.toLowerCase(), newEmail?.toLowerCase())
     }
@@ -155,7 +152,7 @@ class GormUserService implements IUserService {
             return User.findAllByEmailLikeOrLastNameLikeOrFirstNameLike(q, q, q, [offset: paginationToken as int, max: maxResults ])
         }
 
-        return User.list([offset: paginationToken as int, max: maxResults ])
+        return User.list([offset: (paginationToken ?: 0) as int, max: maxResults ])
     }
 
     @Override
@@ -253,7 +250,7 @@ class GormUserService implements IUserService {
 
                     // Now send a temporary password to the user...
                     try {
-                        resetAndSendTemporaryPassword(userInstance, emailSubject, emailTitle, emailBody, password)
+                        passwordService.resetAndSendTemporaryPassword(userInstance, emailSubject, emailTitle, emailBody, password)
                     } catch (PasswordResetFailedException ex) {
                         // Catching the checked exception should prevent the transaction from failing
                         log.error("Failed to send temporary password via email!", ex)
@@ -274,7 +271,7 @@ class GormUserService implements IUserService {
 
         properties.keySet().each { String propName ->
             def propValue = properties[propName] ?: ''
-            setUserProperty(user, propName, propValue)
+            setUserProperty(user, propName, propValue as String)
         }
     }
 
@@ -530,39 +527,44 @@ class GormUserService implements IUserService {
     @Override
     void addRoles(Collection<RoleRecord> roleRecords) {
         Role.saveAll(roleRecords.collect { new Role(role: it.role, description:  it.description) })
-
     }
 
-    @Override
-    List<UserPropertyRecord> findAllAttributesByName(String s) {
-        UserProperty.findAllByName("flickrId")
-    }
+//        *********** Property related services *************
 
     @Override
-    void addOrUpdateProperty(UserRecord userRecord, String name, String value) {
+    UserPropertyRecord addOrUpdateProperty(UserRecord userRecord, String name, String value) {
         assert userRecord instanceof User
-        UserProperty.addOrUpdateProperty(userRecord, name, value)
+        return UserProperty.addOrUpdateProperty(userRecord, name, value)
     }
 
     @Override
-    void removeUserAttributes(UserRecord user, ArrayList<String> attrs) {
-        def props = UserProperty.findAllByUserAndNameInList(user, attrs)
+    void removeUserProperty(UserRecord user, ArrayList<String> attrs) {
+        def props = UserProperty.findAllByUserAndNameInList(user as User, attrs)
         if (props) UserProperty.deleteAll(props)
     }
 
     @Override
-    void getUserAttribute(UserRecord userRecord, String attribute) {
-        UserProperty.findAllByUserAndName(userRecord, attribute)
-    }
+    List<UserPropertyRecord> searchProperty(UserRecord userRecord, String attribute) {
+        List<UserPropertyRecord> propList = []
 
-    @Override
-    List<UserProperty> getAllAvailableProperties() {
-        UserProperty.withCriteria {
-            projections {
-                distinct("name")
-            }
-            order("name")
+        if(userRecord && attribute){
+            List properties = UserProperty.findAllByUserAndName(userRecord as User, attribute)
+            propList =  properties.collect {new UserPropertyRecord(user: userRecord, name: it.name, value: it.value) }
         }
+        else if(attribute){
+            propList = UserProperty.findAllByName(attribute)
+        }
+        else{
+            List properties = UserProperty.withCriteria {
+                projections {
+                    distinct("name")
+                }
+                order("name")
+            } as List
+
+            propList = properties.collect { new UserPropertyRecord(user: it.user, name: it.name, value: it.value) }
+        }
+        return propList
     }
 
     @Override
@@ -652,6 +654,8 @@ class GormUserService implements IUserService {
         emailService.sendAccountActivation(user, user.tempAuthKey)
     }
 
+    //    *********** MFA services *************
+
     @Override
     String getSecretForMfa() {}
 
@@ -660,4 +664,12 @@ class GormUserService implements IUserService {
 
     @Override
     void enableMfa(String userId, boolean enable){}
+
+    def getUserDetailsFromIdList(List idList){
+        def c = User.createCriteria()
+        def results = c.list() {
+            'in'("id", idList.collect { userId -> userId as long } )
+        }
+        return results
+    }
 }

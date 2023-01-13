@@ -24,6 +24,8 @@ import grails.web.servlet.mvc.GrailsParameterMap
 
 interface IUserService {
 
+    //    *********** User related services *************
+
     boolean updateUser(String userId, GrailsParameterMap params)
 
     boolean disableUser(UserRecord user)
@@ -31,8 +33,6 @@ interface IUserService {
     boolean isActive(String email)
 
     boolean isLocked(String email)
-
-    boolean isEmailRegistered(String email)
 
     boolean isEmailInUse(String newEmail)
 
@@ -49,8 +49,6 @@ interface IUserService {
     void updateProperties(UserRecord user, GrailsParameterMap params)
 
     void deleteUser(UserRecord user)
-
-    void clearTempAuthKey(UserRecord user)
 
     UserRecord getUserById(String userId)
 
@@ -72,6 +70,22 @@ interface IUserService {
     Map getUsersCounts(Locale locale)
 
     List<String[]> countByProfileAttribute(String s, Date date, Locale locale)
+
+    void findScrollableUsersByUserName(String username, int maxResults, ResultStreamer resultStreamer)
+
+    void findScrollableUsersByIdsAndRole(List<String> ids, String roleName, ResultStreamer resultStreamer)
+
+    def getUserDetailsFromIdList(List idList)
+
+    UserRecord findByUserNameOrEmail(String username)
+
+    List<String[]> listNamesAndEmails()
+
+    List<String[]> listIdsAndNames()
+
+    List<String[]> listUserDetails()
+
+    //    *********** Role services *************
 
     Collection<RoleRecord> listRoles()
 
@@ -142,35 +156,25 @@ interface IUserService {
      */
     PagedResult<UserRoleRecord> findUserRoles(String role, GrailsParameterMap params)
 
-    // TODO return type and implementation
-    void findScrollableUsersByUserName(String username, int maxResults, ResultStreamer resultStreamer)
+    //    *********** account related services *************
 
-    // TODO return type and implementation
-    void findScrollableUsersByIdsAndRole(List<String> ids, String roleName, ResultStreamer resultStreamer)
-
-    List<UserPropertyRecord> findAllAttributesByName(String s)
-
-    void addOrUpdateProperty(UserRecord userRecord, String name, String value)
-
-    void removeUserAttributes(UserRecord userRecord, ArrayList<String> attributes)
-
-    void getUserAttribute(UserRecord userRecord, String attribute)
-
-    List getAllAvailableProperties()
-
-    UserRecord findByUserNameOrEmail(String username)
-
-    List<String[]> listNamesAndEmails()
-
-    List<String[]> listIdsAndNames()
-
-    List<String[]> listUserDetails()
+    void clearTempAuthKey(UserRecord user)
 
     def sendAccountActivation(UserRecord user)
+
+    //    *********** MFA services *************
 
     String getSecretForMfa()
 
     boolean verifyUserCode(String userCode)
 
     void enableMfa(String userId, boolean enable)
+
+//    *********** Property related services *************
+
+    UserPropertyRecord addOrUpdateProperty(UserRecord userRecord, String name, String value)
+
+    void removeUserProperty(UserRecord userRecord, ArrayList<String> attributes)
+
+    List<UserPropertyRecord> searchProperty(UserRecord userRecord, String attribute)
 }

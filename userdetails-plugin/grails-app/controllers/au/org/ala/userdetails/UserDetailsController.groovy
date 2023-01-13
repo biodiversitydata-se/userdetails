@@ -21,6 +21,7 @@ import au.org.ala.users.UserRecord
 import au.org.ala.web.UserDetails
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import grails.converters.JSON
+import grails.web.servlet.mvc.GrailsParameterMap
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.ArraySchema
@@ -88,23 +89,12 @@ class UserDetailsController {
     def search() {
         def q = params['q']
         if (!q) {
-            render(status: 401, text: 'q parameter is required')
+            render(status: 400, text: 'q parameter is required')
+            return
         }
         def max = params.int('max', 10)
         def streamer = new ResultStreamer(response: response, jsonConfig: UserMarshaller.WITH_PROPERTIES_CONFIG)
-        userService.findScrollableUsersByUserName(q, max, streamer)
-//        def results = UserRecord.withStatelessSession { session ->
-//            def c = UserRecord.createCriteria()
-//            c.scroll {
-//                or {
-//                    ilike('userName', "%$q%")
-//                    ilike('email', "%$q%")
-//                    ilike('displayName', "%$q%")
-//                }
-//                maxResults(max)
-//            }
-//        }
-//        streamResults(session, results, UserMarshaller.WITH_PROPERTIES_CONFIG)
+        userService.findScrollableUsersByUserName(q as String, max, streamer)
     }
 
     @Operation(
@@ -155,76 +145,15 @@ class UserDetailsController {
 
         def streamer = new ResultStreamer(response: response, jsonConfig: includeProps ? UserMarshaller.WITH_PROPERTIES_CONFIG : 'default')
 
-//        if (!role) {
-//            response.sendError(404, "RoleRecord not found")
-//            return
-//        }
+        def role = userService.listRoles().find { it.role == roleName}
+
+        if (!role) {
+            response.sendError(404, "Role not found")
+            return
+        }
 
         userService.findScrollableUsersByIdsAndRole(ids, roleName, streamer)
-
-
-
-        // stream the results just in case someone requests ROLE_USER or something
-//        results = UserRecord.withStatelessSession { session ->
-//            RoleRecord role = RoleRecord.findByRole(roleName)
-//            if (!role) {
-//                response.sendError(404, "RoleRecord not found")
-//                return
-//            }
-//
-//            def c = UserRecord.createCriteria()
-//            c.scroll {
-//                or {
-//                    if (numberIds) {
-//                        inList('id', numberIds*.toLong())
-//                    }
-//                    if (userIds) {
-//                        inList('userName', userIds)
-//                        inList('email', userIds)
-//                    }
-//                }
-//                userRoles {
-//                    eq("role", role)
-//                }
-//            }
-//        }
-//        streamResults(session, results, includeProps ? UserMarshaller.WITH_PROPERTIES_CONFIG : 'default')
     }
-
-//    private streamResults(session, ScrollableResults results, String jsonConfig) {
-//        response.contentType = 'application/json'
-//        response.characterEncoding = 'UTF-8'
-//        def csw = new CloseShieldWriter(new BufferedWriter(response.writer))
-//        def first = true
-//        csw.print('[')
-//        if (jsonConfig) JSON.use(jsonConfig)
-//        else JSON.use('default')
-//        try {
-//            int count = 0
-//
-//            while (results.next()) {
-//                if (!first) {
-//                    csw.print(',')
-//                } else {
-//                    first = false
-//                }
-//                UserRecord user = ((UserRecord)results.get()[0])
-//
-//                (user as JSON).render(csw)
-//
-//                if (count++ % 50 == 0) {
-//                    session.flush()
-//                    session.clear()
-//                }
-//
-//            }
-//        } finally {
-//            JSON.use('default')
-//        }
-//        csw.print(']')
-//        csw.flush()
-//        response.flushBuffer()
-//    }
 
     @Operation(
             method = "POST",
@@ -272,7 +201,6 @@ class UserDetailsController {
                 user = userService.getUserById(userName)
             } else {
                 user = userService.findByUserNameOrEmail(userName)
-//                user = UserRecord.findByUserNameOrEmail(userName, userName)
             }
         } else {
             render status:400, text: "Missing parameter: userName"
@@ -422,12 +350,9 @@ class UserDetailsController {
         if (req && req.userIds) {
 
             try {
-                List<Long> idList = req.userIds.collect { userId -> userId as long }
+                List idList = req.userIds
 
-                def c = UserRecord.createCriteria()
-                def results = c.list() {
-                    'in'("id", idList)
-                }
+                def results = userService.getUserDetailsFromIdList(idList)
                 String jsonConfig = includeProps ? UserMarshaller.WITH_PROPERTIES_CONFIG : null
                 try {
 
@@ -435,11 +360,11 @@ class UserDetailsController {
 
                     def resultsMap = [users:[:], invalidIds:[], success: true]
                     results.each { user ->
-                        resultsMap.users[user.id] = user
+                        resultsMap.users[user.userId] = user
                     }
 
                     idList.each {
-                        if (!resultsMap.users[it]) {
+                        if (!resultsMap.users[it.toString()]) {
                             resultsMap.invalidIds << it
                         }
                     }

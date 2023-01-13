@@ -42,12 +42,19 @@ class RoleBasedInterceptor {
             PreAuthorise pa = method.getAnnotation(PreAuthorise) ?: controllerClass.getAnnotation(PreAuthorise)
             response.withFormat {
                 json {
-                    if (!authorisedSystemService.isAuthorisedRequest(request, response, pa.requiredRole(), pa.requiredScope())) {
-                        log.warn("Denying access to $actionName from remote addr: ${request.remoteAddr}, remote host: ${request.remoteHost}")
-                        response.status = HttpStatus.SC_UNAUTHORIZED
-                        render(['error': "Unauthorized"] as JSON)
+                    try{
+                        if (!authorisedSystemService.isAuthorisedRequest(request, response, pa.requiredRole(), pa.requiredScope())) {
+                            log.warn("Denying access to $actionName from remote addr: ${request.remoteAddr}, remote host: ${request.remoteHost}")
+                            response.status = HttpStatus.SC_UNAUTHORIZED
+                            render(['error': "Unauthorized"] as JSON)
 
-                        result = false
+                            result = false
+                        }
+                    }
+                    catch (Exception e){
+                        log.error(e.getMessage(), e)
+                        response.sendError(HttpStatus.SC_UNAUTHORIZED)
+                        return false
                     }
                 }
                 '*' {

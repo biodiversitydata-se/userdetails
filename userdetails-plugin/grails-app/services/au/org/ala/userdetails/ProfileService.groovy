@@ -24,8 +24,8 @@ class ProfileService {
     @Autowired
     IUserService userService
 
-    List getUserProperty(UserRecord user, String name) {
-        userService.getUserAttribute(user, name) ?: [] // UserPropertyRecord.findAllByUserAndName(user, name)?:[];
+    List<UserPropertyRecord> getUserProperty(UserRecord user, String name) {
+        userService.searchProperty(user, name)
     }
 
     UserPropertyRecord saveUserProperty(UserRecord user, String name, String value) {
@@ -33,6 +33,6 @@ class ProfileService {
     }
 
     List<UserPropertyRecord> getAllAvailableProperties() {
-        userService.getAllAvailableProperties()
+        userService.searchProperty(null, null)
     }
 }

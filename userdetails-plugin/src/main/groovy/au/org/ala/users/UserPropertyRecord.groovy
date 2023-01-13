@@ -27,18 +27,6 @@ class UserPropertyRecord implements WebDataBinding, Serializable {
     String name
     String value
 
-//    static def addOrUpdateProperty(user, name, value){
-//
-//        def up = UserPropertyRecord.findByUserAndName(user, name)
-//        if(!up){
-//           up = new UserPropertyRecord(user:user, name:name, value:value)
-//        } else {
-//           up.value = value
-//        }
-//        up.save(flush:true)
-//        up
-//    }
-
     static constraints = {
         value nullable: false, blank: true
         name nullable: false, blank: false

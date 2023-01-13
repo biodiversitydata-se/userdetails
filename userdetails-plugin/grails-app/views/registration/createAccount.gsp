@@ -138,7 +138,7 @@
                 </p>
                 <g:if test="${edit}">
                     <h2><g:message code="user.enableMFA.title" /></h2>
-                    <g:if test="${props?.enableMFA}">
+                    <g:if test="${props?.enableMFA == 'true'}">
                         <p><g:message code="user.enabledMFA.description" />
                     </g:if>
                     <g:else>
@@ -264,9 +264,9 @@
                 <g:if test="${edit}">
                     <div class="form-group checkbox">
                         <label>
-                            <g:checkBox name="enableMFA" value="${props?.enableMFA}" id="enableMFA" disabled="disabled"/> <g:message code="user.enabledMFA" />
+                            <g:checkBox name="enableMFA" value="${props?.enableMFA == 'true'}" id="enableMFA" disabled="disabled"/> <g:message code="user.enabledMFA" />
                         </label>
-                        <g:if test="${props?.enableMFA}">
+                        <g:if test="${props?.enableMFA == 'true'}">
                             <g:link controller="Registration" action="disableMfa" params="[userId:user?.email]">Disable MFA</g:link>
                         </g:if>
                     </div>

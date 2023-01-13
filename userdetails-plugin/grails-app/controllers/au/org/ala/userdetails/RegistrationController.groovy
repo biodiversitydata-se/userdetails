@@ -293,7 +293,7 @@ class RegistrationController {
             }
 
             //create user account...
-            if (!paramsEmail || userService.isEmailRegistered(paramsEmail)) {
+            if (!paramsEmail || userService.isEmailInUse(paramsEmail)) {
                 def inactiveUser = !userService.isActive(paramsEmail)
                 def lockedUser = userService.isLocked(paramsEmail)
                 render(view: 'createAccount', model: [edit: false, user: params, props: params, alreadyRegistered: true, inactiveUser: inactiveUser, lockedUser: lockedUser, passwordPolicy: passwordService.buildPasswordPolicy()])
@@ -371,12 +371,13 @@ class RegistrationController {
     }
 
     def getSecretForMfa() {
+        def mfaResponse
         try {
-            def response = [success: true, code: userService.getSecretForMfa()]
+            mfaResponse = [success: true, code: userService.getSecretForMfa()]
         } catch (e) {
-            def response = [success: false, error: e.message]
+            mfaResponse = [success: false, error: e.message]
         }
-        render(response as JSON)
+        render(mfaResponse as JSON)
     }
 
     def verifyAndActivateMfa() {

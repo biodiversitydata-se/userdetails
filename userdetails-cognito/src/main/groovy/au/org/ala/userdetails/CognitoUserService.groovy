@@ -284,8 +284,6 @@ class CognitoUserService implements IUserService {
 
             UserRecord user = cognitoUserTypeToUserRecord(userResponse.user, true)
 
-            user.userRoles = rolesForUser(user.userName).collect { new UserRoleRecord(role: it, user: user) }
-
             //disable user
             disableUser(user)
 

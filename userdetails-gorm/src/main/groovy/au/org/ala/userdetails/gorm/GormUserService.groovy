@@ -22,7 +22,6 @@ import au.org.ala.userdetails.IUserService
 import au.org.ala.userdetails.LocationService
 import au.org.ala.userdetails.PagedResult
 import au.org.ala.userdetails.PasswordService
-import au.org.ala.userdetails.ProfileService
 import au.org.ala.userdetails.ResultStreamer
 import au.org.ala.users.RoleRecord
 import au.org.ala.users.UserPropertyRecord
@@ -55,7 +54,6 @@ class GormUserService implements IUserService {
     LocationService locationService
     MessageSource messageSource
     WebService webService
-    ProfileService profileService
 
     @Value('${attributes.affiliations.enabled:false}')
     boolean affiliationsEnabled = false
@@ -490,7 +488,10 @@ class GormUserService implements IUserService {
     }
 
     @Override
-    void findScrollableUsersByUserName(String username, int max, ResultStreamer resultStreamer) {
+    def findScrollableUsersByUserName(GrailsParameterMap params, ResultStreamer resultStreamer) {
+        String username = params.q
+        int max = params.int('max', 10)
+
         User.withStatelessSession { Session session ->
             def c = User.createCriteria()
             ScrollableResults results = c.scroll {
@@ -507,14 +508,14 @@ class GormUserService implements IUserService {
     }
 
     @Override
-    void findScrollableUsersByIdsAndRole(List<String> ids, String roleName, ResultStreamer resultStreamer) {
+    def findScrollableUsersByIdsAndRole(GrailsParameterMap params, ResultStreamer resultStreamer) {
 
-        def things = ids.groupBy { it.isLong() }
+        def things = params.list('id').groupBy { it.isLong() }
         def userIds = things[false]
         def numberIds = things[true]
 
         User.withStatelessSession { Session session ->
-            RoleRecord role = Role.findByRole(roleName)
+            RoleRecord role = Role.findByRole(params.role)
 
             def c = User.createCriteria()
             ScrollableResults results = c.scroll {
@@ -586,8 +587,8 @@ class GormUserService implements IUserService {
     }
 
     @Override
-    UserRecord findByUserNameOrEmail(String username) {
-        return User.findByUserNameOrEmail(username, username)
+    UserRecord findByUserNameOrEmail(GrailsParameterMap params) {
+        return User.findByUserNameOrEmail(params.userName, params.userName)
     }
 
     @Override

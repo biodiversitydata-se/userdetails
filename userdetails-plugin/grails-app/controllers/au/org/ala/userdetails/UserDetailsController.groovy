@@ -92,9 +92,11 @@ class UserDetailsController {
             render(status: 400, text: 'q parameter is required')
             return
         }
-        def max = params.int('max', 10)
         def streamer = new ResultStreamer(response: response, jsonConfig: UserMarshaller.WITH_PROPERTIES_CONFIG)
-        userService.findScrollableUsersByUserName(q as String, max, streamer)
+        def list = userService.findScrollableUsersByUserName(params, streamer)
+        if(list) {
+            render list as JSON
+        }
     }
 
     @Operation(
@@ -139,7 +141,6 @@ class UserDetailsController {
     @Path("byRole")
     @Produces("application/json")
     def byRole() {
-        def ids = params.list('id')
         def roleName = params.get('role', 'ROLE_USER')
         def includeProps = params.boolean('includeProps', false)
 
@@ -152,7 +153,10 @@ class UserDetailsController {
             return
         }
 
-        userService.findScrollableUsersByIdsAndRole(ids, roleName, streamer)
+        def list = userService.findScrollableUsersByIdsAndRole(params, streamer)
+        if(list) {
+            render list as JSON
+        }
     }
 
     @Operation(
@@ -200,7 +204,7 @@ class UserDetailsController {
             if (userName.isLong()) {
                 user = userService.getUserById(userName)
             } else {
-                user = userService.findByUserNameOrEmail(userName)
+                user = userService.findByUserNameOrEmail(params)
             }
         } else {
             render status:400, text: "Missing parameter: userName"

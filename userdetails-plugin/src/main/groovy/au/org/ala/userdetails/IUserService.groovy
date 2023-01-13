@@ -73,13 +73,13 @@ interface IUserService {
 
     List<String[]> countByProfileAttribute(String s, Date date, Locale locale)
 
-    void findScrollableUsersByUserName(String username, int maxResults, ResultStreamer resultStreamer)
+    def findScrollableUsersByUserName(GrailsParameterMap params, ResultStreamer resultStreamer)
 
-    void findScrollableUsersByIdsAndRole(List<String> ids, String roleName, ResultStreamer resultStreamer)
+    def findScrollableUsersByIdsAndRole(GrailsParameterMap params, ResultStreamer resultStreamer)
 
     def getUserDetailsFromIdList(List idList)
 
-    UserRecord findByUserNameOrEmail(String username)
+    UserRecord findByUserNameOrEmail(GrailsParameterMap params)
 
     List<String[]> listNamesAndEmails()
 

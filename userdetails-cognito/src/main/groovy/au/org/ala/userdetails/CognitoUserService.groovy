@@ -20,12 +20,10 @@ import com.amazonaws.services.cognitoidp.model.AdminEnableUserRequest
 import com.amazonaws.services.cognitoidp.model.AdminGetUserRequest
 import com.amazonaws.services.cognitoidp.model.AdminListGroupsForUserRequest
 import com.amazonaws.services.cognitoidp.model.AdminRemoveUserFromGroupRequest
-import com.amazonaws.services.cognitoidp.model.AdminResetUserPasswordRequest
 import com.amazonaws.services.cognitoidp.model.AdminSetUserMFAPreferenceRequest
 import com.amazonaws.services.cognitoidp.model.AdminUpdateUserAttributesRequest
 import com.amazonaws.services.cognitoidp.model.AssociateSoftwareTokenRequest
 import com.amazonaws.services.cognitoidp.model.AttributeType
-import com.amazonaws.services.cognitoidp.model.ConfirmForgotPasswordRequest
 import com.amazonaws.services.cognitoidp.model.DescribeUserPoolRequest
 import com.amazonaws.services.cognitoidp.model.CreateGroupRequest
 import com.amazonaws.services.cognitoidp.model.GetGroupRequest
@@ -194,6 +192,7 @@ class CognitoUserService implements IUserService {
             request.withFilter("email ^= \"${params.q}\"")
 
             ListUsersResult emailResults = cognitoIdp.listUsers(request)
+            nextPageToken = emailResults.paginationToken
 
             request.withFilter("given_name ^= \"${params.q}\"")
 
@@ -538,23 +537,20 @@ class CognitoUserService implements IUserService {
     }
 
     @Override
-    void findScrollableUsersByUserName(String username, int maxResults, ResultStreamer resultStreamer) {
-        def params = [:]
-        params.q = username
-        params.max = maxResults
-        streamUserResults(resultStreamer, listUsers(params)?.list)
+    def findScrollableUsersByUserName(GrailsParameterMap params, ResultStreamer resultStreamer) {
+        return listUsers(params)
     }
 
     @Override
-    void findScrollableUsersByIdsAndRole(List<String> ids, String roleName, ResultStreamer resultStreamer) {
+    def findScrollableUsersByIdsAndRole(GrailsParameterMap params, ResultStreamer resultStreamer) {
 
-        def things = ids.groupBy { it.isLong() }
+        def things = params.list('id').groupBy { it.isLong() }
         def userIds = things[false]
         def numberIds = things[true]
 
         ListUsersInGroupRequest request = new ListUsersInGroupRequest().withUserPoolId(poolId)
 
-        request.groupName = roleName.contains(jwtProperties.getRolePrefix()) ? roleName.split(jwtProperties.getRolePrefix())[1].toLowerCase() : roleName
+        request.groupName = params.roleName.contains(jwtProperties.getRolePrefix()) ? params.roleName.split(jwtProperties.getRolePrefix())[1].toLowerCase() : params.roleName
 
         def response = cognitoIdp.listUsersInGroup(request)
         def users = response.users.findAll
@@ -564,7 +560,7 @@ class CognitoUserService implements IUserService {
             cognitoUserTypeToUserRecord(userType, true)
         }.toList()
 
-        streamUserResults(resultStreamer, results)
+        return results
     }
 
     @Override
@@ -764,11 +760,10 @@ class CognitoUserService implements IUserService {
     }
 
     @Override
-    UserRecord findByUserNameOrEmail(String userName) {
-        def params = [:]
-        params.q = userName
+    UserRecord findByUserNameOrEmail(GrailsParameterMap params) {
+        params.q = params.userName
         params.max = 1
-        return listUsers(params)?[0]
+        return listUsers(params)?.list[0]
     }
 
     def getUserDetailsFromIdList(List idList){
@@ -807,24 +802,6 @@ class CognitoUserService implements IUserService {
                         .withUserAttributes(userAttributes)
 
         return cognitoIdp.adminUpdateUserAttributes(updateUserRequest)
-    }
-
-    private void streamUserResults(ResultStreamer resultStreamer, List<UserRecord> results) {
-        resultStreamer.init()
-        try {
-            int count = 0
-
-            for(UserRecord elem : results){
-                resultStreamer.offer(elem)
-
-//                if (count++ % 50 == 0) {
-//                    break
-//                }
-            }
-        } finally {
-            resultStreamer.finalise()
-        }
-        resultStreamer.complete()
     }
 
 }

@@ -120,7 +120,7 @@
                     </g:if></p>
                 </g:if>
 
-                <g:if test="${!edit}">
+                <g:if test="${!edit && grailsApplication.config.getProperty('userdetails.features.requirePasswordForUserUpdate', Boolean, true)}">
                     <g:render template="passwordPolicy"
                               model="[passwordPolicy: passwordPolicy]"/>
                 </g:if>

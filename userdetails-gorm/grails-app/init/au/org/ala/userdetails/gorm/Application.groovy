@@ -21,7 +21,6 @@ import au.org.ala.userdetails.IPasswordOperations
 import au.org.ala.userdetails.IUserService
 import au.org.ala.userdetails.LocationService
 import au.org.ala.userdetails.PasswordService
-import au.org.ala.userdetails.ProfileService
 import au.org.ala.web.AuthService
 import au.org.ala.ws.service.WebService
 import grails.boot.GrailsApp

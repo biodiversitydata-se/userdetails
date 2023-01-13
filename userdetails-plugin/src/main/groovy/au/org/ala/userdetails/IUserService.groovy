@@ -158,7 +158,7 @@ interface IUserService {
      */
     PagedResult<UserRoleRecord> findUserRoles(String role, GrailsParameterMap params)
 
-    //    *********** Password and account related services *************
+    //    *********** account related services *************
 
     void clearTempAuthKey(UserRecord user)
 

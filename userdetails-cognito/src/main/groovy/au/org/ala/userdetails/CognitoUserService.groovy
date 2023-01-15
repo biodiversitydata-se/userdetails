@@ -168,7 +168,7 @@ class CognitoUserService implements IUserService {
             enableUser(user)
         }
         if(!user.activated) {
-            def request = new AdminConfirmSignUpRequest().withUsername(user.email).withUserPoolId(poolId)
+            def request = new AdminConfirmSignUpRequest().withUsername(user.userName).withUserPoolId(poolId)
             cognitoIdp.adminConfirmSignUp(request)
         }
         return true
@@ -264,8 +264,7 @@ class CognitoUserService implements IUserService {
         }
 
         def request = new AdminCreateUserRequest()
-        //TODO need to change
-        request.username = params.email //UUID.randomUUID().toString()
+        request.username = UUID.randomUUID().toString()
         request.userPoolId = poolId
         request.desiredDeliveryMediums = ["EMAIL"]
 
@@ -283,7 +282,7 @@ class CognitoUserService implements IUserService {
 
         def userResponse = cognitoIdp.adminCreateUser(request)
 
-        if(userResponse.user) {
+        if (userResponse.user) {
 
             UserRecord user = cognitoUserTypeToUserRecord(userResponse.user, true)
 

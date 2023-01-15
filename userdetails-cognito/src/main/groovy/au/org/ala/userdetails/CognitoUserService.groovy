@@ -27,6 +27,7 @@ import com.amazonaws.services.cognitoidp.model.ConfirmForgotPasswordRequest
 import com.amazonaws.services.cognitoidp.model.DescribeUserPoolRequest
 
 import com.amazonaws.services.cognitoidp.model.CreateGroupRequest
+import com.amazonaws.services.cognitoidp.model.CreateGroupResult
 import com.amazonaws.services.cognitoidp.model.GetGroupRequest
 import com.amazonaws.services.cognitoidp.model.GetUserRequest
 import com.amazonaws.services.cognitoidp.model.GetUserResult
@@ -37,8 +38,7 @@ import com.amazonaws.services.cognitoidp.model.ListUsersInGroupRequest
 import com.amazonaws.services.cognitoidp.model.ListUsersRequest
 import com.amazonaws.services.cognitoidp.model.ListUsersResult
 import com.amazonaws.services.cognitoidp.model.SchemaAttributeType
-import com.amazonaws.services.cognitoidp.model.UpdateUserAttributesRequest
-import com.amazonaws.services.cognitoidp.model.UpdateUserAttributesResult
+import com.amazonaws.services.cognitoidp.model.ResourceNotFoundException
 import com.amazonaws.services.cognitoidp.model.SoftwareTokenMfaSettingsType
 import com.amazonaws.services.cognitoidp.model.UserNotFoundException
 import com.amazonaws.services.cognitoidp.model.UserType
@@ -160,7 +160,7 @@ class CognitoUserService implements IUserService {
 
     @Override
     boolean activateAccount(UserRecord user, GrailsParameterMap params) {
-        def request = new AdminEnableUserRequest().withUsername(user.email).withUserPoolId(poolId)
+        def request = new AdminEnableUserRequest().withUsername(user.userName).withUserPoolId(poolId)
         def response = cognitoIdp.adminEnableUser(request)
         //TODO update custom activated field
         return response.getSdkHttpMetadata().httpStatusCode == 200
@@ -245,6 +245,7 @@ class CognitoUserService implements IUserService {
     UserRecord registerUser(GrailsParameterMap params) throws Exception {
         def request = new AdminCreateUserRequest()
         //TODO need to change
+
         request.username = UUID.randomUUID().toString()
         request.userPoolId = poolId
         request.desiredDeliveryMediums = ["EMAIL"]
@@ -261,15 +262,38 @@ class CognitoUserService implements IUserService {
 
         userAttributes.add(new AttributeType().withName('custom:activated').withValue("0"))
         userAttributes.add(new AttributeType().withName('custom:disabled').withValue("0"))
-        userAttributes.add(new AttributeType().withName('custom:authority').withValue("ROLE_USER"))
-        userAttributes.add(new AttributeType().withName('custom:role').withValue("ROLE_USER"))
+//        userAttributes.add(new AttributeType().withName('custom:authority').withValue("ROLE_USER"))
+//        userAttributes.add(new AttributeType().withName('custom:role').withValue("ROLE_USER"))
         userAttributes.add(new AttributeType().withName('custom:expired').withValue("0"))
 
         request.userAttributes = userAttributes
 
         def userResponse = cognitoIdp.adminCreateUser(request)
 
-        if(userResponse.user) {
+        if (userResponse.user) {
+
+            RoleRecord role
+
+            try {
+
+                GroupType groupType = getCognitoGroup('user')
+
+                role = new RoleRecord(role: groupType.groupName, description: groupType.description)
+
+            } catch (ResourceNotFoundException e) {
+
+                CreateGroupResult result = cognitoIdp.createGroup(
+                        new CreateGroupRequest()
+                                .withGroupName('user')
+                                .withDescription('User role')
+//                                .withRoleArn()
+                                .withUserPoolId(poolId)
+                )
+
+                role = new RoleRecord(role: result.group.groupName, description: result.group.description)
+            }
+
+            addUserRole(userResponse.user.username, role.role)
 
             Map<String, String> attributes = userResponse.user.attributes.collectEntries { [(it.name): it.value] }
             Collection<UserPropertyRecord> userProperties = attributes
@@ -283,7 +307,7 @@ class CognitoUserService implements IUserService {
                     }
 
             UserRecord user = cognitoUserTypeToUserRecord(userResponse.user, true)
-
+            
             //disable user
             disableUser(user)
 

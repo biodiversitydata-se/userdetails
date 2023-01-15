@@ -24,6 +24,7 @@ import com.amazonaws.services.cognitoidp.model.AdminSetUserMFAPreferenceRequest
 import com.amazonaws.services.cognitoidp.model.AdminUpdateUserAttributesRequest
 import com.amazonaws.services.cognitoidp.model.AssociateSoftwareTokenRequest
 import com.amazonaws.services.cognitoidp.model.AttributeType
+import com.amazonaws.services.cognitoidp.model.CreateGroupResult
 import com.amazonaws.services.cognitoidp.model.DescribeUserPoolRequest
 import com.amazonaws.services.cognitoidp.model.CreateGroupRequest
 import com.amazonaws.services.cognitoidp.model.GetGroupRequest
@@ -524,7 +525,15 @@ class CognitoUserService implements IUserService {
             return isSuccessful(getGroupResult) ? getGroupResult.group : null
         }
         catch (ResourceNotFoundException e){
-            return null
+
+            def roleInstance = new RoleRecord(role: cognitoRoleName, description: cognitoRoleName)
+            def role = addRole(roleInstance)
+            if(role) {
+                return cognitoRoleName
+            }
+            else {
+                return null
+            }
         }
     }
 

@@ -94,7 +94,7 @@ class UserDetailsController {
         }
         def streamer = new ResultStreamer(response: response, jsonConfig: UserMarshaller.WITH_PROPERTIES_CONFIG)
         def list = userService.findScrollableUsersByUserName(params, streamer)
-        if(list) {
+        if (list != null) {
             render list as JSON
         }
     }
@@ -154,7 +154,7 @@ class UserDetailsController {
         }
 
         def list = userService.findScrollableUsersByIdsAndRole(params, streamer)
-        if(list) {
+        if (list != null) {
             render list as JSON
         }
     }

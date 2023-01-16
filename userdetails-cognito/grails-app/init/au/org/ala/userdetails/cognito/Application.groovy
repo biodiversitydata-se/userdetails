@@ -83,7 +83,13 @@ class Application extends GrailsAutoConfiguration {
     }
 
     @Bean('passwordOperations')
-    IPasswordOperations passwordOperations() {
-        new CognitoPasswordOperations()
+    IPasswordOperations passwordOperations(AWSCognitoIdentityProvider cognitoIdp) {
+        CognitoPasswordOperations cognitoPasswordOperations = new CognitoPasswordOperations()
+
+        cognitoPasswordOperations.cognitoIdp = cognitoIdp
+        cognitoPasswordOperations.poolId = grailsApplication.config.getProperty('cognito.poolId')
+        cognitoPasswordOperations.grailsApplication = grailsApplication
+
+        return cognitoPasswordOperations
     }
 }

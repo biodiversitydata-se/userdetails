@@ -80,7 +80,7 @@ class Application extends GrailsAutoConfiguration {
     }
 
     @Bean('passwordOperations')
-    IPasswordOperations passwordOperations() {
-        new GormPasswordOperations()
+    IPasswordOperations passwordOperations(EmailService emailService) {
+        new GormPasswordOperations(emailService: emailService)
     }
 }

@@ -141,3 +141,8 @@ body #main {
 #external-linkages  .d-flex {
     margin-top: 0px;
 }
+
+.userdetails-grid {
+    text-align: center;
+    padding-top: 10px;
+}

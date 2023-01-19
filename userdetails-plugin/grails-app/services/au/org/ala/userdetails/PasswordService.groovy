@@ -305,4 +305,12 @@ class PasswordService {
 
         return this.builtPasswordGeneralRules
     }
+
+    private PasswordEncoder getEncoder() {
+        def encoder = passwordEncoderType.equalsIgnoreCase(BCRYPT_ENCODER_TYPE) ?
+                new BcryptPasswordEncoder(bcryptStrength) :
+                new LegacyPasswordEncoder(legacySalt, legacyAlgorithm, true)
+        return encoder
+    }
+
 }

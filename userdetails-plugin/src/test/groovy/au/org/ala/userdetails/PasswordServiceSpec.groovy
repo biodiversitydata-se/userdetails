@@ -24,6 +24,7 @@ class PasswordServiceSpec extends UserDetailsSpec implements ServiceUnitTest<Pas
     def setup() {
         defineBeans {
             userService(InstanceFactoryBean, Mock(IUserService), IUserService)
+            passwordOperations(InstanceFactoryBean, Mock(IPasswordOperations), IPasswordOperations)
         }
 //        service.passwordEncoderType = 'bcrypt'
 //        service.legacyAlgorithm = null

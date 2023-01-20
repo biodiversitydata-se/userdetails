@@ -23,7 +23,7 @@ cache:
   - $HOME/.gradle/wrapper/
 
 after_success:
-  - '[ "${TRAVIS_PULL_REQUEST}" = "false" ] && travis_retry ./gradlew publish'
+  - '[ "${TRAVIS_PULL_REQUEST}" = "false" ] && ./gradlew clean && travis_retry ./gradlew publish'
 env:
   global:
   - JAVA_TOOL_OPTIONS=-Dhttps.protocols=TLSv1.2

@@ -1,12 +1,19 @@
 plugins {
-    id "com.gorylenko.gradle-git-properties" version "2.4.1"
     id "java-library"
+    id "org.springframework.boot" version "2.1.0.RELEASE"
 }
 
 version "3.1.0-SNAPSHOT"
 group "au.org.ala"
 
-allprojects {
+apply plugin: 'maven-publish'
+apply plugin:"war"
+
+bootWar {
+    enabled = false
+}
+
+subprojects {
     publishing {
         repositories {
             maven {

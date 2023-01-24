@@ -1,0 +1,27 @@
+plugins {
+    id "com.gorylenko.gradle-git-properties" version "2.4.1"
+    id "java-library"
+}
+
+version "3.1.0-SNAPSHOT"
+group "au.org.ala"
+
+allprojects {
+    publishing {
+        repositories {
+            maven {
+                name 'Nexus'
+                url "https://nexus.ala.org.au/content/repositories/${project.version.endsWith('-SNAPSHOT') ? 'snapshots' : 'releases'}"
+                credentials {
+                    username = System.getenv('TRAVIS_DEPLOY_USERNAME')
+                    password = System.getenv('TRAVIS_DEPLOY_PASSWORD')
+                }
+            }
+        }
+        publications {
+            mavenJar(MavenPublication) {
+                artifact bootWar
+            }
+        }
+    }
+}

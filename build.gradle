@@ -13,6 +13,8 @@ bootWar {
     enabled = false
 }
 
+project.tasks.publish.enabled = false
+
 subprojects {
     publishing {
         repositories {

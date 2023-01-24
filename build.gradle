@@ -1,34 +1,34 @@
-//plugins {
-//    id "java-library"
-//    id "org.springframework.boot" version "2.1.0.RELEASE"
-//}
-//
-//version "3.1.0-SNAPSHOT"
-//group "au.org.ala"
-//
-//apply plugin: 'maven-publish'
-//apply plugin:"war"
-//
-//bootWar {
-//    enabled = false
-//}
-//
-//subprojects {
-//    publishing {
-//        repositories {
-//            maven {
-//                name 'Nexus'
-//                url "https://nexus.ala.org.au/content/repositories/${project.version.endsWith('-SNAPSHOT') ? 'snapshots' : 'releases'}"
-//                credentials {
-//                    username = System.getenv('TRAVIS_DEPLOY_USERNAME')
-//                    password = System.getenv('TRAVIS_DEPLOY_PASSWORD')
-//                }
-//            }
-//        }
-//        publications {
-//            mavenJar(MavenPublication) {
-//                artifact bootWar
-//            }
-//        }
-//    }
-//}
+plugins {
+    id "java-library"
+    id "org.springframework.boot" version "2.1.0.RELEASE"
+}
+
+version "3.1.0-SNAPSHOT"
+group "au.org.ala"
+
+apply plugin: 'maven-publish'
+apply plugin:"war"
+
+bootWar {
+    enabled = false
+}
+
+subprojects {
+    publishing {
+        repositories {
+            maven {
+                name 'Nexus'
+                url "https://nexus.ala.org.au/content/repositories/${project.version.endsWith('-SNAPSHOT') ? 'snapshots' : 'releases'}"
+                credentials {
+                    username = System.getenv('TRAVIS_DEPLOY_USERNAME')
+                    password = System.getenv('TRAVIS_DEPLOY_PASSWORD')
+                }
+            }
+        }
+        publications {
+            mavenJar(MavenPublication) {
+                artifact bootWar
+            }
+        }
+    }
+}

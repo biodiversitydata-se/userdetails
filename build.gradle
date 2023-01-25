@@ -13,7 +13,10 @@ bootWar {
     enabled = false
 }
 
-project.tasks.publish.enabled = false
+project.afterEvaluate {
+    project.tasks.publishMavenJarPublicationToNexus2Repository.enabled = false
+}
+
 
 subprojects {
     publishing {

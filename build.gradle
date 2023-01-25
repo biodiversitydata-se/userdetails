@@ -14,7 +14,8 @@ bootWar {
 }
 
 project.afterEvaluate {
-    project.tasks.publishMavenJarPublicationToNexus2Repository.enabled = false
+    project.tasks.publishMavenJarPublicationToNexus2Repository?.enabled = false
+    project.tasks.publishMavenJarPublicationToNexus3Repository?.enabled = false
 }
 
 

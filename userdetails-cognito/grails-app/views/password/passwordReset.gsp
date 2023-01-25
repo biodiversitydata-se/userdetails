@@ -36,8 +36,7 @@
 <div class="row">
     <h1><g:message code="password.reset.description" /></h1>
 
-    <g:render template="passwordPolicy"
-              model="[passwordPolicy: passwordPolicy]"/>
+    <g:render template="passwordPolicy" model="[ passwordPolicy: passwordPolicy ]"/>
 
     <g:hasErrors>
     <div class="alert alert-danger">
@@ -50,7 +49,8 @@
     <div class="row">
 
         <div class="col-md-6">
-            <g:form useToken="true" name="resetPasswordForm" controller="registration" action="updateCognitoPassword">
+            <g:form useToken="true" name="resetPasswordForm" action="updateCognitoPassword">
+
                 <input id="email" type="hidden" name="email" value="${email}"/>
 
                 <div class="form-group">

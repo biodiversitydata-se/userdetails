@@ -52,9 +52,12 @@
                         </div>
                         <div class="content">
                             <h4 id="reset-your-password">
-                                <g:link controller="registration" action="forgottenPassword">
-                                    <g:message code="userdetails.index.reset.password" />
+                                <g:link controller="password" action="updatePassword">
+                                    <g:message code="userdetails.index.update.password" />
                                 </g:link>
+%{--                                <g:link controller="registration" action="forgottenPassword">--}%
+%{--                                    <g:message code="userdetails.index.reset.password" />--}%
+%{--                                </g:link>--}%
                             </h4>
                             <p><g:message code="userdetails.index.reset.password.desc" /></p>
                         </div>

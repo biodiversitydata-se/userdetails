@@ -2,12 +2,16 @@ package au.org.ala.userdetails
 
 import au.org.ala.auth.PasswordResetFailedException
 import au.org.ala.users.UserRecord
+import au.org.ala.ws.tokens.TokenService
 import com.amazonaws.services.cognitoidp.AWSCognitoIdentityProvider
 import com.amazonaws.services.cognitoidp.model.AdminInitiateAuthRequest
 import com.amazonaws.services.cognitoidp.model.AdminResetUserPasswordRequest
 import com.amazonaws.services.cognitoidp.model.AdminSetUserPasswordRequest
 import com.amazonaws.services.cognitoidp.model.AuthFlowType
+import com.amazonaws.services.cognitoidp.model.ChangePasswordRequest
+import com.amazonaws.services.cognitoidp.model.ChangePasswordResult
 import com.amazonaws.services.cognitoidp.model.ConfirmForgotPasswordRequest
+import com.nimbusds.oauth2.sdk.token.AccessToken
 import grails.core.GrailsApplication
 import groovy.util.logging.Slf4j
 import org.apache.commons.codec.digest.HmacAlgorithms
@@ -18,6 +22,7 @@ class CognitoPasswordOperations implements IPasswordOperations {
 
     GrailsApplication grailsApplication
 
+    TokenService tokenService
     AWSCognitoIdentityProvider cognitoIdp
     String poolId
 
@@ -48,6 +53,36 @@ class CognitoPasswordOperations implements IPasswordOperations {
                 return response.getSdkHttpMetadata().httpStatusCode == 200
             }
         } catch(Exception e) {
+            return false
+        }
+    }
+
+    @Override
+    boolean updatePassword(UserRecord user, String currentPassword, String newPassword) {
+
+        if (!user || !currentPassword || !newPassword) {
+            return false
+        }
+
+        AccessToken accessToken = tokenService.getAuthToken(true)
+
+        if (accessToken == null){
+            return null
+        }
+
+        try {
+
+            ChangePasswordRequest changePasswordRequest = new ChangePasswordRequest()
+                    .withAccessToken(accessToken as String)
+                    .withPreviousPassword(currentPassword)
+                    .withProposedPassword(newPassword)
+
+
+            ChangePasswordResult changePasswordResult = cognitoIdp.changePassword(changePasswordRequest)
+            return changePasswordResult.sdkHttpMetadata.httpStatusCode == 200
+
+        } catch (Exception e) {
+
             return false
         }
     }

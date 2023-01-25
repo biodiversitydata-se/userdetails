@@ -25,8 +25,12 @@ import com.github.scribejava.core.model.*
 import com.github.scribejava.core.oauth.OAuth20Service
 import com.github.scribejava.core.oauth.OAuthService
 import grails.converters.JSON
+import org.passay.RuleResult
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.context.MessageSource
+import org.springframework.context.i18n.LocaleContextHolder
+import org.springframework.validation.Errors
 import uk.co.desirableobjects.oauth.scribe.OauthProvider
 
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED

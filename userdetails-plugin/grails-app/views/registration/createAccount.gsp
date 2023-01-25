@@ -121,8 +121,7 @@
                 </g:if>
 
                 <g:if test="${!edit}">
-                    <g:render template="passwordPolicy"
-                              model="[passwordPolicy: passwordPolicy]"/>
+                    <g:render template="/password/passwordPolicy" model="[ passwordPolicy: passwordPolicy ]"/>
                 </g:if>
 
                 <h2><g:message code="create.account.policy.title" /></h2>

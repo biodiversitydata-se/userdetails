@@ -19,6 +19,8 @@ interface IPasswordOperations {
      */
     boolean resetPassword(UserRecord user, String newPassword, boolean isPermanent, String confirmationCode)
 
+    boolean updatePassword(UserRecord user, String currentPassword, String newPassword)
+
     void resetAndSendTemporaryPassword(UserRecord user, String emailSubject, String emailTitle, String emailBody, String password) throws PasswordResetFailedException
 
     String getResetPasswordUrl(UserRecord user)

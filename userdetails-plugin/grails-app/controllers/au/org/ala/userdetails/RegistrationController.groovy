@@ -131,8 +131,7 @@ class RegistrationController {
                 try {
                     def success = passwordService.resetPassword(user, cmd.password, true, cmd.code)
                     if(success) {
-                        Map resp = webService.get("${grailsApplication.config.getProperty('grails.serverURL')}/logout?")
-                        redirect(controller: 'registration', action: 'passwordResetSuccess')
+                        redirect(uri: '/logout', params: [url: grailsLinkGenerator.link(controller: 'registration', action: 'passwordResetSuccess')])
                         log.info("Password successfully reset for user: " + cmd.email)
                     }
                     else{
@@ -216,7 +215,7 @@ class RegistrationController {
             def success = userService.disableUser(user)
 
             if (success) {
-                redirect(controller: 'logout', action: 'logout', params: [appUrl: grailsApplication.config.getProperty('grails.serverURL') + '/registration/accountDisabled'])
+                redirect(uri: '/logout', params: [url: grailsLinkGenerator.link(controller: 'registration', action: 'accountDisabled')])
             } else {
                 render(view: "accountError", model: [msg: "Failed to disable user profile - unknown error"])
             }

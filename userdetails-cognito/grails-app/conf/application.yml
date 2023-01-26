@@ -115,6 +115,7 @@ grails:
 security:
   oidc:
     scope: openid profile email ala/attrs ala/roles aws.cognito.signin.user.admin
+    logoutAction: cognito
 
 openapi:
   title: UserDetails REST services

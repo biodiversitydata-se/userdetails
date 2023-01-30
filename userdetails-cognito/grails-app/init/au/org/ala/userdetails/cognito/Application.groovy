@@ -88,7 +88,6 @@ class Application extends GrailsAutoConfiguration {
 
         cognitoPasswordOperations.cognitoIdp = cognitoIdp
         cognitoPasswordOperations.poolId = grailsApplication.config.getProperty('cognito.poolId')
-        cognitoPasswordOperations.grailsApplication = grailsApplication
 
         return cognitoPasswordOperations
     }

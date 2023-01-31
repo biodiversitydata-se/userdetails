@@ -465,7 +465,7 @@ class CognitoUserService implements IUserService {
     @Override
     boolean addUserRole(String userId, String roleName) {
 
-        String cognitoRoleName = roleName.contains(jwtProperties.getRolePrefix()) ? roleName.split(jwtProperties.getRolePrefix())[1].toLowerCase() : roleName
+        String cognitoRoleName = getCognitoRoleName(roleName)
 
         if (checkGroupExists(cognitoRoleName)) {
             def addUserToGroupResult = cognitoIdp.adminAddUserToGroup(
@@ -484,7 +484,7 @@ class CognitoUserService implements IUserService {
     @Override
     boolean removeUserRole(String userId, String roleName) {
 
-        String cognitoRoleName = roleName.contains(jwtProperties.getRolePrefix()) ? roleName.split(jwtProperties.getRolePrefix())[1].toLowerCase() : roleName
+        String cognitoRoleName = getCognitoRoleName(roleName)
 
         if (checkGroupExists(roleName)) {
             def removeUserFromGroupResult = cognitoIdp.adminRemoveUserFromGroup(
@@ -501,7 +501,7 @@ class CognitoUserService implements IUserService {
 
     private GroupType getCognitoGroup(String roleName) {
 
-        String cognitoRoleName = roleName.contains(jwtProperties.getRolePrefix()) ? roleName.split(jwtProperties.getRolePrefix())[1].toLowerCase() : roleName
+        String cognitoRoleName = getCognitoRoleName(roleName)
 
         try {
             def getGroupResult = cognitoIdp.getGroup(
@@ -541,7 +541,7 @@ class CognitoUserService implements IUserService {
 
         ListUsersInGroupRequest request = new ListUsersInGroupRequest().withUserPoolId(poolId)
 
-        request.groupName = params.role.contains(jwtProperties.getRolePrefix()) ? params.role.split(jwtProperties.getRolePrefix())[1].toLowerCase() : params.role
+        request.groupName = getCognitoRoleName(params.role)
 
         def response = cognitoIdp.listUsersInGroup(request)
         def users = response.users.findAll
@@ -628,7 +628,7 @@ class CognitoUserService implements IUserService {
     @Override
     RoleRecord addRole(RoleRecord roleRecord) {
         if (!checkGroupExists(roleRecord.role)) {
-            String cognitoRoleName = roleRecord.role.contains(jwtProperties.getRolePrefix()) ? roleRecord.role.split(jwtProperties.getRolePrefix())[1].toLowerCase() : roleRecord.role
+            String cognitoRoleName = getCognitoRoleName(roleRecord.role)
             def createGroupResult = cognitoIdp.createGroup(
                     new CreateGroupRequest()
                             .withGroupName(cognitoRoleName)
@@ -670,7 +670,7 @@ class CognitoUserService implements IUserService {
         if (role) {
             def group = getCognitoGroup(role)
             if (group) {
-                String cognitoRoleName = role.contains(jwtProperties.getRolePrefix()) ? role.split(jwtProperties.getRolePrefix())[1].toLowerCase() : role
+                String cognitoRoleName = getCognitoRoleName(role)
                 def listUsersInGroupResult = cognitoIdp.listUsersInGroup(
                         new ListUsersInGroupRequest()
                                 .withGroupName(cognitoRoleName)
@@ -804,6 +804,10 @@ class CognitoUserService implements IUserService {
                         .withUserAttributes(userAttributes)
 
         return cognitoIdp.adminUpdateUserAttributes(updateUserRequest)
+    }
+
+    String getCognitoRoleName(String role) {
+        return role.contains(jwtProperties.getRolePrefix()) ? role.split(jwtProperties.getRolePrefix())[1].toLowerCase() : role
     }
 
 }

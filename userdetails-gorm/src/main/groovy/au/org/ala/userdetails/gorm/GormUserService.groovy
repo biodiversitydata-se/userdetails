@@ -157,16 +157,15 @@ class GormUserService implements IUserService {
 
         params.max = Math.min(params.int('max', 100), 1000)
 
-        def users = User.list(params)
-
         if (params.q) {
 
             String q = "%${params.q}%"
 
             return User.findAllByEmailLikeOrLastNameLikeOrFirstNameLike(q, q, q, params)
         }
-
-        return  new PagedResult<User>(list:users, count: User.count(), nextPageToken: null)
+        else{
+            return new PagedResult<User>(list:User.list(params), count: User.count(), nextPageToken: null)
+        }
     }
 
     @Override

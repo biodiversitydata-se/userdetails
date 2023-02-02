@@ -47,7 +47,6 @@ import grails.converters.JSON
 import grails.web.servlet.mvc.GrailsParameterMap
 import groovy.util.logging.Slf4j
 import org.apache.commons.lang3.NotImplementedException
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 
 import java.util.stream.Stream
@@ -64,7 +63,6 @@ class CognitoUserService implements IUserService {
 
     AWSCognitoIdentityProvider cognitoIdp
     String poolId
-    @Autowired
     JwtProperties jwtProperties
 
     @Value('${attributes.affiliations.enabled:false}')
@@ -530,12 +528,12 @@ class CognitoUserService implements IUserService {
     }
 
     @Override
-    def findScrollableUsersByUserName(GrailsParameterMap params, ResultStreamer resultStreamer) {
-        return listUsers(params)
+    void findScrollableUsersByUserName(GrailsParameterMap params, ResultStreamer resultStreamer) {
+        streamUserResults(resultStreamer, listUsers(params).list)
     }
 
     @Override
-    def findScrollableUsersByIdsAndRole(GrailsParameterMap params, ResultStreamer resultStreamer) {
+    void findScrollableUsersByIdsAndRole(GrailsParameterMap params, ResultStreamer resultStreamer) {
 
         def ids = params.list('id')
 
@@ -551,7 +549,7 @@ class CognitoUserService implements IUserService {
             cognitoUserTypeToUserRecord(userType, true)
         }.toList()
 
-        return results
+        streamUserResults(resultStreamer, results)
     }
 
     @Override
@@ -808,6 +806,18 @@ class CognitoUserService implements IUserService {
 
     String getCognitoRoleName(String role) {
         return role.contains(jwtProperties.getRolePrefix()) ? role.split(jwtProperties.getRolePrefix())[1].toLowerCase() : role
+    }
+
+    private void streamUserResults(ResultStreamer resultStreamer, List<UserRecord> results) {
+        resultStreamer.init()
+        try {
+            results.each {
+                resultStreamer.offer(it)
+            }
+        } finally {
+            resultStreamer.finalise()
+        }
+        resultStreamer.complete()
     }
 
 }

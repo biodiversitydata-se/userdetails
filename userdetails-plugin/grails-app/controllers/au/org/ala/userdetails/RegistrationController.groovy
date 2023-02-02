@@ -240,7 +240,6 @@ class RegistrationController {
                 }
             }
 
-            // TODO might need to remove this for delegated auth?
             if (requirePasswordForUserUpdate) {
                 def isCorrectPassword = passwordService.checkUserPassword(user, params.confirmUserPassword)
                 if (!isCorrectPassword) {

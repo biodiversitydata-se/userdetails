@@ -487,7 +487,7 @@ class GormUserService implements IUserService {
     }
 
     @Override
-    def findScrollableUsersByUserName(GrailsParameterMap params, ResultStreamer resultStreamer) {
+    void findScrollableUsersByUserName(GrailsParameterMap params, ResultStreamer resultStreamer) {
         String username = params.q
         int max = params.int('max', 10)
 
@@ -507,7 +507,7 @@ class GormUserService implements IUserService {
     }
 
     @Override
-    def findScrollableUsersByIdsAndRole(GrailsParameterMap params, ResultStreamer resultStreamer) {
+    void findScrollableUsersByIdsAndRole(GrailsParameterMap params, ResultStreamer resultStreamer) {
 
         def things = params.list('id').groupBy { it.isLong() }
         def userIds = things[false]

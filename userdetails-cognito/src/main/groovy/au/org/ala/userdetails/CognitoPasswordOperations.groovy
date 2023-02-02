@@ -12,14 +12,12 @@ import com.amazonaws.services.cognitoidp.model.ConfirmForgotPasswordRequest
 import groovy.util.logging.Slf4j
 import org.apache.commons.codec.digest.HmacAlgorithms
 import org.apache.commons.codec.digest.HmacUtils
-import org.springframework.beans.factory.annotation.Autowired
 
 @Slf4j
 class CognitoPasswordOperations implements IPasswordOperations {
 
     AWSCognitoIdentityProvider cognitoIdp
     String poolId
-    @Autowired
     OidcClientProperties oidcClientProperties
 
     @Override
@@ -63,7 +61,6 @@ class CognitoPasswordOperations implements IPasswordOperations {
 
     @Override
     boolean checkUserPassword(UserRecord user, String password) {
-        // TODO this is untested
         def clientId = oidcClientProperties.getClientId()
         def secret = oidcClientProperties.getSecret()
         try {
@@ -77,7 +74,6 @@ class CognitoPasswordOperations implements IPasswordOperations {
                             SECRET_HASH: calculateSecretHash(clientId, secret, user.userName)
                     ])
             )
-            // TODO Test this and sign out?
             return authResult.authenticationResult != null
         } catch (e) {
             log.debug("Exception caught while checking user password", e)

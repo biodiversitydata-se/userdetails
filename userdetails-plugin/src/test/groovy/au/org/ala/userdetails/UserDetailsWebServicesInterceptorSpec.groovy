@@ -15,27 +15,21 @@
 
 package au.org.ala.userdetails
 
-import au.org.ala.ws.security.JwtAuthenticator
 import au.org.ala.ws.security.JwtProperties
 import grails.testing.web.interceptor.InterceptorUnitTest
 import org.apache.http.HttpStatus
 import org.grails.spring.beans.factory.InstanceFactoryBean
 import org.grails.web.util.GrailsApplicationAttributes
 import org.pac4j.core.config.Config
-import org.pac4j.http.client.direct.DirectBearerAuthClient
+import au.org.ala.ws.security.client.AlaAuthClient
 import spock.lang.Specification
+
+import javax.servlet.http.HttpServletRequest
 
 /**
  * See the API for {@link grails.test.mixin.web.InterceptorUnitTestMixin} for usage instructions
  */
-//@TestFor(UserDetailsWebServicesInterceptor)
-//@TestMixin([InterceptorUnitTestMixin, GrailsUnitTestMixin])
 class UserDetailsWebServicesInterceptorSpec extends Specification implements InterceptorUnitTest<UserDetailsWebServicesInterceptor> {
-
-//    Closure doWithSpring(){{ ->
-//        authorisedSystemService(UserDetailsSpec.UnAuthorised)
-//    }}
-
 
     def setup() {
         defineBeans {
@@ -45,8 +39,8 @@ class UserDetailsWebServicesInterceptorSpec extends Specification implements Int
                 fallbackToLegacyBehaviour = true
             }
             config(InstanceFactoryBean, Stub(Config), Config)
-            directBearerAuthClient(InstanceFactoryBean, Stub(DirectBearerAuthClient), DirectBearerAuthClient)
-            authorisedSystemService(UserDetailsSpec.UnAuthorised)
+            alaAuthClient(InstanceFactoryBean, Stub(AlaAuthClient), AlaAuthClient)
+            authorisedSystemService(UnAuthorised)
         }
     }
 
@@ -121,5 +115,13 @@ class UserDetailsWebServicesInterceptorSpec extends Specification implements Int
         }
         then:
         response.status == HttpStatus.SC_UNAUTHORIZED
+    }
+
+    // These classes are a workaround for the difficulty in injecting Spock mocks into the filter class in unit tests.
+    public static class UnAuthorised extends AuthorisedSystemService {
+        @Override
+        def isAuthorisedSystem(HttpServletRequest request) {
+            return false
+        }
     }
 }

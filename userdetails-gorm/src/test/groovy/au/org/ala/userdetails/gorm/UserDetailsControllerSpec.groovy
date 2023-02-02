@@ -13,25 +13,21 @@
  * rights and limitations under the License.
  */
 
-package au.org.ala.userdetails
+package au.org.ala.userdetails.gorm
 
-import au.org.ala.users.RoleRecord
-import au.org.ala.users.UserPropertyRecord
+import au.org.ala.userdetails.IUserService
+import au.org.ala.userdetails.UserDetailsController
 import au.org.ala.users.UserRecord
-import au.org.ala.users.UserRoleRecord
 import au.org.ala.ws.security.JwtProperties
 import grails.converters.JSON
 import grails.testing.gorm.DataTest
 import grails.testing.web.controllers.ControllerUnitTest
-import spock.lang.Ignore
+import org.grails.spring.beans.factory.InstanceFactoryBean
+import org.pac4j.core.config.Config
 
 /**
  * Tests the UserDetailsController and the filtering behaviour associated with it.
  */
-@Ignore
-//@TestFor(UserDetailsController)
-//@TestMixin(InterceptorUnitTestMixin)
-//@Mock([UserDetailsWebServicesInterceptor, UserRecord, RoleRecord, UserRoleRecord, UserPropertyRecord])
 class UserDetailsControllerSpec extends UserDetailsSpec implements ControllerUnitTest<UserDetailsController>, DataTest {
 
     static doWithSpring = {
@@ -45,12 +41,16 @@ class UserDetailsControllerSpec extends UserDetailsSpec implements ControllerUni
     private UserRecord user
 
     void setupSpec() {
-//        mockDomains(UserRecord, RoleRecord, UserRoleRecord, UserPropertyRecord)
+        mockDomains(Role, User, Password, UserRole, UserProperty)
     }
 
     void setup() {
+        defineBeans {
+            userService(InstanceFactoryBean, Mock(IUserService), IUserService)
+        }
         registerMarshallers()
         user = createUser()
+        controller.userService = new GormUserService()
     }
 
     void "A user can be found by user id"() {
@@ -98,7 +98,7 @@ class UserDetailsControllerSpec extends UserDetailsSpec implements ControllerUni
     void "Details of a list of users can be returned"() {
 
         setup:
-        UserRecord user2 = createUser()
+        UserRecord user2 = createUser(2)
 
         when:
         request.method = 'POST'

@@ -1,12 +1,14 @@
-package au.org.ala.userdetails
+package au.org.ala.userdetails.gorm
 
+import au.org.ala.userdetails.PasswordService
+import au.org.ala.userdetails.IUserService
+import au.org.ala.userdetails.IPasswordOperations
 import grails.testing.gorm.DataTest
 import grails.testing.services.ServiceUnitTest
 import org.grails.spring.beans.factory.InstanceFactoryBean
 import org.passay.RuleResultMetadata
-import spock.lang.Ignore
 
-class PasswordServiceSpec extends UserDetailsSpec implements ServiceUnitTest<PasswordService>/*, DataTest*/ {
+class PasswordServiceSpec extends UserDetailsSpec implements ServiceUnitTest<PasswordService>, DataTest {
 
     def charLength = RuleResultMetadata.CountCategory.Length
     def charLowerCase = RuleResultMetadata.CountCategory.LowerCase
@@ -18,7 +20,7 @@ class PasswordServiceSpec extends UserDetailsSpec implements ServiceUnitTest<Pas
     def charIllegal = RuleResultMetadata.CountCategory.Illegal
 
     void setupSpec() {
-//        mockDomains(Role, User, Password)
+        mockDomains(Role, User, Password, UserRole, UserProperty)
     }
 
     def setup() {
@@ -26,16 +28,14 @@ class PasswordServiceSpec extends UserDetailsSpec implements ServiceUnitTest<Pas
             userService(InstanceFactoryBean, Mock(IUserService), IUserService)
             passwordOperations(InstanceFactoryBean, Mock(IPasswordOperations), IPasswordOperations)
         }
-//        service.passwordEncoderType = 'bcrypt'
-//        service.legacyAlgorithm = null
-//        service.legacySalt = null
+       service.passwordOperations = new GormPasswordOperations()
     }
 
     def cleanup() {
-//        User.deleteAll()
-//        Role.deleteAll()
-//        UserRole.deleteAll()
-//        UserProperty.deleteAll()
+        User.deleteAll()
+        Role.deleteAll()
+        UserRole.deleteAll()
+        UserProperty.deleteAll()
     }
 
     @Override
@@ -63,7 +63,6 @@ class PasswordServiceSpec extends UserDetailsSpec implements ServiceUnitTest<Pas
         service.passwordEncoderType == PasswordService.BCRYPT_ENCODER_TYPE
     }
 
-    @Ignore("TODO fix for IUserService")
     void 'test reset password generates and stores a new password for the user'() {
         given:
         def tempAuthKey = "wzAdTZYn1xJDJrjwHgpu"
@@ -71,16 +70,15 @@ class PasswordServiceSpec extends UserDetailsSpec implements ServiceUnitTest<Pas
         def newPassword = "0hFAnO9dWq6rcUopZ9EN"
 
         when:
-        service.resetPassword(user, newPassword)
+        service.resetPassword(user, newPassword, true, null)
 
         then:
         0 * _ // no other interactions
-//        Password.count() == 1
-//        service.comparePasswords(newPassword, Password.first().password)
-//        Password.first().user == user
+        Password.count() == 1
+        service.passwordOperations.comparePasswords(newPassword, Password.first().password)
+        Password.first().user == user
     }
 
-    @Ignore("TODO fix for IUserService")
     void 'test generate new password generates and stores a new password for the user'() {
         given:
         def tempAuthKey = "wzAdTZYn1xJDJrjwHgpu"
@@ -91,25 +89,24 @@ class PasswordServiceSpec extends UserDetailsSpec implements ServiceUnitTest<Pas
 
         then:
         0 * _ // no other interactions
-//        Password.count() == 1
-        service.comparePasswords(newPassword, Password.first().password)
-//        Password.first().user == user
+        Password.count() == 1
+        service.passwordOperations.comparePasswords(newPassword, Password.first().password)
+        Password.first().user == user
     }
 
-    @Ignore("TODO fix for IUserService")
     void 'test compare user password is true when given password matches existing password'() {
         given:
         def tempAuthKey = "wzAdTZYn1xJDJrjwHgpu"
         def user = createUser(tempAuthKey)
         def password = "0hFAnO9dWq6rcUopZ9EN"
         def encodedPassword = service.encodePassword(password)
-//        def existingPassword = new Password(
-//                user: user,
-//                password: encodedPassword,
-//                type: PasswordService.BCRYPT_ENCODER_TYPE,
-//                created: new Date().toTimestamp(),
-//                status: PasswordService.STATUS_CURRENT
-//        ).save()
+        def existingPassword = new Password(
+                user: user,
+                password: encodedPassword,
+                type: PasswordService.BCRYPT_ENCODER_TYPE,
+                created: new Date().toTimestamp(),
+                status: service.passwordOperations.STATUS_CURRENT
+        ).save()
 
         when:
         def isMatch = service.checkUserPassword(user, password)
@@ -117,13 +114,12 @@ class PasswordServiceSpec extends UserDetailsSpec implements ServiceUnitTest<Pas
         then:
         0 * _ // no other interactions
         isMatch
-//        Password.count() == 1
-//        Password.first() == existingPassword
-//        Password.first().password == existingPassword.password
-//        Password.first().user == user
+        Password.count() == 1
+        Password.first() == existingPassword
+        Password.first().password == existingPassword.password
+        Password.first().user == user
     }
 
-    @Ignore("TODO fix for IUserService")
     void 'test compare user password is false when given password does not match existing password'() {
         given:
         def tempAuthKey = "wzAdTZYn1xJDJrjwHgpu"
@@ -131,13 +127,13 @@ class PasswordServiceSpec extends UserDetailsSpec implements ServiceUnitTest<Pas
         def password = "0hFAnO9dWq6rcUopZ9EN"
         def wrongPassword = 'wrongpassword'
         def encodedPassword = service.encodePassword(password)
-//        def existingPassword = new Password(
-//                user: user,
-//                password: encodedPassword,
-//                type: PasswordService.BCRYPT_ENCODER_TYPE,
-//                created: new Date().toTimestamp(),
-//                status: PasswordService.STATUS_CURRENT
-//        ).save()
+        def existingPassword = new Password(
+                user: user,
+                password: encodedPassword,
+                type: PasswordService.BCRYPT_ENCODER_TYPE,
+                created: new Date().toTimestamp(),
+                status: service.passwordOperations.STATUS_CURRENT
+        ).save()
 
         when:
         def isMatch = service.checkUserPassword(user, wrongPassword)
@@ -145,30 +141,32 @@ class PasswordServiceSpec extends UserDetailsSpec implements ServiceUnitTest<Pas
         then:
         0 * _ // no other interactions
         !isMatch
-//        Password.count() == 1
-//        Password.first() == existingPassword
-//        Password.first().password == existingPassword.password
-//        Password.first().user == user
+        Password.count() == 1
+        Password.first() == existingPassword
+        Password.first().password == existingPassword.password
+        Password.first().user == user
     }
 
-    @Ignore("TODO fix for IUserService")
     void 'test compare user password is false when given password does not match existing password for legacy encoder'() {
         given:
         def tempAuthKey = "wzAdTZYn1xJDJrjwHgpu"
         service.passwordEncoderType = 'legacy'
         service.legacyAlgorithm = 'md5'
         service.legacySalt = 'RSOU5UBkJq8OT6SeaFQI'
+        service.passwordOperations.passwordEncoderType = 'legacy'
+        service.passwordOperations.legacyAlgorithm = 'md5'
+        service.passwordOperations.legacySalt = 'RSOU5UBkJq8OT6SeaFQI'
         def user = createUser(tempAuthKey)
         def password = "0hFAnO9dWq6rcUopZ9EN"
         def wrongPassword = 'wrongpassword'
         def encodedPassword = service.encodePassword(password)
-//        def existingPassword = new Password(
-//                user: user,
-//                password: encodedPassword,
-//                type: PasswordService.BCRYPT_ENCODER_TYPE,
-//                created: new Date().toTimestamp(),
-//                status: PasswordService.STATUS_CURRENT
-//        ).save()
+        def existingPassword = new Password(
+                user: user,
+                password: encodedPassword,
+                type: PasswordService.BCRYPT_ENCODER_TYPE,
+                created: new Date().toTimestamp(),
+                status: service.passwordOperations.STATUS_CURRENT
+        ).save()
 
         when:
         def isMatch = service.checkUserPassword(user, wrongPassword)
@@ -177,13 +175,12 @@ class PasswordServiceSpec extends UserDetailsSpec implements ServiceUnitTest<Pas
         0 * _ // no other interactions
         service.passwordEncoderType == 'legacy'
         !isMatch
-//        Password.count() == 1
-//        Password.first() == existingPassword
-//        Password.first().password == existingPassword.password
-//        Password.first().user == user
+        Password.count() == 1
+        Password.first() == existingPassword
+        Password.first().password == existingPassword.password
+        Password.first().user == user
     }
 
-    @Ignore("TODO fix for IUserService")
     void 'test compare user password is false when user does not have an existing password'() {
         given:
         def tempAuthKey = "wzAdTZYn1xJDJrjwHgpu"
@@ -196,24 +193,22 @@ class PasswordServiceSpec extends UserDetailsSpec implements ServiceUnitTest<Pas
         then:
         0 * _ // no other interactions
         !isMatch
-//        Password.count() == 0
+        Password.count() == 0
     }
 
-    @Ignore("TODO fix")
     void 'test compare passwords is true when passwords match'() {
         given:
         def password = "0hFAnO9dWq6rcUopZ9EN"
 
         when:
         def encoded = service.encodePassword(password)
-        def isMatch = service.comparePasswords(password, encoded)
+        def isMatch = service.passwordOperations.comparePasswords(password, encoded)
 
         then:
         0 * _ // no other interactions
         isMatch
     }
 
-    @Ignore("TODO fix")
     void 'test compare passwords is false when passwords do not match'() {
         given:
         def password = "0hFAnO9dWq6rcUopZ9EN"
@@ -221,24 +216,26 @@ class PasswordServiceSpec extends UserDetailsSpec implements ServiceUnitTest<Pas
 
         when:
         def encoded = service.encodePassword(password)
-        def isMatch = service.comparePasswords(wrongPassword, encoded)
+        def isMatch = service.passwordOperations.comparePasswords(wrongPassword, encoded)
 
         then:
         0 * _ // no other interactions
         !isMatch
     }
 
-    @Ignore("TODO fix")
     void 'test compare passwords is true when passwords do match for legacy encoder'() {
         given:
         def password = "0hFAnO9dWq6rcUopZ9EN"
         service.passwordEncoderType = 'legacy'
         service.legacyAlgorithm = 'md5'
         service.legacySalt = 'RSOU5UBkJq8OT6SeaFQI'
+        service.passwordOperations.passwordEncoderType = 'legacy'
+        service.passwordOperations.legacyAlgorithm = 'md5'
+        service.passwordOperations.legacySalt = 'RSOU5UBkJq8OT6SeaFQI'
 
         when:
         def encoded = service.encodePassword(password)
-        def isMatch = service.comparePasswords(password, encoded)
+        def isMatch = service.passwordOperations.comparePasswords(password, encoded)
 
         then:
         0 * _ // no other interactions
@@ -246,7 +243,6 @@ class PasswordServiceSpec extends UserDetailsSpec implements ServiceUnitTest<Pas
         isMatch
     }
 
-    @Ignore("TODO fix")
     void 'test compare passwords is false when passwords do not match for legacy encoder'() {
         given:
         def password = "0hFAnO9dWq6rcUopZ9EN"
@@ -254,10 +250,13 @@ class PasswordServiceSpec extends UserDetailsSpec implements ServiceUnitTest<Pas
         service.passwordEncoderType = 'legacy'
         service.legacyAlgorithm = 'md5'
         service.legacySalt = 'RSOU5UBkJq8OT6SeaFQI'
+        service.passwordOperations.passwordEncoderType = 'legacy'
+        service.passwordOperations.legacyAlgorithm = 'md5'
+        service.passwordOperations.legacySalt = 'RSOU5UBkJq8OT6SeaFQI'
 
         when:
         def encoded = service.encodePassword(password)
-        def isMatch = service.comparePasswords(wrongPassword, encoded)
+        def isMatch = service.passwordOperations.comparePasswords(wrongPassword, encoded)
 
         then:
         0 * _ // no other interactions

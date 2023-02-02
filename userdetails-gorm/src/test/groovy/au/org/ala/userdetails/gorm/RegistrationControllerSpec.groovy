@@ -13,10 +13,14 @@
  * rights and limitations under the License.
  */
 
-package au.org.ala.userdetails
+package au.org.ala.userdetails.gorm
 
 import au.org.ala.recaptcha.RecaptchaClient
 import au.org.ala.recaptcha.RecaptchaResponse
+import au.org.ala.userdetails.EmailService
+import au.org.ala.userdetails.IUserService
+import au.org.ala.userdetails.PasswordService
+import au.org.ala.userdetails.RegistrationController
 import au.org.ala.users.UserRecord
 import grails.testing.gorm.DataTest
 import grails.testing.web.controllers.ControllerUnitTest
@@ -25,9 +29,7 @@ import org.grails.web.servlet.mvc.SynchronizerTokensHolder
 import org.passay.RuleResult
 import org.passay.RuleResultDetail
 import retrofit2.mock.Calls
-import spock.lang.Ignore
 
-@Ignore
 class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUnitTest<RegistrationController>, DataTest {
 
     def passwordService = Mock(PasswordService)
@@ -43,7 +45,7 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
     }
 
     void setupSpec() {
-//        mockDomains(UserRecord, RoleRecord, UserRoleRecord, UserPropertyRecord)
+        mockDomains(Role, User, Password, UserRole, UserProperty)
     }
 
     void "A new password must be supplied"() {
@@ -61,10 +63,12 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
         controller.updatePassword()
 
         then:
+        1 * userService.getUserById('1') >> user
         1 * passwordService.validatePassword(username, "") >> new RuleResult(
                 false,
                 new RuleResultDetail('TOO_SHORT', [minimumLength: 8, maximumLength: 64])
         )
+        1 * passwordService.buildPasswordPolicy()
         0 * _ // no other interactions
         model.errors.getFieldError("password").codes.any { c -> c.contains('.blank.') }
         view == '/registration/passwordReset'
@@ -85,10 +89,12 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
         controller.updatePassword()
 
         then:
+        1 * userService.getUserById('1') >> user
         1 * passwordService.validatePassword(user.email, password) >> new RuleResult(
                 false,
                 new RuleResultDetail('TOO_SHORT', [minimumLength: 8, maximumLength: 64])
         )
+        1 * passwordService.buildPasswordPolicy()
         0 * _ // no other interactions
         model.errors.getFieldError("password").codes.any { c -> c.contains('.too_short.') }
         view == '/registration/passwordReset'
@@ -110,7 +116,9 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
         controller.updatePassword()
 
         then:
+        1 * userService.getUserById('1') >> user
         1 * passwordService.validatePassword(user.email, password) >> new RuleResult(true)
+        1 * passwordService.buildPasswordPolicy()
         0 * _ // no other interactions
         model.errors.getFieldError("reenteredPassword").codes.any { c -> c.contains('.validator.invalid') }
         model.passwordMatchFail
@@ -133,10 +141,12 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
         controller.updatePassword()
 
         then:
+        1 * userService.getUserById('1') >> user
         1 * passwordService.validatePassword(user.email, password) >> new RuleResult(
                 false,
                 new RuleResultDetail('INSUFFICIENT_CHARACTERISTICS', [successCount: '2', minimumRequired: '3', ruleCount: '4'])
         )
+        1 * passwordService.buildPasswordPolicy()
         0 * _ // no other interactions
         model.errors.getFieldError("password").codes.any { c -> c.contains('.insufficient_characteristics') }
         model.passwordMatchFail
@@ -159,6 +169,7 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
         controller.updatePassword()
 
         then:
+        1 * userService.getUserById('1') >> user
         1 * passwordService.validatePassword(user.email, password) >> new RuleResult(true)
         0 * _ // no other interactions
         !model.errors
@@ -185,7 +196,7 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
         params[SynchronizerTokensHolder.TOKEN_KEY] = tokenHolder.generateToken(params[SynchronizerTokensHolder.TOKEN_URI])
 
         when:
-        params.userId = userId
+        params.userId = 1
         params.password = password
         params.reenteredPassword = password
         params.authKey = authKey
@@ -194,9 +205,9 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
         controller.updatePassword()
 
         then:
+        1 * userService.getUserById('1') >> user
         1 * passwordService.resetPassword(user, password, _, _)
         1 * passwordService.validatePassword(user.email, password) >> new RuleResult(true)
-        1 * passwordService.resetPassword(user, password)
         1 * userService.clearTempAuthKey(user)
         0 * _ // no other interactions
         response.redirectedUrl == '/registration/passwordResetSuccess'
@@ -237,9 +248,9 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
         1 * recaptchaClient.verify(recaptchaSecretKey, recaptchaResponseKey, remoteAddressIp) >> { Calls.response(new RecaptchaResponse(true, '2019-09-27T16:06:00Z', 'test-host', [])) }
         1 * userService.isEmailInUse(email) >> false
         1 * passwordService.validatePassword(email, password) >> new RuleResult(true)
-        1 * userService.registerUser(_) >> { def user = new UserRecord(params); user.tempAuthKey = authKey; user }
+        1 * userService.registerUser(_) >> { def user = new UserRecord(); user.tempAuthKey = authKey; user }
         1 * passwordService.resetPassword(_, password, _, _)
-        1 * emailService.sendAccountActivation(_, authKey)
+        1 * userService.sendAccountActivation(_)
         0 * _ // no other interactions
         response.redirectedUrl == '/registration/accountCreated'
     }
@@ -276,9 +287,9 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
         0 * recaptchaClient.verify(_, _, _)
         1 * userService.isEmailInUse(email) >> false
         1 * passwordService.validatePassword(email, password) >> new RuleResult(true)
-        1 * userService.registerUser(_) >> { def user = new UserRecord(params); user.tempAuthKey = authKey; user }
+        1 * userService.registerUser(_) >> { def user = new UserRecord(); user.tempAuthKey = authKey; user }
         1 * passwordService.resetPassword(_, password, _, _)
-        1 * emailService.sendAccountActivation(_, authKey)
+        1 * userService.sendAccountActivation(_)
         0 * _ // no other interactions
         response.redirectedUrl == '/registration/accountCreated'
     }
@@ -314,6 +325,7 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
         0 * userService.registerUser(_)
         0 * passwordService.resetPassword(_, _, _, _)
         0 * emailService.sendAccountActivation(_, _)
+        1 * passwordService.buildPasswordPolicy()
         0 * _ // no other interactions
         view == '/registration/createAccount'
         !model.edit
@@ -353,6 +365,7 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
                 false,
                 new RuleResultDetail('INSUFFICIENT_CHARACTERISTICS', [successCount: '2', minimumRequired: '3', ruleCount: '4'])
         )
+        1 * passwordService.buildPasswordPolicy()
         0 * _ // no other interactions
         view == '/registration/createAccount'
         !model.edit
@@ -380,8 +393,9 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
 
         then:
         1 * userService.currentUser >> user
+        1 * userService.isEmailInUse('test@example.org')
         1 * passwordService.checkUserPassword(user, password) >> true
-        1 * userService.updateUser(user, params) >> true
+        1 * userService.updateUser(user.userId, params) >> true
         0 * _ // no other interactions
         response.redirectedUrl == '/profile'
     }
@@ -407,7 +421,9 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
 
         then:
         1 * userService.currentUser >> user
+        1 * userService.isEmailInUse('test@example.org')
         1 * passwordService.checkUserPassword(user, wrongPassword) >> false
+        1 * passwordService.buildPasswordPolicy()
         0 * _ // no other interactions
         flash.message == 'Incorrect password. Could not update account details. Please try again.'
         model.edit
@@ -460,8 +476,9 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
 
         then:
         1 * userService.currentUser >> user
+        1 * userService.isEmailInUse('test@example.org')
         1 * passwordService.checkUserPassword(user, password) >> true
-        1 * userService.updateUser(user, params) >> false
+        1 * userService.updateUser(user.userId, params) >> false
         0 * _ // no other interactions
         model.msg == "Failed to update user profile - unknown error"
         view == '/registration/accountError'
@@ -497,12 +514,13 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
         params.state = 'ACT'
         params.city = 'Canberra'
         params.password = 'password'
-        params.reenteredPassword = 'password'
+        params.confirmUserPassword = 'password'
 
         when:
         controller.update()
 
         then:
+        1 * passwordService.checkUserPassword(currentUser, 'password') >> true
         1 * userService.updateUser(_, _) >> true
         1 * userService.isEmailInUse(params.email) >> false
         response.redirectedUrl == '/profile'

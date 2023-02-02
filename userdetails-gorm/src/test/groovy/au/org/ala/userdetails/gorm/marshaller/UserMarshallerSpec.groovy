@@ -13,28 +13,28 @@
  * rights and limitations under the License.
  */
 
-package au.org.ala.userdetails.marshaller
+package au.org.ala.userdetails.gorm.marshaller
 
-import au.org.ala.userdetails.*
-import au.org.ala.users.RoleRecord
-import au.org.ala.users.UserPropertyRecord
+import au.org.ala.userdetails.gorm.Password
+import au.org.ala.userdetails.gorm.Role
+import au.org.ala.userdetails.gorm.User
+import au.org.ala.userdetails.gorm.UserDetailsSpec
+import au.org.ala.userdetails.gorm.UserProperty
+import au.org.ala.userdetails.gorm.UserRole
+import au.org.ala.userdetails.marshaller.UserMarshaller
 import au.org.ala.users.UserRecord
-import au.org.ala.users.UserRoleRecord
 import grails.converters.JSON
 import grails.testing.gorm.DataTest
-import spock.lang.Ignore
 
 /**
  * Tests the UserMarshaller
  */
-//@Mock([User, Role, UserRole, UserProperty])
-@Ignore
 class UserMarshallerSpec extends UserDetailsSpec implements DataTest {
 
     private UserRecord user
 
     void setupSpec() {
-//        mockDomains(UserRecord, RoleRecord, UserRoleRecord, UserPropertyRecord)
+        mockDomains(Role, User, Password, UserRole, UserProperty)
     }
 
     void setup() {

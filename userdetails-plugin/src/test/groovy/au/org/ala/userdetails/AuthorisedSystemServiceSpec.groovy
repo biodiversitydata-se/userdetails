@@ -1,6 +1,5 @@
 package au.org.ala.userdetails
 
-import au.org.ala.users.AuthorisedSystem
 import au.org.ala.ws.security.JwtProperties
 import grails.testing.gorm.DataTest
 import grails.testing.services.ServiceUnitTest
@@ -14,7 +13,6 @@ import spock.lang.Specification
 class AuthorisedSystemServiceSpec extends Specification implements ServiceUnitTest<AuthorisedSystemService>, DataTest {
 
     void setupSpec() {
-//        mockDomains(AuthorisedSystem)
     }
 
     def setup() {

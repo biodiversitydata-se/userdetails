@@ -103,6 +103,8 @@ dependencies {
     // Groovy backwards compat
     runtimeOnly 'org.codehaus.groovy:groovy-dateutil'
 
+    implementation 'org.passay:passay:1.6.0'
+
     // Grails plugin dependencies
 
     // Base Userdetails plugin
@@ -113,6 +115,7 @@ dependencies {
     implementation 'com.zaxxer:HikariCP:5.0.1'
     implementation 'mysql:mysql-connector-java:8.0.29'
     testRuntimeOnly "com.h2database:h2"
+    testImplementation('com.squareup.retrofit2:retrofit-mock:2.9.0')
 
 }
 

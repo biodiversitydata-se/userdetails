@@ -23,10 +23,9 @@ group "au.org.ala"
 
 apply plugin:"eclipse"
 apply plugin:"idea"
-apply plugin:"war"
 apply plugin:"org.grails.grails-plugin"
 apply plugin:"com.github.erdi.webdriver-binaries"
-apply plugin:"com.bertramlabs.asset-pipeline"
+apply plugin:"asset-pipeline"
 apply plugin:"org.grails.grails-gsp"
 apply plugin:"maven-publish"
 
@@ -178,6 +177,8 @@ dependencies {
     testImplementation('com.squareup.retrofit2:retrofit-mock:2.9.0')
 }
 
+compileJava.dependsOn(processResources)
+
 springBoot {
     buildInfo()
 }
@@ -194,11 +195,6 @@ bootRun {
     systemProperty springProfilesActive, System.getProperty(springProfilesActive)
 }
 
-bootWar {
-    launchScript()
-    classifier = 'exec'
-}
-
 tasks.withType(GroovyCompile) {
     configure(groovyOptions) {
         forkOptions.jvmArgs = ['-Xmx1024m']
@@ -207,6 +203,13 @@ tasks.withType(GroovyCompile) {
 
 tasks.withType(Test) {
     useJUnitPlatform()
+}
+
+// enable if you wish to package this plugin as a standalone application
+bootJar.enabled = false
+
+assets {
+    packagePlugin = true
 }
 
 webdriverBinaries {
@@ -231,12 +234,6 @@ tasks.withType(Test) {
     }
 }
 
-
-assets {
-    minifyJs = true
-    minifyCss = true
-}
-
 publishing {
     repositories {
         maven {
@@ -250,7 +247,9 @@ publishing {
     }
     publications {
         mavenJar(MavenPublication) {
-            artifact bootWar
+            from components.java
+            artifact sourcesJar
+            artifact javadocJar
         }
     }
 }

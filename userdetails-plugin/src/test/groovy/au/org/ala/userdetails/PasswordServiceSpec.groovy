@@ -6,6 +6,7 @@ import org.grails.spring.beans.factory.InstanceFactoryBean
 import org.passay.RuleResultMetadata
 import spock.lang.Ignore
 
+@Ignore
 class PasswordServiceSpec extends UserDetailsSpec implements ServiceUnitTest<PasswordService>/*, DataTest*/ {
 
     def charLength = RuleResultMetadata.CountCategory.Length

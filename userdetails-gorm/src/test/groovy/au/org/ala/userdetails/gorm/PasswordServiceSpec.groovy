@@ -66,7 +66,7 @@ class PasswordServiceSpec extends UserDetailsSpec implements ServiceUnitTest<Pas
     void 'test reset password generates and stores a new password for the user'() {
         given:
         def tempAuthKey = "wzAdTZYn1xJDJrjwHgpu"
-        def user = createUser(tempAuthKey)
+        def user = createUser(1, tempAuthKey)
         def newPassword = "0hFAnO9dWq6rcUopZ9EN"
 
         when:
@@ -82,7 +82,7 @@ class PasswordServiceSpec extends UserDetailsSpec implements ServiceUnitTest<Pas
     void 'test generate new password generates and stores a new password for the user'() {
         given:
         def tempAuthKey = "wzAdTZYn1xJDJrjwHgpu"
-        def user = createUser(tempAuthKey)
+        def user = createUser(1, tempAuthKey)
 
         when:
         def newPassword = service.generatePassword(user)
@@ -97,7 +97,7 @@ class PasswordServiceSpec extends UserDetailsSpec implements ServiceUnitTest<Pas
     void 'test compare user password is true when given password matches existing password'() {
         given:
         def tempAuthKey = "wzAdTZYn1xJDJrjwHgpu"
-        def user = createUser(tempAuthKey)
+        def user = createUser(1, tempAuthKey)
         def password = "0hFAnO9dWq6rcUopZ9EN"
         def encodedPassword = service.encodePassword(password)
         def existingPassword = new Password(
@@ -123,7 +123,7 @@ class PasswordServiceSpec extends UserDetailsSpec implements ServiceUnitTest<Pas
     void 'test compare user password is false when given password does not match existing password'() {
         given:
         def tempAuthKey = "wzAdTZYn1xJDJrjwHgpu"
-        def user = createUser(tempAuthKey)
+        def user = createUser(1, tempAuthKey)
         def password = "0hFAnO9dWq6rcUopZ9EN"
         def wrongPassword = 'wrongpassword'
         def encodedPassword = service.encodePassword(password)
@@ -156,7 +156,7 @@ class PasswordServiceSpec extends UserDetailsSpec implements ServiceUnitTest<Pas
         service.passwordOperations.passwordEncoderType = 'legacy'
         service.passwordOperations.legacyAlgorithm = 'md5'
         service.passwordOperations.legacySalt = 'RSOU5UBkJq8OT6SeaFQI'
-        def user = createUser(tempAuthKey)
+        def user = createUser(1, tempAuthKey)
         def password = "0hFAnO9dWq6rcUopZ9EN"
         def wrongPassword = 'wrongpassword'
         def encodedPassword = service.encodePassword(password)
@@ -184,7 +184,7 @@ class PasswordServiceSpec extends UserDetailsSpec implements ServiceUnitTest<Pas
     void 'test compare user password is false when user does not have an existing password'() {
         given:
         def tempAuthKey = "wzAdTZYn1xJDJrjwHgpu"
-        def user = createUser(tempAuthKey)
+        def user = createUser(1, tempAuthKey)
         def password = "wzAdTZYn1xJDJrjwHgpu"
 
         when:

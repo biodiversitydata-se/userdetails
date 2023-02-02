@@ -51,7 +51,7 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
     void "A new password must be supplied"() {
         setup:
         def authKey = UUID.randomUUID().toString()
-        def user = createUser(authKey)
+        def user = createUser(1, authKey)
         def username = user.userName ?: user.email ?: ''
 
         when:
@@ -78,7 +78,7 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
         setup:
         def authKey = UUID.randomUUID().toString()
         def password = "12345"
-        def user = createUser(authKey)
+        def user = createUser(1, authKey)
 
         when:
         params.userId = user.id
@@ -104,7 +104,7 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
         setup:
         def authKey = UUID.randomUUID().toString()
         def password = "123456789"
-        def user = createUser(authKey)
+        def user = createUser(1, authKey)
         def reenteredPassword = "123456543"
 
         when:
@@ -129,7 +129,7 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
         setup:
         def authKey = UUID.randomUUID().toString()
         def password = "AKSdkffhMf"
-        def user = createUser(authKey)
+        def user = createUser(1, authKey)
         def reenteredPassword = password
 
         when:
@@ -157,7 +157,7 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
         setup:
         def authKey = UUID.randomUUID().toString()
         def password = "password1"
-        def user = createUser(authKey)
+        def user = createUser(1, authKey)
 
         when:
         params.userId = user.id
@@ -180,13 +180,13 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
         setup:
         String authKey = "test"
         String password = "password1"
-        UserRecord user = createUser(authKey)
+        UserRecord user = createUser(1, authKey)
         request.method = 'POST'
         params.userId = Long.toString(1)
         params.authKey = authKey
 //        String authKey = UUID.randomUUID().toString()
 //        String password = "password1"
-//        User user = createUser(authKey)
+//        User user = createUser(1, authKey)
 //        def userId = Long.toString(1)?.toLong()
 
         // This is to allow the submitted token to pass validation.  Failure to do this will result in the invalidToken block being used.
@@ -376,7 +376,7 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
         setup:
         def password = "HPVBq46QmEH0YhWo6xek"
         def authKey = "W0E6QMaKUJnzTlqSNQXk"
-        UserRecord user = createUser(authKey)
+        UserRecord user = createUser(1, authKey)
 
         when:
         params.email = 'test@example.org'
@@ -404,7 +404,7 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
         setup:
         def wrongPassword = 'O6I8NdjRFLXpwOVhYeWt'
         def authKey = "W0E6QMaKUJnzTlqSNQXk"
-        UserRecord user = createUser(authKey)
+        UserRecord user = createUser(1, authKey)
 
         when:
         params.email = 'test@example.org'
@@ -459,7 +459,7 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
         setup:
         def password = 'HPVBq46QmEH0YhWo6xek'
         def authKey = "W0E6QMaKUJnzTlqSNQXk"
-        UserRecord user = createUser(authKey)
+        UserRecord user = createUser(1, authKey)
 
         when:
         params.email = 'test@example.org'

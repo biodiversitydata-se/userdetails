@@ -270,7 +270,6 @@ class GormUserService implements IUserService {
                     // Now send a temporary password to the user...
                     try {
                         resetAndSendTemporaryPassword(userInstance, emailSubject, emailTitle, emailBody, password)
-                        passwordService
                     } catch (PasswordResetFailedException ex) {
                         // Catching the checked exception should prevent the transaction from failing
                         log.error("Failed to send temporary password via email!", ex)

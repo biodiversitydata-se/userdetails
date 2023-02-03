@@ -55,7 +55,6 @@ class GormUserService implements IUserService {
     LocationService locationService
     MessageSource messageSource
     WebService webService
-    ProfileService profileService
 
     @Value('${attributes.affiliations.enabled:false}')
     boolean affiliationsEnabled = false

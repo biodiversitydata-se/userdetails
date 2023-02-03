@@ -18,7 +18,7 @@ class GormAuthorisedSystemRepository implements IAuthorisedSystemRepository {
         def count = 0
         def query = params.q as String
         if (query) {
-            def c = au.org.ala.users.AuthorisedSystem.createCriteria()
+            def c = AuthorisedSystem.createCriteria()
             list = c.list(params) {
                 or {
                     ilike('host', "%${query}%")
@@ -27,8 +27,8 @@ class GormAuthorisedSystemRepository implements IAuthorisedSystemRepository {
             }
             count = list.totalCount
         } else {
-            list = au.org.ala.users.AuthorisedSystem.list(params)
-            count = au.org.ala.users.AuthorisedSystem.count()
+            list = AuthorisedSystem.list(params)
+            count = AuthorisedSystem.count()
         }
 
         return [authorisedSystemInstanceList: list, authorisedSystemInstanceTotal: count]

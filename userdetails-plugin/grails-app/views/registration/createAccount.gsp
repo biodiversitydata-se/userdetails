@@ -25,7 +25,7 @@
         <g:set var="title"><g:message code="create.account.title" /></g:set>
     </g:else>
     <title>${title}</title>
-    <asset:stylesheet src="application.css" />
+    <asset:stylesheet src="userdetails.css" />
     <asset:stylesheet src="createAccount.css" />
     <g:if test="${grailsApplication.config.getProperty('recaptcha.siteKey')}">
         <script src="https://www.google.com/recaptcha/api.js" async defer></script>
@@ -138,7 +138,7 @@
                 </p>
                 <g:if test="${edit}">
                     <h2><g:message code="user.enableMFA.title" /></h2>
-                    <g:if test="${props?.enableMFA}">
+                    <g:if test="${props?.enableMFA == 'true'}">
                         <p><g:message code="user.enabledMFA.description" />
                     </g:if>
                     <g:else>
@@ -264,25 +264,27 @@
                 <g:if test="${edit}">
                     <div class="form-group checkbox">
                         <label>
-                            <g:checkBox name="enableMFA" value="${props?.enableMFA}" id="enableMFA" disabled="disabled"/> <g:message code="user.enabledMFA" />
+                            <g:checkBox name="enableMFA" value="${props?.enableMFA == 'true'}" id="enableMFA" disabled="disabled"/> <g:message code="user.enabledMFA" />
                         </label>
-                        <g:if test="${props?.enableMFA}">
+                        <g:if test="${props?.enableMFA == 'true'}">
                             <g:link controller="Registration" action="disableMfa" params="[userId:user?.email]">Disable MFA</g:link>
                         </g:if>
                     </div>
-                    <div class="form-group">
-                        <label for="confirmUserPassword">
-                            <g:message code="create.account.confirm.password" />
-                        </label>
-                        <input id="confirmUserPassword"
-                               name="confirmUserPassword"
-                               class="form-control"
-                               value=""
-                               data-validation-engine="validate[required, minSize[8]]"
-                               data-errormessage-value-missing="Password is required!"
-                               type="password"
-                               autocomplete="current-password"/>
-                    </div>
+                    <g:if test="${grailsApplication.config.getProperty('userdetails.features.requirePasswordForUserUpdate', Boolean, true)}">
+                        <div class="form-group">
+                            <label for="confirmUserPassword">
+                                <g:message code="create.account.confirm.password" />
+                            </label>
+                            <input id="confirmUserPassword"
+                                   name="confirmUserPassword"
+                                   class="form-control"
+                                   value=""
+                                   data-validation-engine="validate[required, minSize[8]]"
+                                   data-errormessage-value-missing="Password is required!"
+                                   type="password"
+                                   autocomplete="current-password"/>
+                        </div>
+                    </g:if>
 
                     <button id="updateAccountSubmit" class="btn btn-primary"><g:message code="create.account.update.account" /></button>
                     <button id="disableAccountSubmit" class="btn btn-danger"><g:message code="create.account.disable.account" /></button>

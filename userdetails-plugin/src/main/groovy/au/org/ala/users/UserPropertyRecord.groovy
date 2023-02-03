@@ -19,27 +19,13 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import grails.web.databinding.WebDataBinding
 import groovy.transform.EqualsAndHashCode
 
-//@Entity
-//@EqualsAndHashCode(includes = 'id')
-@EqualsAndHashCode()
+@EqualsAndHashCode
 @JsonIgnoreProperties(['metaClass','errors'])
 class UserPropertyRecord implements WebDataBinding, Serializable {
 
     UserRecord user
     String name
     String value
-
-//    static def addOrUpdateProperty(user, name, value){
-//
-//        def up = UserPropertyRecord.findByUserAndName(user, name)
-//        if(!up){
-//           up = new UserPropertyRecord(user:user, name:name, value:value)
-//        } else {
-//           up.value = value
-//        }
-//        up.save(flush:true)
-//        up
-//    }
 
     static constraints = {
         value nullable: false, blank: true

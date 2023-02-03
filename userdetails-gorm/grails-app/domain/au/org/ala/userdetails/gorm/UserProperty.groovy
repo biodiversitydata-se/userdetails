@@ -19,7 +19,6 @@ import au.org.ala.users.UserPropertyRecord
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import groovy.transform.EqualsAndHashCode
 
-@EqualsAndHashCode(includes = 'id')
 @JsonIgnoreProperties(['metaClass','errors'])
 class UserProperty extends UserPropertyRecord implements Serializable {
 

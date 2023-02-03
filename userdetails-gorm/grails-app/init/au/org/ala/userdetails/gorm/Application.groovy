@@ -17,9 +17,11 @@ package au.org.ala.userdetails.gorm
 
 import au.org.ala.userdetails.EmailService
 import au.org.ala.userdetails.IAuthorisedSystemRepository
+import au.org.ala.userdetails.IPasswordOperations
 import au.org.ala.userdetails.IUserService
 import au.org.ala.userdetails.LocationService
 import au.org.ala.userdetails.PasswordService
+import au.org.ala.userdetails.ProfileService
 import au.org.ala.web.AuthService
 import au.org.ala.ws.service.WebService
 import grails.boot.GrailsApp
@@ -51,7 +53,9 @@ class Application extends GrailsAutoConfiguration {
                              AuthService authService,
                              LocationService locationService,
                              MessageSource messageSource,
-                             WebService webService) {
+                             WebService webService,
+                             ProfileService profileService
+                             ) {
 
 //        grailsApplication.addArtefact(DomainClassArtefactHandler.TYPE, UserRecord)
 //        grailsApplication.addArtefact(DomainClassArtefactHandler.TYPE, UserPropertyRecord)
@@ -66,6 +70,7 @@ class Application extends GrailsAutoConfiguration {
 
         userService.grailsApplication = grailsApplication
         userService.messageSource = messageSource
+        userService.profileService = profileService
 
         userService.affiliationsEnabled = grailsApplication.config.getProperty('attributes.affiliations.enabled', Boolean, false)
 
@@ -77,4 +82,8 @@ class Application extends GrailsAutoConfiguration {
         new GormAuthorisedSystemRepository()
     }
 
+    @Bean('passwordOperations')
+    IPasswordOperations passwordOperations() {
+        new GormPasswordOperations()
+    }
 }

@@ -21,7 +21,7 @@ import org.pac4j.core.context.WebContext
 import org.pac4j.core.profile.ProfileManager
 import org.pac4j.core.profile.UserProfile
 import org.pac4j.core.util.FindBest
-import org.pac4j.http.client.direct.DirectBearerAuthClient
+import au.org.ala.ws.security.client.AlaAuthClient
 import org.pac4j.jee.context.JEEContextFactory
 import org.springframework.beans.factory.annotation.Autowired
 
@@ -35,7 +35,7 @@ class AuthorisedSystemService {
     @Autowired(required = false)
     Config config
     @Autowired(required = false)
-    DirectBearerAuthClient directBearerAuthClient
+    AlaAuthClient alaAuthClient
     @Autowired
     IAuthorisedSystemRepository authorisedSystemRepository
 
@@ -64,15 +64,15 @@ class AuthorisedSystemService {
             ProfileManager profileManager = new ProfileManager(context, config.sessionStore)
             profileManager.setConfig(config)
 
-            def credentials = directBearerAuthClient.getCredentials(context, config.sessionStore)
+            def credentials = alaAuthClient.getCredentials(context, config.sessionStore)
             if (credentials.isPresent()) {
-                def profile = directBearerAuthClient.getUserProfile(credentials.get(), context, config.sessionStore)
+                def profile = alaAuthClient.getUserProfile(credentials.get(), context, config.sessionStore)
                 if (profile.isPresent()) {
                     def userProfile = profile.get()
                     profileManager.save(
-                            directBearerAuthClient.getSaveProfileInSession(context, userProfile),
+                            alaAuthClient.getSaveProfileInSession(context, userProfile),
                             userProfile,
-                            directBearerAuthClient.isMultiProfile(context, userProfile)
+                            alaAuthClient.isMultiProfile(context, userProfile)
                     )
 
                     result = true

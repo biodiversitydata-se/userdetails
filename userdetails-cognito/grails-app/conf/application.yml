@@ -5,6 +5,7 @@ grails:
         defaultPackage: au.org.ala.userdetails.cognito
     config:
         locations:
+            - file:/data/userdetails/config/userdetails-cognito-config.yml
             - file:/data/userdetails/config/userdetails-config.properties
             - file:/data/userdetails/config/userdetails-config.yml
             - file:/data/userdetails/config/userdetails-config.groovy

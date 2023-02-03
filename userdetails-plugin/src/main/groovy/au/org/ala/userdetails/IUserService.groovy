@@ -16,16 +16,15 @@
 package au.org.ala.userdetails
 
 import au.org.ala.auth.BulkUserLoadResults
-import au.org.ala.auth.PasswordResetFailedException
 import au.org.ala.users.RoleRecord
 import au.org.ala.users.UserPropertyRecord
 import au.org.ala.users.UserRecord
 import au.org.ala.users.UserRoleRecord
 import grails.web.servlet.mvc.GrailsParameterMap
 
-import javax.servlet.http.HttpSession
-
 interface IUserService {
+
+    //    *********** User related services *************
 
     boolean updateUser(String userId, GrailsParameterMap params)
 
@@ -35,13 +34,11 @@ interface IUserService {
 
     boolean isLocked(String email)
 
-    boolean isEmailRegistered(String email)
-
     boolean isEmailInUse(String newEmail)
 
     boolean activateAccount(UserRecord user, GrailsParameterMap params)
 
-    def listUsers(String query, String paginationToken, int maxResults)
+    List<UserRecord> listUsers(String query, String paginationToken, int maxResults)
 
     Collection<UserRecord> listUsers()
 
@@ -53,10 +50,6 @@ interface IUserService {
 
     void deleteUser(UserRecord user)
 
-    void resetAndSendTemporaryPassword(UserRecord user, String emailSubject, String emailTitle, String emailBody, String password) throws PasswordResetFailedException
-
-    void clearTempAuthKey(UserRecord user)
-
     UserRecord getUserById(String userId)
 
     UserRecord getUserByEmail(String email)
@@ -65,8 +58,6 @@ interface IUserService {
      * This service method returns the UserRecord object for the current user.
      */
     UserRecord getCurrentUser()
-
-    String getResetPasswordUrl(UserRecord user)
 
     Collection<UserRecord> findUsersForExport(List usersInRoles, includeInactive)
 
@@ -80,35 +71,11 @@ interface IUserService {
 
     List<String[]> countByProfileAttribute(String s, Date date, Locale locale)
 
-    Collection<RoleRecord> listRoles()
-
-    Collection<RoleRecord> listRoles(String paginationToken, int maxResults)
-
-//    RoleRecord createRole(GrailsParameterMap params)
-
-    boolean addUserRole(String userId, String roleName)
-
-//    boolean removeUserRole(UserRecord user, RoleRecord role)
-
-    // TODO return type and implementation
     void findScrollableUsersByUserName(String username, int maxResults, ResultStreamer resultStreamer)
 
-    // TODO return type and implementation
     void findScrollableUsersByIdsAndRole(List<String> ids, String roleName, ResultStreamer resultStreamer)
 
-    void addRoles(Collection<RoleRecord> roleRecords)
-
-    List<UserPropertyRecord> findAllAttributesByName(String s)
-
-    void addOrUpdateProperty(UserRecord userRecord, String name, String value)
-
-    void removeUserAttributes(UserRecord userRecord, ArrayList<String> attributes)
-
-    void getUserAttribute(UserRecord userRecord, String attribute)
-
-    List getAllAvailableProperties()
-
-    RoleRecord addRole(RoleRecord roleRecord)
+    def getUserDetailsFromIdList(List idList)
 
     UserRecord findByUserNameOrEmail(String username)
 
@@ -118,19 +85,96 @@ interface IUserService {
 
     List<String[]> listUserDetails()
 
-    Map findUserRoles(String role, GrailsParameterMap grailsParameterMap)
+    //    *********** Role services *************
 
-    boolean deleteRole(String userId, String roleName)
+    Collection<RoleRecord> listRoles()
 
-    boolean resetPassword(UserRecord user, String newPassword, boolean isPermanent, String confirmationCode)
+    /**
+     * Retrieve a list of roles, paged by the params in the argument.
+     *
+     * The following paging params are always supported:
+     *  - max: Maximum number of items to retrieve at a time
+     * The following paging params are supported in GORM:
+     *  - offset: The number of items to skip forward
+     *  - sort: the field to sort results by
+     *  - order: whether to sort 'asc'ending or 'desc'ending
+     * The following paging params are supported in Cognito:
+     *  - token: The paging token provided by the back end API
+     *
+     * @param params The parameters that may be used in the search
+     * @return A result with the list of roles and either the total count or the next page token.
+     */
+    PagedResult<RoleRecord> listRoles(GrailsParameterMap params)
 
-    String getPasswordResetView()
+    /**
+     * Add a role with `rolename` to user identified by `userid`
+     *
+     * @param userId The users id
+     * @param roleName The name of the role to add
+     * @return True if the operation succeeded or false otherwise
+     */
+    boolean addUserRole(String userId, String roleName)
+
+    /**
+     * Remove a role with `rolename` from user identified by `userid`
+     *
+     * @param userId The users id
+     * @param roleName The name of the role to add
+     * @return True if the operation succeeded or false otherwise
+     */
+    boolean removeUserRole(String userId, String roleName)
+
+    /**
+     * Add a list of roles to the system.
+     *
+     * @param roleRecords The list of RoleRecords to add
+     */
+    void addRoles(Collection<RoleRecord> roleRecords)
+
+    /**
+     * Add a single role to the system.
+     *
+     * @param roleRecord The RoleRecord to add
+     */
+
+    RoleRecord addRole(RoleRecord roleRecord)
+
+    /**
+     * Find a list of users for a given role.
+     *
+     * The following paging params are always supported:
+     *  - max: Maximum number of items to retrieve at a time
+     * The following paging params are supported in GORM:
+     *  - offset: The number of items to skip forward
+     *  - sort: the field to sort results by
+     *  - order: whether to sort 'asc'ending or 'desc'ending
+     * The following paging params are supported in Cognito:
+     *  - token: The paging token provided by the back end API
+     *
+     * @param role The role name to get the list of users for
+     * @param params The paging parameters for the request
+     */
+    PagedResult<UserRoleRecord> findUserRoles(String role, GrailsParameterMap params)
+
+    //    *********** account related services *************
+
+    void clearTempAuthKey(UserRecord user)
 
     def sendAccountActivation(UserRecord user)
+
+    //    *********** MFA services *************
 
     String getSecretForMfa()
 
     boolean verifyUserCode(String userCode)
 
     void enableMfa(String userId, boolean enable)
+
+//    *********** Property related services *************
+
+    UserPropertyRecord addOrUpdateProperty(UserRecord userRecord, String name, String value)
+
+    void removeUserProperty(UserRecord userRecord, ArrayList<String> attributes)
+
+    List<UserPropertyRecord> searchProperty(UserRecord userRecord, String attribute)
 }

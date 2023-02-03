@@ -20,15 +20,13 @@ import groovy.transform.EqualsAndHashCode
 
 import java.sql.Timestamp
 
-@EqualsAndHashCode(includes = 'id')
-class User extends UserRecord implements Serializable {
+@EqualsAndHashCode
+class User extends UserRecord<Long> implements Serializable {
 
     static hasMany =  [
             userRoles: UserRole,
             userProperties: UserProperty
     ]
-
-    String userId
 
     String firstName
     String lastName
@@ -48,16 +46,13 @@ class User extends UserRecord implements Serializable {
 
     String displayName
 
-    Collection<UserRole> userRoles
-    Collection<UserProperty> userProperties
-
-
+//    Collection<UserRole> userRoles
+//    Collection<UserProperty> userProperties
 
     static mapping = {
         table 'users'
 
         id (generator:'identity', column:'userid', type:'long')
-        userId column:'userid', updatable: false, insertable: false, type: 'string'
 
         userName column:  'username'
         firstName column:  'firstname'
@@ -78,6 +73,11 @@ class User extends UserRecord implements Serializable {
         lastLogin nullable: true
         tempAuthKey nullable: true
         displayName nullable: true
+    }
+
+    @Override
+    String getUserId() {
+        return this.id?.toString()
     }
 
     static List<String[]> findNameAndEmailWhereEmailIsNotNull() {
@@ -116,12 +116,7 @@ class User extends UserRecord implements Serializable {
     def propsAsMap(){
         def map = [:]
         this.getUserProperties().each {
-            if(it.name == "enableMFA"){
-                map.put(it.name, it.value.toBoolean())
-            }
-            else {
-                map.put(it.name.startsWith('custom:') ? it.name.substring(7) : it.name, it.value)
-            }
+            map.put(it.name.startsWith('custom:') ? it.name.substring(7) : it.name, it.value)
         }
         map
     }

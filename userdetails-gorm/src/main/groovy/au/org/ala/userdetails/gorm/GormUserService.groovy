@@ -17,17 +17,16 @@ package au.org.ala.userdetails.gorm
 
 import au.org.ala.auth.BulkUserLoadResults
 import au.org.ala.auth.PasswordResetFailedException
-import au.org.ala.cas.encoding.BcryptPasswordEncoder
-import au.org.ala.cas.encoding.LegacyPasswordEncoder
 import au.org.ala.userdetails.EmailService
 import au.org.ala.userdetails.IUserService
 import au.org.ala.userdetails.LocationService
+import au.org.ala.userdetails.PagedResult
 import au.org.ala.userdetails.PasswordService
+import au.org.ala.userdetails.ProfileService
 import au.org.ala.userdetails.ResultStreamer
 import au.org.ala.users.RoleRecord
 import au.org.ala.users.UserPropertyRecord
 import au.org.ala.users.UserRecord
-import au.org.ala.users.UserRoleRecord
 import au.org.ala.web.AuthService
 import au.org.ala.ws.service.WebService
 import grails.converters.JSON
@@ -45,14 +44,9 @@ import org.hibernate.ScrollableResults
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.MessageSource
 
-import javax.servlet.http.HttpSession
-
 @Slf4j
 @Transactional
 class GormUserService implements IUserService {
-
-    static final String BCRYPT_ENCODER_TYPE = 'bcrypt'
-    static final String LEGACY_ENCODER_TYPE = 'legacy'
 
     EmailService emailService
     PasswordService passwordService
@@ -61,15 +55,7 @@ class GormUserService implements IUserService {
     LocationService locationService
     MessageSource messageSource
     WebService webService
-
-    @Value('${password.encoder}')
-    String passwordEncoderType = 'bcrypt'
-    @Value('${bcrypt.strength}')
-    Integer bcryptStrength = 10
-    @Value('${encoding.algorithm}')
-    String legacyAlgorithm
-    @Value('${encoding.salt}')
-    String legacySalt
+    ProfileService profileService
 
     @Value('${attributes.affiliations.enabled:false}')
     boolean affiliationsEnabled = false
@@ -130,11 +116,6 @@ class GormUserService implements IUserService {
     }
 
     @Transactional(readOnly = true)
-    boolean isEmailRegistered(String email) {
-        return User.findByEmailOrUserName(email?.toLowerCase(), email?.toLowerCase()) != null
-    }
-
-    @Transactional(readOnly = true)
     boolean isEmailInUse(String newEmail) {
         return User.findByEmailOrUserName(newEmail?.toLowerCase(), newEmail?.toLowerCase())
     }
@@ -162,7 +143,7 @@ class GormUserService implements IUserService {
     }
 
     @Override
-    def listUsers(String query, String paginationToken, int maxResults) {
+    List<User> listUsers(String query, String paginationToken, int maxResults) {
 
         if (query) {
 
@@ -171,7 +152,7 @@ class GormUserService implements IUserService {
             return User.findAllByEmailLikeOrLastNameLikeOrFirstNameLike(q, q, q, [offset: paginationToken as int, max: maxResults ])
         }
 
-        return User.list([offset: paginationToken as int, max: maxResults ])
+        return User.list([offset: (paginationToken ?: 0) as int, max: maxResults ])
     }
 
     @Override
@@ -269,7 +250,7 @@ class GormUserService implements IUserService {
 
                     // Now send a temporary password to the user...
                     try {
-                        resetAndSendTemporaryPassword(userInstance, emailSubject, emailTitle, emailBody, password)
+                        passwordService.resetAndSendTemporaryPassword(userInstance, emailSubject, emailTitle, emailBody, password)
                     } catch (PasswordResetFailedException ex) {
                         // Catching the checked exception should prevent the transaction from failing
                         log.error("Failed to send temporary password via email!", ex)
@@ -290,7 +271,7 @@ class GormUserService implements IUserService {
 
         properties.keySet().each { String propName ->
             def propValue = properties[propName] ?: ''
-            setUserProperty(user, propName, propValue)
+            setUserProperty(user, propName, propValue as String)
         }
     }
 
@@ -361,18 +342,6 @@ class GormUserService implements IUserService {
     }
 
     @Override
-    void resetAndSendTemporaryPassword(UserRecord user, String emailSubject, String emailTitle, String emailBody, String password = null) throws PasswordResetFailedException {
-        assert user instanceof User
-        if (user) {
-            //set the temp auth key
-            user.tempAuthKey = UUID.randomUUID().toString()
-            user.save(flush: true)
-            //send the email
-            emailService.sendPasswordReset(user, user.tempAuthKey, emailSubject, emailTitle, emailBody, password)
-        }
-    }
-
-    @Override
     void clearTempAuthKey(UserRecord user) {
         assert user instanceof User
         if (user) {
@@ -419,15 +388,6 @@ class GormUserService implements IUserService {
         }
 
         return user
-    }
-
-    @NotTransactional
-    @Override
-    String getResetPasswordUrl(UserRecord user) {
-        assert user instanceof User
-        if(user.tempAuthKey){
-            emailService.getServerUrl() + "resetPassword/" +  user.id +  "/"  + user.tempAuthKey
-        }
     }
 
     @Transactional(readOnly = true)
@@ -497,8 +457,10 @@ class GormUserService implements IUserService {
     }
 
     @Override
-    Collection<RoleRecord> listRoles(String paginationToken, int maxResults) {
-        Role.list([offset: paginationToken as int, max: maxResults ])
+    PagedResult<RoleRecord> listRoles(GrailsParameterMap params) {
+        params.max = Math.min(params.int('max', 100), 1000)
+        def roles = Role.list(params)
+        return new PagedResult<RoleRecord>(list: roles, count: Role.count(), nextPageToken: null)
     }
 
 //    Role createRole(GrailsParameterMap params) {
@@ -514,11 +476,6 @@ class GormUserService implements IUserService {
 
          new UserRole(user: user, role: role).save()
     }
-
-//    @Override
-//    boolean removeUserRole(UserRecord user, RoleRecord role) {
-//        return false
-//    }
 
     @Override
     void findScrollableUsersByUserName(String username, int max, ResultStreamer resultStreamer) {
@@ -569,45 +526,50 @@ class GormUserService implements IUserService {
 
     @Override
     void addRoles(Collection<RoleRecord> roleRecords) {
-        Role.saveAll(roleRecords.collect { new Role(it.role, it.description) })
-
+        Role.saveAll(roleRecords.collect { new Role(role: it.role, description:  it.description) })
     }
 
-    @Override
-    List<UserPropertyRecord> findAllAttributesByName(String s) {
-        UserProperty.findAllByName("flickrId")
-    }
+//        *********** Property related services *************
 
     @Override
-    void addOrUpdateProperty(UserRecord userRecord, String name, String value) {
+    UserPropertyRecord addOrUpdateProperty(UserRecord userRecord, String name, String value) {
         assert userRecord instanceof User
-        UserProperty.addOrUpdateProperty(userRecord, name, value)
+        return UserProperty.addOrUpdateProperty(userRecord, name, value)
     }
 
     @Override
-    void removeUserAttributes(UserRecord user, ArrayList<String> attrs) {
-        def props = UserProperty.findAllByUserAndNameInList(user, attrs)
+    void removeUserProperty(UserRecord user, ArrayList<String> attrs) {
+        def props = UserProperty.findAllByUserAndNameInList(user as User, attrs)
         if (props) UserProperty.deleteAll(props)
     }
 
     @Override
-    void getUserAttribute(UserRecord userRecord, String attribute) {
-        UserProperty.findAllByUserAndName(userRecord, attribute)
-    }
+    List<UserPropertyRecord> searchProperty(UserRecord userRecord, String attribute) {
+        List<UserPropertyRecord> propList = []
 
-    @Override
-    List<UserProperty> getAllAvailableProperties() {
-        UserProperty.withCriteria {
-            projections {
-                distinct("name")
-            }
-            order("name")
+        if(userRecord && attribute){
+            List properties = UserProperty.findAllByUserAndName(userRecord as User, attribute)
+            propList =  properties.collect {new UserPropertyRecord(user: userRecord, name: it.name, value: it.value) }
         }
+        else if(attribute){
+            propList = UserProperty.findAllByName(attribute)
+        }
+        else{
+            List properties = UserProperty.withCriteria {
+                projections {
+                    distinct("name")
+                }
+                order("name")
+            } as List
+
+            propList = properties.collect { new UserPropertyRecord(user: it.user, name: it.name, value: it.value) }
+        }
+        return propList
     }
 
     @Override
     RoleRecord addRole(RoleRecord roleRecord) {
-        return new Role(role: roleRecord.role).save(flush: true)
+        return new Role(role: roleRecord.role, description: roleRecord.description).save(flush: true)
     }
 
     @Override
@@ -636,34 +598,34 @@ class GormUserService implements IUserService {
 //    }
 
     @Override
-    Map findUserRoles(String roleName, GrailsParameterMap params) {
+    PagedResult<Role> findUserRoles(String roleName, GrailsParameterMap params) {
         params.max = Math.min(params.int('max', 100), 1000)
         if (roleName) {
             def role = Role.findByRole(roleName)
             if(role) {
                 def list = UserRole.findAllByRole(role, params)
-                return [userRoleInstanceList: list, userRoleInstanceTotal: UserRole.findAllByRole(role).size()]
+                return new PagedResult<Role>(list: list, count: UserRole.countByRole(role))
             } else {
-                return [userRoleInstanceList: [], userRoleInstanceTotal: 0]
+                return new PagedResult<Role>(list: [], count: 0)
             }
         } else {
-            return [userRoleInstanceList: UserRole.list(params), userRoleInstanceTotal: UserRole.count()]
+            return new PagedResult<Role>(list: UserRole.list(params), count: UserRole.count())
         }
     }
 
     @Override
-    boolean deleteRole(String userId, String roleName) {
-        def user = UserRecord.get(userId.toLong())
-        def role = RoleRecord.get(roleName)
+    boolean removeUserRole(String userId, String roleName) {
+        def user = User.get(userId.toLong())
+        def role = Role.get(roleName)
 
-        UserRole.withNewTransaction {
+//        UserRole.withNewTransaction {
             def userRoleInstance = UserRole.findByUserAndRole(user, role)
             if (!userRoleInstance) {
                 return false
             }
             userRoleInstance.delete(flush: true)
             return true
-        }
+//        }
     }
 
     private void streamUserResults(ResultStreamer resultStreamer, ScrollableResults results, session) {
@@ -688,38 +650,11 @@ class GormUserService implements IUserService {
     }
 
     @Override
-    boolean resetPassword(UserRecord user, String newPassword, boolean isPermanent, String confirmationCode) {
-        assert user instanceof User
-        Password.findAllByUser(user).each {
-            it.delete()
-        }
-
-        boolean isBcrypt = passwordEncoderType.equalsIgnoreCase(BCRYPT_ENCODER_TYPE)
-
-        def encoder = isBcrypt ? new BcryptPasswordEncoder(bcryptStrength) : new LegacyPasswordEncoder(legacySalt, legacyAlgorithm, true)
-        def encodedPassword = encoder.encode(newPassword)
-
-        //reuse object if old password
-        def password = new Password()
-        password.user = user
-        password.password = encodedPassword
-        password.type = isBcrypt ? BCRYPT_ENCODER_TYPE : LEGACY_ENCODER_TYPE
-        password.created = new Date().toTimestamp()
-        password.expiry = null
-        password.status = "CURRENT"
-        password.save(failOnError: true)
-        return true
-    }
-
-    @Override
-    String getPasswordResetView() {
-        return "startPasswordReset"
-    }
-
-    @Override
     def sendAccountActivation(UserRecord user) {
         emailService.sendAccountActivation(user, user.tempAuthKey)
     }
+
+    //    *********** MFA services *************
 
     @Override
     String getSecretForMfa() {}
@@ -729,4 +664,12 @@ class GormUserService implements IUserService {
 
     @Override
     void enableMfa(String userId, boolean enable){}
+
+    def getUserDetailsFromIdList(List idList){
+        def c = User.createCriteria()
+        def results = c.list() {
+            'in'("id", idList.collect { userId -> userId as long } )
+        }
+        return results
+    }
 }

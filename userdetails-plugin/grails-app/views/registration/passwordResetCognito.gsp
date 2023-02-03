@@ -4,7 +4,7 @@
     <meta name="layout" content="${grailsApplication.config.getProperty('skin.layout')}"/>
     <meta name="section" content="home"/>
     <title><g:message code="password.reset.title" /></title>
-    <asset:stylesheet src="application.css" />
+    <asset:stylesheet src="userdetails.css" />
 </head>
 <body>
 <asset:script type="text/javascript">
@@ -35,6 +35,9 @@
 
 <div class="row">
     <h1><g:message code="password.reset.description" /></h1>
+
+    <g:render template="passwordPolicy"
+              model="[passwordPolicy: passwordPolicy]"/>
 
     <g:hasErrors>
     <div class="alert alert-danger">

@@ -16,6 +16,7 @@
 package au.org.ala.userdetails
 
 import au.org.ala.auth.PreAuthorise
+import au.org.ala.users.AuthorisedSystem
 import grails.converters.JSON
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.dao.DataIntegrityViolationException

@@ -50,10 +50,8 @@
 <div class="row">
     <h1><g:message code="password.reset.description" /></h1>
 
-    <g:if test="${grailsApplication.config.getProperty('userdetails.features.requirePasswordForUserUpdate', Boolean, true)}">
-        <g:render template="passwordPolicy"
-              model="[passwordPolicy: passwordPolicy]"/>
-    </g:if>
+    <g:render template="passwordPolicy"
+          model="[passwordPolicy: passwordPolicy]"/>
 
     <g:hasErrors>
     <div class="alert alert-danger">

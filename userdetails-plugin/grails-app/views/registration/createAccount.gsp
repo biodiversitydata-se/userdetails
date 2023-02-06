@@ -120,10 +120,8 @@
                     </g:if></p>
                 </g:if>
 
-                <g:if test="${!edit && grailsApplication.config.getProperty('userdetails.features.requirePasswordForUserUpdate', Boolean, true)}">
-                    <g:render template="passwordPolicy"
-                              model="[passwordPolicy: passwordPolicy]"/>
-                </g:if>
+                <g:render template="passwordPolicy"
+                          model="[passwordPolicy: passwordPolicy]"/>
 
                 <h2><g:message code="create.account.policy.title" /></h2>
                 <p>

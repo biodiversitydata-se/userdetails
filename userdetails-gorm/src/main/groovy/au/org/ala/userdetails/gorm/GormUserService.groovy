@@ -62,6 +62,13 @@ class GormUserService implements IUserService {
 
         User user = getUserById(userId)
 
+        if (params.version != null) {
+            if (user.version > params.version) {
+                log.error("Another user has updated this UserRecord while you were editing")
+                return false
+            }
+        }
+
         def emailRecipients = [user.email]
         if (params.email != user.email) {
             emailRecipients << params.email
@@ -367,7 +374,12 @@ class GormUserService implements IUserService {
 
     @Override
     User getUserById(String userId) {
-        return User.get(userId as Long)
+        if(userId.isNumber()) {
+            return User.get(userId as Long)
+        }
+        else{
+            return User.findByEmail(userId)
+        }
     }
 
     @Override

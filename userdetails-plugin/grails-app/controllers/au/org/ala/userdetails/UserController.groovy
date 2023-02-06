@@ -94,21 +94,6 @@ class UserController {
             return
         }
 
-        // TODO: deal with optimistic locking
-//        if (version != null) {
-//            if (userInstance.version > version) {
-//                userInstance.errors.rejectValue("version", "default.optimistic.locking.failure",
-//                          [message(code: 'user.label', default: 'UserRecord')] as Object[],
-//                          "Another user has updated this UserRecord while you were editing")
-//                render(view: "edit", model: [userInstance: userInstance])
-//                return
-//            }
-//        }
-//
-//        if (userInstance.email != params.email) {
-//            params.userName = params.email
-//        }
-
         def success = userService.updateUser(id, params)
 
         if (!success) {

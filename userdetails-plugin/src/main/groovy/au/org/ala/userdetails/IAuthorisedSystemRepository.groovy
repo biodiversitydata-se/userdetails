@@ -1,5 +1,6 @@
 package au.org.ala.userdetails
 
+import au.org.ala.users.AuthorisedSystemRecord
 import grails.web.servlet.mvc.GrailsParameterMap
 
 /**
@@ -16,14 +17,11 @@ interface IAuthorisedSystemRepository {
 
     def list(GrailsParameterMap params)
 
-    def save(GrailsParameterMap params)
+    AuthorisedSystemRecord save(GrailsParameterMap params)
 
-    def get(Long id)
+    AuthorisedSystemRecord get(Long id)
 
-    def update(GrailsParameterMap params)
+    AuthorisedSystemRecord update(GrailsParameterMap params)
 
-    def delete(Long id)
-
-    def ajaxResolveHostName(GrailsParameterMap params)
-
+    Boolean delete(Long id)
 }

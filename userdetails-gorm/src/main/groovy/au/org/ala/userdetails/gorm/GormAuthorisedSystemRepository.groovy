@@ -1,10 +1,13 @@
 package au.org.ala.userdetails.gorm
 
 import au.org.ala.userdetails.IAuthorisedSystemRepository
+import au.org.ala.users.AuthorisedSystemRecord
 import grails.converters.JSON
 import grails.web.servlet.mvc.GrailsParameterMap
+import groovy.util.logging.Slf4j
 import org.springframework.dao.DataIntegrityViolationException
 
+@Slf4j
 class GormAuthorisedSystemRepository implements IAuthorisedSystemRepository {
 
     @Override
@@ -31,12 +34,12 @@ class GormAuthorisedSystemRepository implements IAuthorisedSystemRepository {
             count = AuthorisedSystem.count()
         }
 
-        return [authorisedSystemInstanceList: list, authorisedSystemInstanceTotal: count]
+        return [list: list, count: count]
     }
 
     @Override
-    def save(GrailsParameterMap params) {
-        def authorisedSystemInstance = new AuthorisedSystem(params)
+    AuthorisedSystemRecord save(GrailsParameterMap params) {
+        def authorisedSystemInstance = new AuthorisedSystem(host: params.host, description: params.description)
         if (!authorisedSystemInstance.save(flush: true)) {
             return null
         }
@@ -44,24 +47,22 @@ class GormAuthorisedSystemRepository implements IAuthorisedSystemRepository {
     }
 
     @Override
-    def get(Long id) {
+    AuthorisedSystemRecord get(Long id) {
         def authorisedSystemInstance = AuthorisedSystem.get(id)
         return authorisedSystemInstance
     }
 
     @Override
-    def update(GrailsParameterMap params) {
-        def authorisedSystemInstance = AuthorisedSystem.get(params.id)
+    AuthorisedSystemRecord update(GrailsParameterMap params) {
+        def authorisedSystemInstance = AuthorisedSystem.get(params.id as Long)
         if (!authorisedSystemInstance) {
             return null
         }
 
         if (params.version != null) {
-            if (authorisedSystemInstance.version > params.version) {
-                authorisedSystemInstance.errors.rejectValue("version", "default.optimistic.locking.failure",
-                        [message(code: 'authorisedSystem.label', default: 'AuthorisedSystem')] as Object[],
-                        "Another user has updated this AuthorisedSystem while you were editing")
-                return authorisedSystemInstance
+            if (authorisedSystemInstance.version > params.version as Long) {
+                log.error("Another user has updated this AuthorisedSystem while you were editing")
+                return null
             }
         }
 
@@ -75,38 +76,17 @@ class GormAuthorisedSystemRepository implements IAuthorisedSystemRepository {
     }
 
     @Override
-    def delete(Long id) {
+    Boolean delete(Long id) {
         def authorisedSystemInstance = AuthorisedSystem.get(id)
         if (!authorisedSystemInstance) {
-            return null
+            return false
         }
         try {
             authorisedSystemInstance.delete(flush: true)
         }
         catch (DataIntegrityViolationException e) {
-            return null
+            return false
         }
-        return
+        return true
     }
-
-    @Override
-    def ajaxResolveHostName(GrailsParameterMap params) {
-
-        def host = params.host as String
-
-        def hostname = "?"
-        def reachable = false
-        if (host) {
-            try {
-                InetAddress addr = InetAddress.getByName(host);
-                hostname = addr.getHostName();
-                reachable = addr.isReachable(2000);
-            } catch (Exception ex) {
-                ex.printStackTrace()
-            }
-        }
-
-        return [host:host, hostname: hostname, reachable: reachable]
-    }
-
 }

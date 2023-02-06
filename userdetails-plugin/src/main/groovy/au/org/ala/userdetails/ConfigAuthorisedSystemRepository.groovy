@@ -1,9 +1,9 @@
 package au.org.ala.userdetails
 
-import au.org.ala.users.AuthorisedSystem
+import au.org.ala.users.AuthorisedSystemRecord
 import grails.core.GrailsApplication
 import grails.web.servlet.mvc.GrailsParameterMap
-import org.springframework.dao.DataIntegrityViolationException
+import org.apache.commons.lang3.NotImplementedException
 
 class ConfigAuthorisedSystemRepository implements IAuthorisedSystemRepository {
 
@@ -11,7 +11,9 @@ class ConfigAuthorisedSystemRepository implements IAuthorisedSystemRepository {
 
     @Override
     Boolean findByHost(String host) {
-        return grailsApplication.config.getProperty('authorised.systems', List<String>, []).contains(host)
+        def list = grailsApplication.config.getProperty('authorised.systems', List, [])
+                .collect{ it as AuthorisedSystemRecord }
+        return list.count{it.host ==  host } > 0
     }
 
     @Override
@@ -20,42 +22,40 @@ class ConfigAuthorisedSystemRepository implements IAuthorisedSystemRepository {
         def count = 0
         def query = params.q as String
         if (query) {
+            def records = grailsApplication.config.getProperty('authorised.systems', List, [])
+                    .collect{ it as AuthorisedSystemRecord }
+            list = records.findAll{ it.host.contains(query) || it.description.contains(query)}
+            count = records.size()
 
         } else {
-
+            list = grailsApplication.config.getProperty('authorised.systems', List, [])
+                    .collect{ it as AuthorisedSystemRecord }
+            count = list.size()
         }
 
-        [authorisedSystemInstanceList: list, authorisedSystemInstanceTotal: count]
+        return [list: list, count: count]
     }
 
     @Override
-    def save(GrailsParameterMap params) {
-        def authorisedSystemInstance = new AuthorisedSystem(params)
-
-        return authorisedSystemInstance
+    AuthorisedSystemRecord save(GrailsParameterMap params) {
+        throw new NotImplementedException()
     }
 
     @Override
-    def get(Long id) {
-        def authorisedSystemInstance = AuthorisedSystem.get(id)
-        return authorisedSystemInstance
+    AuthorisedSystemRecord get(Long id) {
+        def records = grailsApplication.config.getProperty('authorised.systems', List, [])
+                .collect{ it as AuthorisedSystemRecord }
+        return records.find{ it.id == id }
     }
 
 
     @Override
-    def update(GrailsParameterMap params) {
-        def authorisedSystemInstance = AuthorisedSystem.get(id)
-        return authorisedSystemInstance
+    AuthorisedSystemRecord update(GrailsParameterMap params) {
+        throw new NotImplementedException()
     }
 
     @Override
-    def delete(Long id) {
-        def authorisedSystemInstance = AuthorisedSystem.get(id)
-    }
-
-    @Override
-    def ajaxResolveHostName(GrailsParameterMap params) {
-
-        return [host:host, hostname: hostname, reachable: reachable]
+    Boolean delete(Long id) {
+        throw new NotImplementedException()
     }
 }

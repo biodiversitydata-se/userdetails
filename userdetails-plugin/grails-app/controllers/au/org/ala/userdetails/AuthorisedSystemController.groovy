@@ -16,7 +16,7 @@
 package au.org.ala.userdetails
 
 import au.org.ala.auth.PreAuthorise
-import au.org.ala.users.AuthorisedSystem
+import au.org.ala.users.AuthorisedSystemRecord
 import grails.converters.JSON
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.dao.DataIntegrityViolationException
@@ -35,17 +35,18 @@ class AuthorisedSystemController {
 
     def list(Integer max) {
         params.max = Math.min(max ?: 10, 100)
-        return authorisedSystemRepository.list(params)
+        def response =  authorisedSystemRepository.list(params)
+        [authorisedSystemInstanceList: response.list, authorisedSystemInstanceTotal: response.count]
     }
 
     def create() {
-        [authorisedSystemInstance: new AuthorisedSystem(params)]
+        [authorisedSystemInstance: new AuthorisedSystemRecord()]
     }
 
     def save() {
         def authorisedSystemInstance = authorisedSystemRepository.save(params)
         if (!authorisedSystemInstance) {
-            render(view: "create", model: [authorisedSystemInstance: new AuthorisedSystem(params)])
+            render(view: "create", model: [authorisedSystemInstance: new AuthorisedSystemRecord(host: params.host, description: params.description)])
             return
         }
 
@@ -75,7 +76,7 @@ class AuthorisedSystemController {
         [authorisedSystemInstance: authorisedSystemInstance]
     }
 
-    def update(Long id, Long version) {
+    def update(Long id) {
         def authorisedSystemInstance = authorisedSystemRepository.get(id)
         if (!authorisedSystemInstance) {
             flash.message = message(code: 'default.not.found.message', args: [message(code: 'authorisedSystem.label', default: 'AuthorisedSystem'), id])
@@ -85,7 +86,7 @@ class AuthorisedSystemController {
 
         authorisedSystemInstance = authorisedSystemRepository.update(params)
 
-        if (!authorisedSystemInstance || authorisedSystemInstance.errors) {
+        if (!authorisedSystemInstance) {
             render(view: "edit", model: [authorisedSystemInstance: authorisedSystemInstance])
             return
         }
@@ -115,8 +116,20 @@ class AuthorisedSystemController {
 
     def ajaxResolveHostName() {
 
-        def response = authorisedSystemRepository.ajaxResolveHostName(params)
+        def host = params.host as String
 
-        render([host:response.host, hostname: response.hostname, reachable: response.reachable] as JSON)
+        def hostname = "?"
+        def reachable = false
+        if (host) {
+            try {
+                InetAddress addr = InetAddress.getByName(host);
+                hostname = addr.getHostName();
+                reachable = addr.isReachable(2000);
+            } catch (Exception ex) {
+                ex.printStackTrace()
+            }
+        }
+
+        render([host:host, hostname: hostname, reachable: reachable] as JSON)
     }
 }

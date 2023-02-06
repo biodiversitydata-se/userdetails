@@ -15,7 +15,9 @@
 
 package au.org.ala.userdetails.gorm
 
-class AuthorisedSystem {
+import au.org.ala.users.AuthorisedSystemRecord
+
+class AuthorisedSystem extends AuthorisedSystemRecord<Long> {
 
     String host
     String description
@@ -23,5 +25,11 @@ class AuthorisedSystem {
     static constraints = {
         host nullable: false, blank: false
         description nullable: true
+    }
+
+    static mapping = {
+        table 'authorised_system'
+        id(generator: 'identity', column: 'id', type: 'long')
+        version(column:  'version', type: 'long')
     }
 }

@@ -262,3 +262,4 @@ environments:
     production:
         dataSource:
             dbCreate: "validate"
+enable.IpEdit: true

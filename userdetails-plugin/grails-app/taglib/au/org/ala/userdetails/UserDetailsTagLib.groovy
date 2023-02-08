@@ -110,20 +110,19 @@ class UserDetailsTagLib {
                         )
                     }
 
-                    //I don't know whether this is achievable since prevToken is the token for current search not for previous page
 //                    if (prevToken) {
 //                        mb.li {
 //                            mb.mkp.yieldUnescaped(
 //                                    g.link(withParams([token: prevToken], linkTagAttrs)) {
-//                                (attrs.prev ?: messageSource.getMessage('paginate.prev', null, '<<', locale))
+//                                (attrs.prev ?: messageSource.getMessage('paginate.prev', null, '&laquo;', locale))
 //                                }
 //                            )
 //                        }
 //                    } else {
 //                        mb.li('class': 'disabled') {
 //                            mb.span {
-//                                mb.mkp.yield(
-//                                        (attrs.prev ?: messageSource.getMessage('paginate.prev', null, '<<', locale))
+//                                mb.mkp.yieldUnescaped(
+//                                        (attrs.prev ?: messageSource.getMessage('paginate.prev', null, '&laquo;', locale))
 //                                )
 //                            }
 //                        }
@@ -133,15 +132,15 @@ class UserDetailsTagLib {
                         mb.li {
                             mb.mkp.yieldUnescaped(
                                     g.link(withParams([token: nextToken], linkTagAttrs)) {
-                                (attrs.prev ?: messageSource.getMessage('paginate.next', null, '>>', locale))
+                                (attrs.next ?: messageSource.getMessage('paginate.next', null, '&raquo;', locale))
                             }
                             )
                         }
                     } else {
                         mb.li('class': 'disabled') {
                             mb.span {
-                                mb.mkp.yield(
-                                        (attrs.prev ?: messageSource.getMessage('paginate.next', null, '>>', locale))
+                                mb.mkp.yieldUnescaped(
+                                        (attrs.next ?: messageSource.getMessage('paginate.next', null, '&raquo;', locale))
                                 )
                             }
                         }
@@ -159,7 +158,6 @@ class UserDetailsTagLib {
         if (referrer) {
             try {
                 def params = UriComponentsBuilder.fromHttpUrl(referrer).build().queryParams
-                //this gives the token for current search not for previous page
                 def token = params.getFirst('token')
                 if (token) {
                     result = URLDecoder.decode(token, StandardCharsets.UTF_8)

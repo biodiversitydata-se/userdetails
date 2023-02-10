@@ -15,18 +15,13 @@
 
 package au.org.ala.userdetails.gorm
 
-import au.org.ala.users.UserRecord
+import au.org.ala.users.IUser
 import groovy.transform.EqualsAndHashCode
 
 import java.sql.Timestamp
 
-@EqualsAndHashCode
-class User extends UserRecord<Long> implements Serializable {
-
-    static hasMany =  [
-            userRoles: UserRole,
-            userProperties: UserProperty
-    ]
+@EqualsAndHashCode(includes = ['firstName', 'lastName', 'userName', 'email', 'lastLogin', 'tempAuthKey'])
+class User implements IUser<Long>, Serializable {
 
     String firstName
     String lastName
@@ -46,11 +41,24 @@ class User extends UserRecord<Long> implements Serializable {
 
     String displayName
 
-//    Collection<UserRole> userRoles
-//    Collection<UserProperty> userProperties
+    Set<UserRole> userRoles
+    Set<UserProperty> userProperties
+
+    static mappedBy = [
+            userProperties: 'user',
+            userRoles: 'user'
+    ]
+
+    static hasMany =  [
+            userRoles: UserRole,
+            userProperties: UserProperty
+    ]
+
+    static transients = ['roles', 'additionalAttributes']
 
     static mapping = {
         table 'users'
+//        tablePerSubclass false
 
         id (generator:'identity', column:'userid', type:'long')
 
@@ -75,7 +83,6 @@ class User extends UserRecord<Long> implements Serializable {
         displayName nullable: true
     }
 
-    @Override
     String getUserId() {
         return this.id?.toString()
     }
@@ -113,9 +120,20 @@ class User extends UserRecord<Long> implements Serializable {
         }
     }
 
+    @Override
+    Set<UserRole> getRoles() {
+        return userRoles
+    }
+
+    @Override
+    Set<UserProperty> getAdditionalAttributes() {
+        return userProperties
+    }
+
+    @Override
     def propsAsMap(){
         def map = [:]
-        this.getUserProperties().each {
+        this.userProperties.each {
             map.put(it.name.startsWith('custom:') ? it.name.substring(7) : it.name, it.value)
         }
         map

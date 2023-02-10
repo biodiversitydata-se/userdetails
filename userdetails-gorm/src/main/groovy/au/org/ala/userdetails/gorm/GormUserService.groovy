@@ -46,7 +46,7 @@ import org.springframework.context.MessageSource
 
 @Slf4j
 @Transactional
-class GormUserService implements IUserService {
+class GormUserService implements IUserService<User, UserProperty, Role, UserRole> {
 
     EmailService emailService
     PasswordService passwordService
@@ -59,6 +59,25 @@ class GormUserService implements IUserService {
 
     @Value('${attributes.affiliations.enabled:false}')
     boolean affiliationsEnabled = false
+
+    @Override
+    User newUser(GrailsParameterMap params) {
+        return params ? new User(params) : new User()
+    }
+
+    Role newRole(GrailsParameterMap params) {
+        return params ? new Role(params) : new Role()
+    }
+
+//    @Override
+//    UserRole newRole(GrailsParameterMap params) {
+//        return params ? new UserRole(params) : new UserRole()
+//    }
+//
+//    @Override
+//    UserPropertyRecord newProperty(GrailsParameterMap params) {
+//        return params ? new UserProperty(params) : new UserProperty()
+//    }
 
     boolean updateUser(String userId, GrailsParameterMap params) {
 
@@ -86,7 +105,7 @@ class GormUserService implements IUserService {
         }
     }
 
-    boolean disableUser(UserRecord user) {
+    boolean disableUser(User user) {
         assert user instanceof User
         try {
             user.activated = false
@@ -121,7 +140,7 @@ class GormUserService implements IUserService {
     }
 
     @Transactional
-    boolean activateAccount(UserRecord user, GrailsParameterMap params) {
+    boolean activateAccount(User user, GrailsParameterMap params) {
         assert user instanceof User
         //check the activation key
         if (user.tempAuthKey == params.authKey) {
@@ -156,7 +175,7 @@ class GormUserService implements IUserService {
     }
 
     @Override
-    Collection<UserRecord> listUsers() {
+    Collection<User> listUsers() {
         return User.list()
     }
 
@@ -267,7 +286,7 @@ class GormUserService implements IUserService {
         return results
     }
 
-    private setUserPropertiesFromMap(UserRecord user, Map properties) {
+    private setUserPropertiesFromMap(User user, Map properties) {
 
         properties.keySet().each { String propName ->
             def propValue = properties[propName] ?: ''
@@ -275,7 +294,7 @@ class GormUserService implements IUserService {
         }
     }
 
-    private setUserProperty(UserRecord user, String propName, String propValue) {
+    private setUserProperty(User user, String propName, String propValue) {
         def existingProperty = UserProperty.findByUserAndName(user, propName)
         if (existingProperty) {
             existingProperty.value = propValue
@@ -286,7 +305,7 @@ class GormUserService implements IUserService {
         }
     }
 
-    UserRecord registerUser(GrailsParameterMap params) throws Exception {
+    User registerUser(GrailsParameterMap params) throws Exception {
 
         //does a user with the supplied email address exist
         def user = new User(params)
@@ -305,7 +324,7 @@ class GormUserService implements IUserService {
         createdUser
     }
 
-    void updateProperties(UserRecord user, GrailsParameterMap params) {
+    void updateProperties(User user, GrailsParameterMap params) {
 
         ['city', 'organisation', 'state', 'country'].each { propName ->
             setUserProperty(user, propName, params.get(propName, ''))
@@ -315,7 +334,7 @@ class GormUserService implements IUserService {
         }
     }
 
-    void deleteUser(UserRecord user) {
+    void deleteUser(User user) {
         assert user instanceof User
         if (user) {
             // First need to delete any user properties
@@ -342,7 +361,7 @@ class GormUserService implements IUserService {
     }
 
     @Override
-    void clearTempAuthKey(UserRecord user) {
+    void clearTempAuthKey(User user) {
         assert user instanceof User
         if (user) {
             //set the temp auth key
@@ -364,7 +383,7 @@ class GormUserService implements IUserService {
      * This service method returns the UserRecord object for the current user.
      */
     @Transactional(readOnly = true)
-    UserRecord getCurrentUser() {
+    User getCurrentUser() {
 
         def userId = authService.getUserId()
         if (userId == null) {
@@ -452,12 +471,12 @@ class GormUserService implements IUserService {
     }
 
     @Override
-    Collection<RoleRecord> listRoles() {
+    Collection<Role> listRoles() {
         Role.list()
     }
 
     @Override
-    PagedResult<RoleRecord> listRoles(GrailsParameterMap params) {
+    PagedResult<Role> listRoles(GrailsParameterMap params) {
         params.max = Math.min(params.int('max', 100), 1000)
         def roles = Role.list(params)
         return new PagedResult<RoleRecord>(list: roles, count: Role.count(), nextPageToken: null)
@@ -525,31 +544,31 @@ class GormUserService implements IUserService {
     }
 
     @Override
-    void addRoles(Collection<RoleRecord> roleRecords) {
+    void addRoles(Collection<Role> roleRecords) {
         Role.saveAll(roleRecords.collect { new Role(role: it.role, description:  it.description) })
     }
 
 //        *********** Property related services *************
 
     @Override
-    UserPropertyRecord addOrUpdateProperty(UserRecord userRecord, String name, String value) {
+    UserProperty addOrUpdateProperty(User userRecord, String name, String value) {
         assert userRecord instanceof User
         return UserProperty.addOrUpdateProperty(userRecord, name, value)
     }
 
     @Override
-    void removeUserProperty(UserRecord user, ArrayList<String> attrs) {
+    void removeUserProperty(User user, ArrayList<String> attrs) {
         def props = UserProperty.findAllByUserAndNameInList(user as User, attrs)
         if (props) UserProperty.deleteAll(props)
     }
 
     @Override
-    List<UserPropertyRecord> searchProperty(UserRecord userRecord, String attribute) {
-        List<UserPropertyRecord> propList = []
+    List<UserProperty> searchProperty(User userRecord, String attribute) {
+        List<UserProperty> propList = []
 
         if(userRecord && attribute){
             List properties = UserProperty.findAllByUserAndName(userRecord as User, attribute)
-            propList =  properties.collect {new UserPropertyRecord(user: userRecord, name: it.name, value: it.value) }
+            propList =  properties//.collect {new UserPropertyRecord(user: userRecord, name: it.name, value: it.value) }
         }
         else if(attribute){
             propList = UserProperty.findAllByName(attribute)
@@ -562,13 +581,13 @@ class GormUserService implements IUserService {
                 order("name")
             } as List
 
-            propList = properties.collect { new UserPropertyRecord(user: it.user, name: it.name, value: it.value) }
+            propList = properties//.collect { new UserPropertyRecord(user: it.user, name: it.name, value: it.value) }
         }
         return propList
     }
 
     @Override
-    RoleRecord addRole(RoleRecord roleRecord) {
+    Role addRole(Role roleRecord) {
         return new Role(role: roleRecord.role, description: roleRecord.description).save(flush: true)
     }
 
@@ -650,7 +669,7 @@ class GormUserService implements IUserService {
     }
 
     @Override
-    def sendAccountActivation(UserRecord user) {
+    def sendAccountActivation(User user) {
         emailService.sendAccountActivation(user, user.tempAuthKey)
     }
 

@@ -51,4 +51,23 @@ class Password implements Serializable {
         status nullable: false, blank: false
         expiry nullable: true
     }
+
+    boolean equals(o) {
+        if (this.is(o)) return true
+        if (o == null || getClass() != o.class) return false
+
+        Password password1 = (Password) o
+
+        if (password != password1.password) return false
+        if (user != password1.user) return false
+
+        return true
+    }
+
+    int hashCode() {
+        int result
+        result = password.hashCode()
+        result = 31 * result + (user != null ? user.hashCode() : 0)
+        return result
+    }
 }

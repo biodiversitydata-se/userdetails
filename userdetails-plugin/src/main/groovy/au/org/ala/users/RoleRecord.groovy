@@ -15,7 +15,7 @@
 
 package au.org.ala.users
 
-class RoleRecord implements Serializable {
+class RoleRecord implements IRole, Serializable {
 
     String role
     String description

@@ -20,7 +20,7 @@ import grails.web.databinding.WebDataBinding
 import groovy.transform.EqualsAndHashCode
 
 @EqualsAndHashCode
-class UserRoleRecord implements WebDataBinding, Serializable {
+class UserRoleRecord implements IUserRole<UserRecord, RoleRecord>, WebDataBinding, Serializable {
 
     UserRecord user
     RoleRecord role
@@ -31,4 +31,13 @@ class UserRoleRecord implements WebDataBinding, Serializable {
         role
     }
 
+    @Override
+    UserRecord getOwner() {
+        return user
+    }
+
+    @Override
+    RoleRecord getRoleObject() {
+        return role
+    }
 }

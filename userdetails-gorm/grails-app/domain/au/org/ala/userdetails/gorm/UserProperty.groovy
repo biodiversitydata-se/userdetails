@@ -15,17 +15,19 @@
 
 package au.org.ala.userdetails.gorm
 
-import au.org.ala.users.UserPropertyRecord
+import au.org.ala.users.IUserProperty
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import groovy.transform.EqualsAndHashCode
 
-@JsonIgnoreProperties(['metaClass','errors'])
-class UserProperty extends UserPropertyRecord implements Serializable {
+@JsonIgnoreProperties(['metaClass','errors','owner'])
+class UserProperty implements IUserProperty<User>, Serializable {
 
     User user
     String name
     String value
-    String id
+
+    static belongsTo = [user: User]
+
+    static transients = ['owner']
 
     static def addOrUpdateProperty(user, name, value){
 
@@ -41,6 +43,7 @@ class UserProperty extends UserPropertyRecord implements Serializable {
 
     static mapping = {
         table 'profiles'
+//        tablePerSubclass false
         id composite: ['user', 'name']
         user column:  'userid'
         name column: 'property'
@@ -76,4 +79,10 @@ class UserProperty extends UserPropertyRecord implements Serializable {
         result = 31 * result + (value != null ? value.hashCode() : 0)
         return result
     }
+
+    @Override
+    User getOwner() {
+        return this.user
+    }
+
 }

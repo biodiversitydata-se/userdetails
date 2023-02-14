@@ -63,9 +63,9 @@ class ExternalSiteController {
         def flickrIds = userService.searchProperty(null, "flickrId")
         render(contentType: "application/json") {
             flickrUsers(flickrIds) { UserPropertyRecord flickrId ->
-                id flickrId.user.id.toString()
+                id flickrId.owner.id.toString()
                 externalId flickrId.value
-                externalUsername flickrId.user.userProperties.find { it.name == 'flickrUsername' }?.value
+                externalUsername flickrId.owner.additionalAttributes.find { it.name == 'flickrUsername' }?.value
                 externalUrl 'http://www.flickr.com/photos/' + flickrId.value
             }
         }

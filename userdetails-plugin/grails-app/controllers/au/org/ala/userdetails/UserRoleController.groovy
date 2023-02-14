@@ -16,8 +16,8 @@
 package au.org.ala.userdetails
 
 import au.org.ala.auth.PreAuthorise
-import au.org.ala.users.UserRecord
-import au.org.ala.users.UserRoleRecord
+import au.org.ala.users.IUser
+import au.org.ala.users.IUserRole
 import grails.converters.JSON
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
@@ -37,15 +37,15 @@ class UserRoleController {
 
     def create() {
 
-        UserRecord user = userService.getUserById(params['user.id'])
+        IUser user = userService.getUserById(params['user.id'])
 
         def roles = userService.listRoles()
 
         //remove existing roles this user has
-        def usersRoles = user.getUserRoles()
+        def usersRoles = user.roles
 
         def acquiredRoles = []
-        usersRoles.each { acquiredRoles << it.role}
+        usersRoles.each { acquiredRoles << it.roleObject }
 
         roles.removeAll(acquiredRoles)
 
@@ -54,7 +54,7 @@ class UserRoleController {
 
     def list() {
 
-        PagedResult<UserRoleRecord> model = userService.findUserRoles(params.role, params)
+        PagedResult<IUserRole> model = userService.findUserRoles(params.role, params)
         withFormat {
 
             html { [userRoleInstanceList: model.list, userRoleInstanceTotal: model.count, nextToken: model.nextPageToken] }

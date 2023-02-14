@@ -15,7 +15,7 @@
 
 package au.org.ala.userdetails.marshaller
 
-
+import au.org.ala.users.IUser
 import au.org.ala.users.UserRecord
 import grails.converters.JSON
 
@@ -26,7 +26,7 @@ class UserMarshaller {
 
     public static final String WITH_PROPERTIES_CONFIG = 'withProperties'
 
-    private Map toMap(UserRecord user) {
+    private Map toMap(IUser user) {
         [
                 userId: user.id?.toString(),
                 userName: user.userName,
@@ -35,21 +35,21 @@ class UserMarshaller {
                 email: user.email,
                 activated: user.activated,
                 locked: user.locked,
-                roles: user.getUserRoles()*.toString() ?: []
+                roles: user.roles*.roleObject*.role ?: []
         ]
     }
 
     void register(){
 
         JSON.createNamedConfig(WITH_PROPERTIES_CONFIG) {
-            it.registerObjectMarshaller(UserRecord) { UserRecord user ->
+            it.registerObjectMarshaller(IUser) { IUser user ->
                 Map userMap = toMap(user)
-                userMap.props = user.userProperties.collectEntries { [(it.name): it.value] }
+                userMap.props = user.additionalAttributes.collectEntries { [(it.name): it.value] }
 
                 userMap
             }
         }
-        JSON.registerObjectMarshaller(UserRecord) { UserRecord user ->
+        JSON.registerObjectMarshaller(IUser) { IUser user ->
             toMap(user)
         }
     }

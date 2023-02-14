@@ -15,8 +15,9 @@
 
 package au.org.ala.userdetails
 
+import au.org.ala.users.IUser
+import au.org.ala.users.IUserProperty
 import au.org.ala.users.UserRecord
-import au.org.ala.users.UserPropertyRecord
 import org.springframework.beans.factory.annotation.Autowired
 
 class ProfileService {
@@ -24,15 +25,15 @@ class ProfileService {
     @Autowired
     IUserService userService
 
-    List<UserPropertyRecord> getUserProperty(UserRecord user, String name) {
+    List<? extends IUserProperty> getUserProperty(IUser user, String name) {
         userService.searchProperty(user, name)
     }
 
-    UserPropertyRecord saveUserProperty(UserRecord user, String name, String value) {
+    IUserProperty saveUserProperty(IUser user, String name, String value) {
         userService.addOrUpdateProperty(user, name, value);
     }
 
-    List<UserPropertyRecord> getAllAvailableProperties() {
+    List<? extends IUserProperty> getAllAvailableProperties() {
         userService.searchProperty(null, null)
     }
 }

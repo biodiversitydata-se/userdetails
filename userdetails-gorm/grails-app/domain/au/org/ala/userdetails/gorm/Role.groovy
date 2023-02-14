@@ -15,9 +15,9 @@
 
 package au.org.ala.userdetails.gorm
 
-import au.org.ala.users.RoleRecord
+import au.org.ala.users.IRole
 
-class Role extends RoleRecord implements Serializable {
+class Role implements IRole, Serializable {
 
     String role
     String description
@@ -34,5 +34,20 @@ class Role extends RoleRecord implements Serializable {
     static constraints = {
         role nullable: false, blank: false
         description nullable:true
+    }
+
+    boolean equals(o) {
+        if (this.is(o)) return true
+        if (o == null || getClass() != o.class) return false
+
+        Role role1 = (Role) o
+
+        if (role != role1.role) return false
+
+        return true
+    }
+
+    int hashCode() {
+        return (role != null ? role.hashCode() : 0)
     }
 }

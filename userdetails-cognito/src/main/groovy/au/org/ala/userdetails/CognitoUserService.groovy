@@ -52,7 +52,7 @@ import org.springframework.beans.factory.annotation.Value
 import java.util.stream.Stream
 
 @Slf4j
-class CognitoUserService implements IUserService {
+class CognitoUserService implements IUserService<UserRecord, UserPropertyRecord, RoleRecord, UserRoleRecord> {
 
     static mainAttrs = ['given_name', 'family_name', 'email', 'username', 'roles'] as Set
 
@@ -68,6 +68,15 @@ class CognitoUserService implements IUserService {
     @Value('${attributes.affiliations.enabled:false}')
     boolean affiliationsEnabled = false
     public static final String TEMP_AUTH_KEY = 'tempAuthKey'
+
+    @Override
+    UserRecord newUser(GrailsParameterMap params) {
+        return params ? new UserRecord(params) : new UserRecord()
+    }
+
+    RoleRecord newRole(GrailsParameterMap params) {
+        return params ? new RoleRecord(role: params.role, description: params.description) : new RoleRecord()
+    }
 
     @Override
     boolean updateUser(String userId, GrailsParameterMap params) {

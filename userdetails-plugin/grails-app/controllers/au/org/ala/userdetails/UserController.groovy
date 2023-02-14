@@ -43,14 +43,14 @@ class UserController {
     }
 
     def create() {
-        [userInstance: new UserRecord()]
+        [userInstance: userService.newUser(params)]
     }
 
     def save() {
         UserRecord user = userService.registerUser(params)
 
         if (!user) {
-            render(view: "create", model: [userInstance: new UserRecord()])
+            render(view: "create", model: [userInstance: userService.newUser(params)])
             return
         }
         userService.sendAccountActivation(user)

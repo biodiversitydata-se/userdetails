@@ -16,19 +16,31 @@
 package au.org.ala.userdetails
 
 import au.org.ala.auth.BulkUserLoadResults
+import au.org.ala.users.IRole
+import au.org.ala.users.IUser
+import au.org.ala.users.IUserProperty
+import au.org.ala.users.IUserRole
 import au.org.ala.users.RoleRecord
 import au.org.ala.users.UserPropertyRecord
 import au.org.ala.users.UserRecord
 import au.org.ala.users.UserRoleRecord
 import grails.web.servlet.mvc.GrailsParameterMap
 
-interface IUserService {
+interface IUserService<U extends IUser<? extends Serializable>, P extends IUserProperty<U>, R extends IRole, UR extends IUserRole<U, R>> {
+
+    //
+
+    U newUser(GrailsParameterMap params)
+    R newRole(GrailsParameterMap params)
+//    UserPropertyRecord newProperty(GrailsParameterMap params)
+//    UserRoleRecord newRole(GrailsParameterMap params)
+
 
     //    *********** User related services *************
 
     boolean updateUser(String userId, GrailsParameterMap params)
 
-    boolean disableUser(UserRecord user)
+    boolean disableUser(U user)
 
     boolean enableUser(UserRecord user)
 
@@ -38,30 +50,30 @@ interface IUserService {
 
     boolean isEmailInUse(String newEmail)
 
-    boolean activateAccount(UserRecord user, GrailsParameterMap params)
+    boolean activateAccount(U user, GrailsParameterMap params)
 
-    PagedResult<UserRecord> listUsers(GrailsParameterMap params)
+    PagedResult<U> listUsers(GrailsParameterMap params)
 
-    Collection<UserRecord> listUsers()
+    Collection<U> listUsers()
 
     BulkUserLoadResults bulkRegisterUsersFromFile(InputStream stream, Boolean firstRowContainsFieldNames, String affiliation, String emailSubject, String emailTitle, String emailBody)
 
-    UserRecord registerUser(GrailsParameterMap params) throws Exception
+    U registerUser(GrailsParameterMap params) throws Exception
 
-    void updateProperties(UserRecord user, GrailsParameterMap params)
+    void updateProperties(U user, GrailsParameterMap params)
 
-    void deleteUser(UserRecord user)
+    void deleteUser(U user)
 
-    UserRecord getUserById(String userId)
+    U getUserById(String userId)
 
-    UserRecord getUserByEmail(String email)
+    U getUserByEmail(String email)
 
     /**
      * This service method returns the UserRecord object for the current user.
      */
-    UserRecord getCurrentUser()
+    U getCurrentUser()
 
-    Collection<UserRecord> findUsersForExport(List usersInRoles, includeInactive)
+    Collection<U> findUsersForExport(List usersInRoles, includeInactive)
 
     /**
      * Calculate the number of active users (not locked and is activated), as well as the number
@@ -79,7 +91,7 @@ interface IUserService {
 
     def getUserDetailsFromIdList(List idList)
 
-    UserRecord findByUserNameOrEmail(GrailsParameterMap params)
+    U findByUserNameOrEmail(GrailsParameterMap params)
 
     List<String[]> listNamesAndEmails()
 
@@ -89,7 +101,7 @@ interface IUserService {
 
     //    *********** Role services *************
 
-    Collection<RoleRecord> listRoles()
+    Collection<R> listRoles()
 
     /**
      * Retrieve a list of roles, paged by the params in the argument.
@@ -106,7 +118,7 @@ interface IUserService {
      * @param params The parameters that may be used in the search
      * @return A result with the list of roles and either the total count or the next page token.
      */
-    PagedResult<RoleRecord> listRoles(GrailsParameterMap params)
+    PagedResult<R> listRoles(GrailsParameterMap params)
 
     /**
      * Add a role with `rolename` to user identified by `userid`
@@ -131,7 +143,7 @@ interface IUserService {
      *
      * @param roleRecords The list of RoleRecords to add
      */
-    void addRoles(Collection<RoleRecord> roleRecords)
+    void addRoles(Collection<R> roleRecords)
 
     /**
      * Add a single role to the system.
@@ -139,7 +151,7 @@ interface IUserService {
      * @param roleRecord The RoleRecord to add
      */
 
-    RoleRecord addRole(RoleRecord roleRecord)
+    R addRole(R roleRecord)
 
     /**
      * Find a list of users for a given role.
@@ -156,13 +168,13 @@ interface IUserService {
      * @param role The role name to get the list of users for
      * @param params The paging parameters for the request
      */
-    PagedResult<UserRoleRecord> findUserRoles(String role, GrailsParameterMap params)
+    PagedResult<UR> findUserRoles(String role, GrailsParameterMap params)
 
     //    *********** account related services *************
 
-    void clearTempAuthKey(UserRecord user)
+    void clearTempAuthKey(U user)
 
-    def sendAccountActivation(UserRecord user)
+    def sendAccountActivation(U user)
 
     //    *********** MFA services *************
 
@@ -174,9 +186,9 @@ interface IUserService {
 
 //    *********** Property related services *************
 
-    UserPropertyRecord addOrUpdateProperty(UserRecord userRecord, String name, String value)
+    P addOrUpdateProperty(U userRecord, String name, String value)
 
-    void removeUserProperty(UserRecord userRecord, ArrayList<String> attributes)
+    void removeUserProperty(U userRecord, ArrayList<String> attributes)
 
-    List<UserPropertyRecord> searchProperty(UserRecord userRecord, String attribute)
+    List<P> searchProperty(U userRecord, String attribute)
 }

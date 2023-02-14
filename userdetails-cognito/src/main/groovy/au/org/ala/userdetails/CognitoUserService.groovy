@@ -234,7 +234,7 @@ class CognitoUserService implements IUserService<UserRecord, UserPropertyRecord,
         def (Map<String, String> attributes, List<UserPropertyRecord> userProperties) =
             cognitoAttrsToUserPropertyRecords(userType.attributes, cognitoIdp.adminGetUser(new AdminGetUserRequest().withUsername(userType.username).withUserPoolId(poolId))?.userMFASettingList)
 
-        def user = new UserRecord<String>(
+        def user = new UserRecord(
                 id: userType.username,
                 dateCreated: userType.userCreateDate, lastUpdated: userType.userLastModifiedDate,
                 activated: userType.userStatus != "UNCONFIRMED", locked: !userType.enabled,
@@ -342,7 +342,7 @@ class CognitoUserService implements IUserService<UserRecord, UserPropertyRecord,
             userResponse = cognitoIdp.adminGetUser(new AdminGetUserRequest().withUsername(userId).withUserPoolId(poolId))
             (attributes, userProperties) = cognitoAttrsToUserPropertyRecords(userResponse.userAttributes, userResponse.userMFASettingList)
 
-            UserRecord user = new UserRecord<String>(
+            UserRecord user = new UserRecord(
                     id: userResponse.username,
                     dateCreated: userResponse.userCreateDate, lastUpdated: userResponse.userLastModifiedDate,
                     activated: userResponse.userStatus != "UNCONFIRMED", locked: !userResponse.enabled,
@@ -395,7 +395,7 @@ class CognitoUserService implements IUserService<UserRecord, UserPropertyRecord,
             request.withFilter("username = \"${userResponse.username}\"")
             def response = cognitoIdp.listUsers(request)
 
-            UserRecord user = new UserRecord<String>(
+            UserRecord user = new UserRecord(
                     id: userResponse.username,
                     dateCreated: response.users[0].userCreateDate, lastUpdated: response.users[0].userLastModifiedDate,
                     activated: response.users[0].userStatus != "UNCONFIRMED", locked: !response.users[0].enabled,

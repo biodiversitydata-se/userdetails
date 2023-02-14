@@ -81,7 +81,7 @@ class AuthorisedSystemService {
                     }
 
                     if (result && scope) {
-                        result = userProfile.permissions.contains(scope) || profileHasScope(userProfile, scope)
+                        result = userProfile.permissions.contains(scope) || profileHasScope(userProfile, scope) || credentials.get().getAccessToken().getScope()
                     }
                 }
             } else if (jwtProperties.fallbackToLegacyBehaviour) {

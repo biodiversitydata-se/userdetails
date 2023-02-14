@@ -58,7 +58,7 @@ class UserController {
     }
 
     def create() {
-        [userInstance: new UserRecord(params)]
+        [userInstance: userService.newUser(params)]
     }
 
     @Transactional
@@ -66,7 +66,7 @@ class UserController {
         UserRecord user = userService.registerUser(params)
 
         if (!user) {
-            render(view: "create", model: [userInstance: new UserRecord()])
+            render(view: "create", model: [userInstance: userService.newUser(params)])
             return
         }
         userService.sendAccountActivation(user)

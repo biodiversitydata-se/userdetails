@@ -15,13 +15,16 @@
 
 package au.org.ala.userdetails.gorm
 
-import au.org.ala.users.UserRoleRecord
+import au.org.ala.users.IUserRole
 import groovy.transform.EqualsAndHashCode
 
-class UserRole extends UserRoleRecord implements Serializable {
+@EqualsAndHashCode(includes = ['user', 'role'])
+class UserRole implements IUserRole<User, Role>, Serializable {
 
     User user
     Role role
+
+    static transients = ['owner', 'roleObject']
 
     static mapping = {
         id composite: ['user', 'role']
@@ -34,4 +37,13 @@ class UserRole extends UserRoleRecord implements Serializable {
         role
     }
 
+    @Override
+    User getOwner() {
+        return user
+    }
+
+    @Override
+    Role getRoleObject() {
+        return role
+    }
 }

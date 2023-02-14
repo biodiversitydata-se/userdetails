@@ -1,12 +1,11 @@
 package au.org.ala.userdetails
 
-import au.org.ala.users.AuthorisedSystem
 import au.org.ala.ws.security.JwtProperties
 import grails.testing.gorm.DataTest
 import grails.testing.services.ServiceUnitTest
 import org.grails.spring.beans.factory.InstanceFactoryBean
 import org.pac4j.core.config.Config
-import org.pac4j.http.client.direct.DirectBearerAuthClient
+import au.org.ala.ws.security.client.AlaAuthClient
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
 import spock.lang.Specification
@@ -14,14 +13,13 @@ import spock.lang.Specification
 class AuthorisedSystemServiceSpec extends Specification implements ServiceUnitTest<AuthorisedSystemService>, DataTest {
 
     void setupSpec() {
-//        mockDomains(AuthorisedSystem)
     }
 
     def setup() {
         defineBeans {
             authorisedSystemRepository(InstanceFactoryBean, Mock(IAuthorisedSystemRepository), IAuthorisedSystemRepository)
             pac4jConfig(InstanceFactoryBean, Stub(Config), Config)
-            directBearerAuthClient(InstanceFactoryBean, Stub(DirectBearerAuthClient), DirectBearerAuthClient)
+            alaAuthClient(InstanceFactoryBean, Stub(AlaAuthClient), AlaAuthClient)
             jwtProperties(JwtProperties) {
                 enabled = true
                 fallbackToLegacyBehaviour = true
@@ -33,7 +31,7 @@ class AuthorisedSystemServiceSpec extends Specification implements ServiceUnitTe
         given:
         service.jwtProperties.enabled = false
         service.config = null
-        service.directBearerAuthClient = null
+        service.alaAuthClient = null
         def request = new MockHttpServletRequest("GET", "/userdetails/getUserDetails")
         request.remoteAddr = remoteAddr
         request.remoteHost = 'example.org'

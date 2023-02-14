@@ -21,7 +21,7 @@ import groovy.transform.EqualsAndHashCode
 
 @EqualsAndHashCode
 @JsonIgnoreProperties(['metaClass','errors'])
-class UserPropertyRecord implements WebDataBinding, Serializable {
+class UserPropertyRecord implements IUserProperty<UserRecord>, WebDataBinding, Serializable {
 
     UserRecord user
     String name
@@ -34,5 +34,10 @@ class UserPropertyRecord implements WebDataBinding, Serializable {
 
     String toString(){
         name + " : " + value
+    }
+
+    @Override
+    UserRecord getOwner() {
+        return user
     }
 }

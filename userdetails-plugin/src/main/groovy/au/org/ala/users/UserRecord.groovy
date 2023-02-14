@@ -21,10 +21,13 @@ import groovy.transform.EqualsAndHashCode
 
 import java.sql.Timestamp
 
+/**
+ * Implementation of IUser as a simple POJO
+ */
 @EqualsAndHashCode
-class UserRecord<T> implements WebDataBinding, Serializable {
+class UserRecord implements IUser<String>, WebDataBinding, Serializable {
 
-    T id
+    String id
 
     String firstName
     String lastName
@@ -42,8 +45,8 @@ class UserRecord<T> implements WebDataBinding, Serializable {
 
     String tempAuthKey
 
-    Collection<UserRoleRecord> userRoles
-    Collection<UserPropertyRecord> userProperties
+    Set<UserRoleRecord> userRoles
+    Set<UserPropertyRecord> userProperties
 
     static constraints = {
         email nullable: true
@@ -69,5 +72,15 @@ class UserRecord<T> implements WebDataBinding, Serializable {
 
     String toString(){
         firstName + " " + lastName + " <" +email +">"
+    }
+
+    @Override
+    Set<UserRoleRecord> getRoles() {
+        return userRoles
+    }
+
+    @Override
+    Set<UserPropertyRecord> getAdditionalAttributes() {
+        return userProperties
     }
 }

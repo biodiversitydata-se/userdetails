@@ -21,7 +21,7 @@
     <g:set var="entityName" value="${message(code: 'user.label', default: 'UserRecord')}"/>
     <title><g:message code="default.show.label" args="[entityName]"/></title>
     <meta name="breadcrumbParent" content="${g.createLink(action:"list")},${g.message(code:"default.list.label", args:[entityName])}" />
-    <asset:stylesheet src="application.css" />
+    <asset:stylesheet src="userdetails.css" />
 </head>
 
 <body>
@@ -116,9 +116,9 @@
             </li>
         </g:if>
 
-        <g:if test="${userInstance?.userProperties}">
+        <g:if test="${userInstance?.additionalAttributes}">
 
-                <g:each in="${userInstance.userProperties}" var="u">
+                <g:each in="${userInstance.additionalAttributes}" var="u">
                                 <li class="fieldcontain">
 
                     <span id="userProperties-label" class="property-label">${u.name}</span>
@@ -149,8 +149,8 @@
         <h4><g:message code="user.userRoles.label"
                                                                              default="Roles"/></h4>
         <br/>
-        <g:if test="${userInstance?.userRoles}">
-                <g:each in="${userInstance.userRoles}" var="u">
+        <g:if test="${userInstance?.roles}">
+                <g:each in="${userInstance.roles}" var="u">
                     <span class="property-value" aria-labelledby="userRoles-label">
                         <g:link controller="userRole" action="list" params="[role:u?.encodeAsHTML()]">${u?.encodeAsHTML()}</g:link>
                     </span>

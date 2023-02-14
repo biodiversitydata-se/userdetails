@@ -16,6 +16,7 @@
 package au.org.ala.userdetails
 
 import au.org.ala.auth.PreAuthorise
+import au.org.ala.users.IUser
 import au.org.ala.users.RoleRecord
 import au.org.ala.users.UserRecord
 import com.opencsv.CSVWriterBuilder
@@ -97,7 +98,7 @@ class AdminController {
                 secondaryFields.each {
                     formatters[it] = { domain, value ->
                         String fieldName = it
-                        domain.userProperties.find {
+                        domain.additionalAttributes.find {
                             it.name == fieldName
                         }?.value
                     }
@@ -106,10 +107,10 @@ class AdminController {
 
             if (params.includeRoles) {
                 String roleFieldName = 'roles'
-                formatters[roleFieldName] = { UserRecord domain, value ->
+                formatters[roleFieldName] = { IUser domain, value ->
                     def result = ""
-                    domain.userRoles.each {
-                        result += it.role.role + " "
+                    domain.roles.each {
+                        result += it.roleObject.role + " "
                     }
                     result
                 }

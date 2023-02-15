@@ -616,7 +616,7 @@ class GormUserService implements IUserService<User, UserProperty, Role, UserRole
     }
 
     @Override
-    UserRecord findByUserNameOrEmail(GrailsParameterMap params) {
+    User findByUserNameOrEmail(GrailsParameterMap params) {
         return User.findByUserNameOrEmail(params.userName, params.userName)
     }
 

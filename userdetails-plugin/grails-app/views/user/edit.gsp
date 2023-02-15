@@ -44,6 +44,9 @@
             </g:hasErrors>
             <g:form method="post">
                 <g:hiddenField name="id" value="${userInstance?.userId}"/>
+                <g:if test="${userInstance?.hasProperty('version')}">
+                    <g:hiddenField name="version" value="${userInstance?.version}"/>
+                </g:if>
                 <fieldset class="form">
                     <g:render template="form"/>
                 </fieldset>

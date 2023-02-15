@@ -38,7 +38,7 @@ interface IUserService<U extends IUser<? extends Serializable>, P extends IUserP
 
     //    *********** User related services *************
 
-    boolean updateUser(String userId, GrailsParameterMap params)
+    boolean updateUser(String userId, GrailsParameterMap params, Locale locale)
 
     boolean disableUser(U user)
 

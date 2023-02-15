@@ -79,7 +79,7 @@ class CognitoUserService implements IUserService<UserRecord, UserPropertyRecord,
     }
 
     @Override
-    boolean updateUser(String userId, GrailsParameterMap params) {
+    boolean updateUser(String userId, GrailsParameterMap params, Locale locale) {
 
         UserRecord user = getUserById(userId)
         def isUserLocked = user.locked
@@ -538,7 +538,20 @@ class CognitoUserService implements IUserService<UserRecord, UserPropertyRecord,
 
     @Override
     void findScrollableUsersByUserName(GrailsParameterMap params, ResultStreamer resultStreamer) {
-        streamUserResults(resultStreamer, listUsers(params).list)
+        def token = null
+        resultStreamer.init()
+        try {
+            do {
+                def users = listUsers(token ? params + [token: token] : params)
+                users.each(resultStreamer.&offer)
+                token = users.nextPageToken
+            } while (token)
+            resultStreamer.complete()
+        } catch(e) {
+            log.error('error streaming results', e)
+        } finally {
+            resultStreamer.finalise()
+        }
     }
 
     @Override
@@ -546,19 +559,35 @@ class CognitoUserService implements IUserService<UserRecord, UserPropertyRecord,
 
         def ids = params.list('id')
 
-        ListUsersInGroupRequest request = new ListUsersInGroupRequest().withUserPoolId(poolId)
+        def groupName = getCognitoRoleName(params.role)
 
-        request.groupName = getCognitoRoleName(params.role)
+        def token = null
+        resultStreamer.init()
+        try {
+            do {
 
-        def response = cognitoIdp.listUsersInGroup(request)
-        def users = response.users.findAll
-                {(!ids) || ids?.contains(it.username) || ids?.contains(it.attributes.find{att -> att.name == "email"}.value)}.stream()
+                ListUsersInGroupRequest request = new ListUsersInGroupRequest().withUserPoolId(poolId)
 
-        def results = users.map { userType ->
-            cognitoUserTypeToUserRecord(userType, true)
-        }.toList()
+                request.groupName = groupName
+                def response = cognitoIdp.listUsersInGroup(request)
 
-        streamUserResults(resultStreamer, results)
+                def users = response.users.findAll
+                    {(!ids) || ids?.contains(it.username) || ids?.contains(it.attributes.find{att -> att.name == "email"}.value)}.stream()
+
+                def results = users.map { userType ->
+                    cognitoUserTypeToUserRecord(userType, true)
+                }.toList()
+
+                results.each{resultStreamer.&offer}
+
+                token = response.nextToken
+            } while (token)
+            resultStreamer.complete()
+        } catch(e) {
+            log.error('error streaming results', e)
+        } finally {
+            resultStreamer.finalise()
+        }
     }
 
     @Override

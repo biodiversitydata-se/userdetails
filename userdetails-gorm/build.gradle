@@ -103,8 +103,6 @@ dependencies {
     // Groovy backwards compat
     runtimeOnly 'org.codehaus.groovy:groovy-dateutil'
 
-    implementation 'org.passay:passay:1.6.0'
-
     // Grails plugin dependencies
 
     // Base Userdetails plugin

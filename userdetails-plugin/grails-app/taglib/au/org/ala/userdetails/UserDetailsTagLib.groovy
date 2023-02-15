@@ -91,7 +91,7 @@ class UserDetailsTagLib {
                 linkTagAttrs.mapping = attrs.mapping
             }
 
-            linkTagAttrs << linkParams
+            linkTagAttrs.params = linkParams
 
             def cssClasses = "pagination"
             if (attrs.class) {
@@ -104,7 +104,7 @@ class UserDetailsTagLib {
                 mb.ul('class': cssClasses) {
                     mb.li {
                         mb.mkp.yieldUnescaped(
-                            g.link(withParams([token: null], linkTagAttrs)) {
+                            g.link(withParams(linkTagAttrs, [token: null])) {
                                 (attrs.start ?: messageSource.getMessage('paginate.start', null, 'First', locale))
                             }
                         )
@@ -131,7 +131,7 @@ class UserDetailsTagLib {
                     if (nextToken) {
                         mb.li {
                             mb.mkp.yieldUnescaped(
-                                    g.link(withParams([token: nextToken], linkTagAttrs)) {
+                                    g.link(withParams(linkTagAttrs, [token: nextToken])) {
                                 (attrs.next ?: messageSource.getMessage('paginate.next', null, '&raquo;', locale))
                             }
                             )
@@ -170,7 +170,7 @@ class UserDetailsTagLib {
     }
 
     private Map withParams(Map attrs, Map<String, Object> extraParams) {
-        Map params = attrs.params?.clone()  ?: [:]
+        Map params = ((Map) attrs.params?.clone()) ?: [:]
         extraParams.each {
             if (it.value == null) {
                 params.remove(it.key)
@@ -178,10 +178,9 @@ class UserDetailsTagLib {
                 params.put(it.key, it.value)
             }
         }
-        attrs.clone()
-        attrs.params = params
-        attrs.params.token = attrs.token
-        attrs
+        def newAttrs = (Map) attrs.clone()
+        newAttrs.params = params
+        newAttrs
     }
 
 }

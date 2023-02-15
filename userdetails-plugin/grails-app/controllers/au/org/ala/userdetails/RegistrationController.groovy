@@ -18,6 +18,7 @@ package au.org.ala.userdetails
 import au.org.ala.auth.UpdateCognitoPasswordCommand
 import au.org.ala.auth.UpdatePasswordCommand
 import au.org.ala.recaptcha.RecaptchaClient
+import au.org.ala.users.IUser
 import au.org.ala.users.UserRecord
 import au.org.ala.ws.service.WebService
 import grails.converters.JSON
@@ -81,7 +82,7 @@ class RegistrationController {
     }
 
     def updatePassword(UpdatePasswordCommand cmd) {
-        UserRecord user = userService.getUserById(cmd.userId as String)
+        IUser<?> user = userService.getUserById(cmd.userId as String)
 
         // since the email address is the user name, use the part before the @ as the username
         def username = user?.userName ?: user?.email ?: ''
@@ -249,7 +250,7 @@ class RegistrationController {
                 }
             }
 
-            def success = userService.updateUser(user.userId, params)
+            def success = userService.updateUser(user.userId, params, request.locale)
 
             if (success) {
                 redirect(controller: 'profile')

@@ -18,6 +18,7 @@ package au.org.ala.userdetails.gorm
 import au.org.ala.userdetails.AuthorisedSystemService
 import au.org.ala.userdetails.RoleBasedInterceptor
 import au.org.ala.userdetails.UserRoleController
+import au.org.ala.users.IUser
 import au.org.ala.users.UserRecord
 import grails.testing.gorm.DataTest
 import grails.testing.web.interceptor.InterceptorUnitTest
@@ -30,7 +31,7 @@ import org.grails.web.util.GrailsApplicationAttributes
 class RoleBasedInterceptorSpec extends UserDetailsSpec implements InterceptorUnitTest<RoleBasedInterceptor>, DataTest {
 
     def controller
-    private UserRecord user
+    private IUser<?> user
 
     def setupSpec() {
         mockDomains(Role, User, Password, UserRole, UserProperty)

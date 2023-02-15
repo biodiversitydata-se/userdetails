@@ -6,6 +6,7 @@ import au.org.ala.cas.encoding.LegacyPasswordEncoder
 import au.org.ala.cas.encoding.PasswordEncoder
 import au.org.ala.userdetails.EmailService
 import au.org.ala.userdetails.IPasswordOperations
+import au.org.ala.users.IUser
 import au.org.ala.users.UserRecord
 import grails.gorm.transactions.NotTransactional
 import org.springframework.beans.factory.annotation.Value
@@ -30,7 +31,7 @@ class GormPasswordOperations implements IPasswordOperations {
     EmailService emailService
 
     @Override
-    boolean resetPassword(UserRecord user, String newPassword, boolean isPermanent, String confirmationCode) {
+    boolean resetPassword(IUser<?> user, String newPassword, boolean isPermanent, String confirmationCode) {
         assert user instanceof User
         Password.findAllByUser(user).each {
             it.delete()
@@ -55,7 +56,7 @@ class GormPasswordOperations implements IPasswordOperations {
 
 
     @Override
-    void resetAndSendTemporaryPassword(UserRecord user, String emailSubject, String emailTitle, String emailBody, String password = null) throws PasswordResetFailedException {
+    void resetAndSendTemporaryPassword(IUser<?> user, String emailSubject, String emailTitle, String emailBody, String password = null) throws PasswordResetFailedException {
         assert user instanceof User
         if (user) {
             //set the temp auth key
@@ -68,7 +69,7 @@ class GormPasswordOperations implements IPasswordOperations {
 
     @NotTransactional
     @Override
-    String getResetPasswordUrl(UserRecord user) {
+    String getResetPasswordUrl(IUser<?> user) {
         assert user instanceof User
         if(user.tempAuthKey){
             emailService.getServerUrl() + "resetPassword/" +  user.id +  "/"  + user.tempAuthKey
@@ -86,7 +87,7 @@ class GormPasswordOperations implements IPasswordOperations {
      * @param password The plain-text password to match.
      * @return True if the password matches the existing password, otherwise false.
      */
-    boolean checkUserPassword(UserRecord user, String password) {
+    boolean checkUserPassword(IUser<?> user, String password) {
         assert user instanceof User
         if (!password || password.size() < 1) {
             throw new IllegalArgumentException("The password must not be empty.")

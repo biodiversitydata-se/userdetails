@@ -17,6 +17,7 @@ package au.org.ala.userdetails.gorm
 
 import au.org.ala.userdetails.IUserService
 import au.org.ala.userdetails.UserDetailsController
+import au.org.ala.users.IUser
 import au.org.ala.users.UserRecord
 import au.org.ala.ws.security.JwtProperties
 import grails.converters.JSON
@@ -38,7 +39,7 @@ class UserDetailsControllerSpec extends UserDetailsSpec implements ControllerUni
         authorisedSystemService(UserDetailsSpec.Authorised)
     }
 
-    private UserRecord user
+    private IUser<?> user
 
     void setupSpec() {
         mockDomains(Role, User, Password, UserRole, UserProperty)
@@ -98,7 +99,7 @@ class UserDetailsControllerSpec extends UserDetailsSpec implements ControllerUni
     void "Details of a list of users can be returned"() {
 
         setup:
-        UserRecord user2 = createUser(2)
+        IUser<?> user2 = createUser(2)
 
         when:
         request.method = 'POST'

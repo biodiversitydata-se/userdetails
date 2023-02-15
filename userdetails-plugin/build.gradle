@@ -170,7 +170,7 @@ dependencies {
         exclude module: 'bootstrap' // dependency from skin
     }
 
-    implementation 'org.passay:passay:1.6.0'
+    api 'org.passay:passay:1.6.0' // not technically required in api scope but required in some gorm tests
 
     api('au.org.ala.plugins:openapi:1.1.0')
 

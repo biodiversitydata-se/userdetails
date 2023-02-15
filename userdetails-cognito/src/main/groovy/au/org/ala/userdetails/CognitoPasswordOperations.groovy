@@ -1,6 +1,7 @@
 package au.org.ala.userdetails
 
 import au.org.ala.auth.PasswordResetFailedException
+import au.org.ala.users.IUser
 import au.org.ala.users.UserRecord
 import au.org.ala.web.OidcClientProperties
 import com.amazonaws.services.cognitoidp.AWSCognitoIdentityProvider
@@ -21,7 +22,7 @@ class CognitoPasswordOperations implements IPasswordOperations {
     OidcClientProperties oidcClientProperties
 
     @Override
-    boolean resetPassword(UserRecord user, String newPassword, boolean isPermanent, String confirmationCode) {
+    boolean resetPassword(IUser<?> user, String newPassword, boolean isPermanent, String confirmationCode) {
         if(!user || !newPassword) {
             return false
         }
@@ -51,7 +52,7 @@ class CognitoPasswordOperations implements IPasswordOperations {
     }
 
     @Override
-    void resetAndSendTemporaryPassword(UserRecord user, String emailSubject, String emailTitle, String emailBody, String password) throws PasswordResetFailedException {
+    void resetAndSendTemporaryPassword(IUser<?> user, String emailSubject, String emailTitle, String emailBody, String password) throws PasswordResetFailedException {
         def request = new AdminResetUserPasswordRequest()
         request.username = user.email
         request.userPoolId = poolId
@@ -60,7 +61,7 @@ class CognitoPasswordOperations implements IPasswordOperations {
     }
 
     @Override
-    boolean checkUserPassword(UserRecord user, String password) {
+    boolean checkUserPassword(IUser<?> user, String password) {
         def clientId = oidcClientProperties.getClientId()
         def secret = oidcClientProperties.getSecret()
         try {
@@ -92,7 +93,7 @@ class CognitoPasswordOperations implements IPasswordOperations {
     }
 
     @Override
-    String getResetPasswordUrl(UserRecord user) {
+    String getResetPasswordUrl(IUser<?> user) {
         return null
     }
 

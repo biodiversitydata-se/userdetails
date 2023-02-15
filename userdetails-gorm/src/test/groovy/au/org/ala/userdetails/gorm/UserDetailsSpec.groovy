@@ -16,6 +16,7 @@
 package au.org.ala.userdetails.gorm
 
 import au.org.ala.userdetails.AuthorisedSystemService
+import au.org.ala.users.IUser
 import au.org.ala.users.UserRecord
 import au.org.ala.userdetails.marshaller.UserMarshaller
 import grails.converters.JSON
@@ -65,7 +66,7 @@ abstract class UserDetailsSpec extends Specification {
     }
 
 
-    protected UserRecord createUser(Long userId = 1, String tempAuthKey = "") {
+    protected IUser<Long> createUser(Long userId = 1, String tempAuthKey = "") {
         Role role = Role.findOrCreateWhere(role: 'ROLE_USER', description:"Everyone has this role")
         role.save(failOnError: true, flush: true)
 

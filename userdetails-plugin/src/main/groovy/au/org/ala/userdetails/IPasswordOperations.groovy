@@ -1,6 +1,7 @@
 package au.org.ala.userdetails
 
 import au.org.ala.auth.PasswordResetFailedException
+import au.org.ala.users.IUser
 import au.org.ala.users.UserRecord
 
 /**
@@ -17,11 +18,11 @@ interface IPasswordOperations {
      * @param confirmationCode The confirmation code provided by the user
      * @return True if the password was reset, false otherwise
      */
-    boolean resetPassword(UserRecord user, String newPassword, boolean isPermanent, String confirmationCode)
+    boolean resetPassword(IUser<?> user, String newPassword, boolean isPermanent, String confirmationCode)
 
-    void resetAndSendTemporaryPassword(UserRecord user, String emailSubject, String emailTitle, String emailBody, String password) throws PasswordResetFailedException
+    void resetAndSendTemporaryPassword(IUser<?> user, String emailSubject, String emailTitle, String emailBody, String password) throws PasswordResetFailedException
 
-    String getResetPasswordUrl(UserRecord user)
+    String getResetPasswordUrl(IUser<?> user)
 
     String getPasswordResetView()
 
@@ -31,5 +32,5 @@ interface IPasswordOperations {
      * @param password The plain-text password to match.
      * @return True if the password matches the existing password, otherwise false.
      */
-    boolean checkUserPassword(UserRecord user, String password)
+    boolean checkUserPassword(IUser<?> user, String password)
 }

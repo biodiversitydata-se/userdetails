@@ -17,6 +17,7 @@ package au.org.ala.userdetails.gorm
 
 import au.org.ala.userdetails.IUserService
 import au.org.ala.userdetails.UserRoleController
+import au.org.ala.users.IUser
 import au.org.ala.users.UserRecord
 import au.org.ala.ws.security.JwtProperties
 import grails.converters.JSON
@@ -32,7 +33,7 @@ import au.org.ala.ws.security.client.AlaAuthClient
  */
 class UserRoleControllerSpec extends UserDetailsSpec implements ControllerUnitTest<UserRoleController>, DataTest {
 
-    private UserRecord user
+    private IUser<?> user
 
     void setupSpec() {
         mockDomains(Role, User, Password, UserRole, UserProperty)

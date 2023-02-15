@@ -24,14 +24,12 @@ import au.org.ala.userdetails.PagedResult
 import au.org.ala.userdetails.PasswordService
 import au.org.ala.userdetails.ResultStreamer
 import au.org.ala.users.RoleRecord
-import au.org.ala.users.UserPropertyRecord
 import au.org.ala.users.UserRecord
 import au.org.ala.web.AuthService
 import au.org.ala.ws.service.WebService
 import grails.converters.JSON
 import grails.core.GrailsApplication
 import grails.plugin.cache.Cacheable
-import grails.gorm.transactions.NotTransactional
 import grails.gorm.transactions.Transactional
 import grails.util.Environment
 import grails.web.servlet.mvc.GrailsParameterMap
@@ -67,23 +65,15 @@ class GormUserService implements IUserService<User, UserProperty, Role, UserRole
         return params ? new Role(params) : new Role()
     }
 
-//    @Override
-//    UserRole newRole(GrailsParameterMap params) {
-//        return params ? new UserRole(params) : new UserRole()
-//    }
-//
-//    @Override
-//    UserPropertyRecord newProperty(GrailsParameterMap params) {
-//        return params ? new UserProperty(params) : new UserProperty()
-//    }
-
-    boolean updateUser(String userId, GrailsParameterMap params) {
+    boolean updateUser(String userId, GrailsParameterMap params, Locale locale) {
 
         User user = getUserById(userId)
 
         if (params.version != null) {
             if (user.version > params.version) {
-                log.error("Another user has updated this UserRecord while you were editing")
+                user.errors.rejectValue("version", "default.optimistic.locking.failure",
+                        [messageSource.getMessage('user.label', [] as Object[], 'User', locale)] as Object[],
+                        "Another user has updated this User while you were editing")
                 return false
             }
         }

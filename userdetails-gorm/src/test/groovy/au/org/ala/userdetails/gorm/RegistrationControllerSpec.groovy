@@ -21,7 +21,7 @@ import au.org.ala.userdetails.EmailService
 import au.org.ala.userdetails.IUserService
 import au.org.ala.userdetails.PasswordService
 import au.org.ala.userdetails.RegistrationController
-import au.org.ala.users.UserRecord
+import au.org.ala.users.IUser
 import grails.testing.gorm.DataTest
 import grails.testing.web.controllers.ControllerUnitTest
 import org.grails.web.servlet.mvc.SynchronizerTokensHolder
@@ -180,7 +180,7 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
         setup:
         String authKey = "test"
         String password = "password1"
-        UserRecord user = createUser(1, authKey)
+        IUser<Long> user = createUser(1, authKey)
         request.method = 'POST'
         params.userId = Long.toString(1)
         params.authKey = authKey
@@ -248,7 +248,7 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
         1 * recaptchaClient.verify(recaptchaSecretKey, recaptchaResponseKey, remoteAddressIp) >> { Calls.response(new RecaptchaResponse(true, '2019-09-27T16:06:00Z', 'test-host', [])) }
         1 * userService.isEmailInUse(email) >> false
         1 * passwordService.validatePassword(email, password) >> new RuleResult(true)
-        1 * userService.registerUser(_) >> { def user = new UserRecord(); user.tempAuthKey = authKey; user }
+        1 * userService.registerUser(_) >> { def user = new User(); user.tempAuthKey = authKey; user }
         1 * passwordService.resetPassword(_, password, _, _)
         1 * userService.sendAccountActivation(_)
         0 * _ // no other interactions
@@ -287,7 +287,7 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
         0 * recaptchaClient.verify(_, _, _)
         1 * userService.isEmailInUse(email) >> false
         1 * passwordService.validatePassword(email, password) >> new RuleResult(true)
-        1 * userService.registerUser(_) >> { def user = new UserRecord(); user.tempAuthKey = authKey; user }
+        1 * userService.registerUser(_) >> { def user = new User(); user.tempAuthKey = authKey; user }
         1 * passwordService.resetPassword(_, password, _, _)
         1 * userService.sendAccountActivation(_)
         0 * _ // no other interactions
@@ -376,7 +376,7 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
         setup:
         def password = "HPVBq46QmEH0YhWo6xek"
         def authKey = "W0E6QMaKUJnzTlqSNQXk"
-        UserRecord user = createUser(1, authKey)
+        IUser<Long> user = createUser(1, authKey)
 
         when:
         params.email = 'test@example.org'
@@ -395,7 +395,7 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
         1 * userService.currentUser >> user
         1 * userService.isEmailInUse('test@example.org')
         1 * passwordService.checkUserPassword(user, password) >> true
-        1 * userService.updateUser(user.userId, params) >> true
+        1 * userService.updateUser(user.userId, params, _) >> true
         0 * _ // no other interactions
         response.redirectedUrl == '/profile'
     }
@@ -404,7 +404,7 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
         setup:
         def wrongPassword = 'O6I8NdjRFLXpwOVhYeWt'
         def authKey = "W0E6QMaKUJnzTlqSNQXk"
-        UserRecord user = createUser(1, authKey)
+        IUser<Long> user = createUser(1, authKey)
 
         when:
         params.email = 'test@example.org'
@@ -459,7 +459,7 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
         setup:
         def password = 'HPVBq46QmEH0YhWo6xek'
         def authKey = "W0E6QMaKUJnzTlqSNQXk"
-        UserRecord user = createUser(1, authKey)
+        IUser<Long> user = createUser(1, authKey)
 
         when:
         params.email = 'test@example.org'
@@ -478,7 +478,7 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
         1 * userService.currentUser >> user
         1 * userService.isEmailInUse('test@example.org')
         1 * passwordService.checkUserPassword(user, password) >> true
-        1 * userService.updateUser(user.userId, params) >> false
+        1 * userService.updateUser(user.userId, params, _) >> false
         0 * _ // no other interactions
         model.msg == "Failed to update user profile - unknown error"
         view == '/registration/accountError'
@@ -486,7 +486,7 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
 
     void "A new email address must not be in use by others"() {
         setup:
-        UserRecord currentUser = new UserRecord()
+        User currentUser = new User()
         currentUser.email = 'currentUser@example.org'
         userService.currentUser >> currentUser
         params.email = 'in.use@example.org'
@@ -502,7 +502,7 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
 
     void "Account is updated when a valid new email address is supplied"() {
         setup:
-        UserRecord currentUser = new UserRecord()
+        User currentUser = new User()
         currentUser.email = 'currentUser@example.org'
         userService.currentUser >> currentUser
 
@@ -521,7 +521,7 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
 
         then:
         1 * passwordService.checkUserPassword(currentUser, 'password') >> true
-        1 * userService.updateUser(_, _) >> true
+        1 * userService.updateUser(_, _, _) >> true
         1 * userService.isEmailInUse(params.email) >> false
         response.redirectedUrl == '/profile'
     }

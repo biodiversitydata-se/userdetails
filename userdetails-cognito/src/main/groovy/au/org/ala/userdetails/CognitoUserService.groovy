@@ -543,7 +543,7 @@ class CognitoUserService implements IUserService<UserRecord, UserPropertyRecord,
         try {
             do {
                 def users = listUsers(token ? params + [token: token] : params)
-                users.each(resultStreamer.&offer)
+                users.list.each(resultStreamer.&offer)
                 token = users.nextPageToken
             } while (token)
             resultStreamer.complete()
@@ -578,7 +578,7 @@ class CognitoUserService implements IUserService<UserRecord, UserPropertyRecord,
                     cognitoUserTypeToUserRecord(userType, true)
                 }.toList()
 
-                results.each{resultStreamer.&offer}
+                results.each(resultStreamer.&offer)
 
                 token = response.nextToken
             } while (token)

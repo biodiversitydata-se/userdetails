@@ -163,7 +163,7 @@ class UserDetailsController {
                             name = "userName",
                             in = QUERY,
                             description = "The username of the user",
-                            required = false
+                            required = true
                     ),
                     @Parameter(
                             name = "includeProps",

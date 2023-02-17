@@ -648,7 +648,7 @@ class CognitoUserService implements IUserService<UserRecord, UserPropertyRecord,
         List<UserPropertyRecord> propList = []
 
         if(userRecord && attribute) {
-            propList = userRecord.userProperties.findAll { it.name == attribute }
+            propList.addAll(userRecord.userProperties.findAll { it.name == attribute })
         }
         else if(attribute){
             //cannot implement this since cognito does not support custom attribute search

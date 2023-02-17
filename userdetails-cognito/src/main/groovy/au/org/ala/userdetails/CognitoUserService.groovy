@@ -567,8 +567,11 @@ class CognitoUserService implements IUserService<UserRecord, UserPropertyRecord,
             do {
 
                 ListUsersInGroupRequest request = new ListUsersInGroupRequest().withUserPoolId(poolId)
-
                 request.groupName = groupName
+                if (token) {
+                    request.nextToken = token
+                }
+
                 def response = cognitoIdp.listUsersInGroup(request)
 
                 def users = response.users

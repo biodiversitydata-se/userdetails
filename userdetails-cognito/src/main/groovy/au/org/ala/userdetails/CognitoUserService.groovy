@@ -571,14 +571,11 @@ class CognitoUserService implements IUserService<UserRecord, UserPropertyRecord,
                 request.groupName = groupName
                 def response = cognitoIdp.listUsersInGroup(request)
 
-                def users = response.users.findAll
-                    {(!ids) || ids?.contains(it.username) || ids?.contains(it.attributes.find{att -> att.name == "email"}.value)}.stream()
+                def users = response.users
+                        .findAll {(!ids) || ids?.contains(it.username) || ids?.contains(it.attributes.find{att -> att.name == "email"}.value)}
+                        .collect { userType -> cognitoUserTypeToUserRecord(userType, true) }
 
-                def results = users.map { userType ->
-                    cognitoUserTypeToUserRecord(userType, true)
-                }.toList()
-
-                results.each(resultStreamer.&offer)
+                users.each(resultStreamer.&offer)
 
                 token = response.nextToken
             } while (token)

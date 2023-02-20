@@ -662,7 +662,7 @@ class GormUserService implements IUserService<User, UserProperty, Role, UserRole
             int count = 0
 
             while (results.next()) {
-                UserRecord user = ((UserRecord) results.get()[0])
+                User user = ((User) results.get()[0])
 
                 resultStreamer.offer(user)
 

@@ -101,6 +101,9 @@ dependencies {
     testRuntimeOnly "org.seleniumhq.selenium:selenium-chrome-driver:4.0.0"
     testRuntimeOnly "org.seleniumhq.selenium:selenium-firefox-driver:4.0.0"
 
+    // Grails backwards compat?
+    api 'org.grails.plugins:converters:4.0.1'
+
     // Groovy backwards compat
     runtimeOnly 'org.codehaus.groovy:groovy-dateutil'
 

@@ -72,14 +72,16 @@
             <input id="city" name="city" type="text" class="form-control" value="${props?.city}" />
         </div>
 
-        <div class="form-group checkbox">
-            <label>
-                <g:checkBox name="enableMFA" value="${props?.enableMFA == 'true'}" id="enableMFA" disabled="disabled"/> <g:message code="user.enabledMFA" />
-            </label>
-            <g:if test="${props?.enableMFA == 'true'}">
-                <g:link controller="user" action="disableMfa" params="[userId:userInstance?.email]">Disable MFA</g:link>
-            </g:if>
-        </div>
+        <g:if test="${grailsApplication.config.getProperty('account.MFAenabled', Boolean, false)}">
+            <div class="form-group checkbox">
+                <label>
+                    <g:checkBox name="enableMFA" value="${props?.enableMFA == 'true'}" id="enableMFA" disabled="disabled"/> <g:message code="user.enabledMFA" />
+                </label>
+                <g:if test="${props?.enableMFA == 'true'}">
+                    <g:link controller="user" action="disableMfa" params="[userId:userInstance?.email]">Disable MFA</g:link>
+                </g:if>
+            </div>
+        </g:if>
 
 </div>
 <div class="col-md-6 well well-lg">

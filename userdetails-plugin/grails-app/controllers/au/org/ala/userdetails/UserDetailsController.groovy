@@ -17,11 +17,9 @@ package au.org.ala.userdetails
 
 
 import au.org.ala.userdetails.marshaller.UserMarshaller
-import au.org.ala.users.UserRecord
 import au.org.ala.web.UserDetails
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import grails.converters.JSON
-import grails.web.servlet.mvc.GrailsParameterMap
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.ArraySchema
@@ -156,8 +154,8 @@ class UserDetailsController {
     @Operation(
             method = "POST",
             tags = "users",
-            summary = "Get UserRecord Details",
-            description = "Get UserRecord Details.  Required scopes: 'users/read'.",
+            summary = "Get User Details",
+            description = "Get User Details.  Required scopes: 'users/read'.",
             parameters = [
                     @Parameter(
                             name = "userName",
@@ -174,7 +172,7 @@ class UserDetailsController {
             ],
             responses = [
                     @ApiResponse(
-                            description = "UserRecord Details",
+                            description = "User Details",
                             responseCode = "200",
                             content = [
                                     @Content(
@@ -223,7 +221,7 @@ class UserDetailsController {
     @Operation(
             method = "POST",
             tags = "users",
-            summary = "Get UserRecord List",
+            summary = "Get User List",
             description = "Get a list of all users.  Required scopes: 'users/read'.",
             deprecated = true,
             responses = [
@@ -252,7 +250,7 @@ class UserDetailsController {
     @Operation(
             method = "POST",
             tags = "users",
-            summary = "Get UserRecord List With Ids",
+            summary = "Get User List With Ids",
             description = "Get a list of all users by their user id.  Required scopes: 'users/read'.",
             deprecated = true,
             responses = [
@@ -281,12 +279,12 @@ class UserDetailsController {
     @Operation(
             method = "POST",
             tags = "users",
-            summary = "Get UserRecord List With Ids",
+            summary = "Get User List With Ids",
             description = "Get a list of all users by their user id.  Required scopes: 'users/read'.",
             deprecated = true,
             responses = [
                     @ApiResponse(
-                            description = "UserRecord Details",
+                            description = "User Details",
                             responseCode = "200",
                             content = [
                                     @Content(
@@ -313,7 +311,7 @@ class UserDetailsController {
             method = "POST",
             tags = "users",
             operationId = "getUserDetailsFromIdList",
-            summary = "Get UserRecord Details by id list",
+            summary = "Get User Details by id list",
             description = "Get a list of user details for a list of user ids.  Required scopes: 'users/read'.",
             requestBody = @RequestBody(
                     description = "The list of user ids to request and whether to include extended properties",
@@ -325,7 +323,7 @@ class UserDetailsController {
             ),
             responses = [
                     @ApiResponse(
-                            description = "UserRecord Details",
+                            description = "User Details",
                             responseCode = "200",
                             content = [
                                     @Content(

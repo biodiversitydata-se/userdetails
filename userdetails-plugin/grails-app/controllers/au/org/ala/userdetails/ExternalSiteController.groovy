@@ -15,8 +15,7 @@
 
 package au.org.ala.userdetails
 
-
-import au.org.ala.users.UserPropertyRecord
+import au.org.ala.users.IUserProperty
 import grails.converters.JSON
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.ArraySchema
@@ -62,7 +61,7 @@ class ExternalSiteController {
 
         def flickrIds = userService.searchProperty(null, "flickrId")
         render(contentType: "application/json") {
-            flickrUsers(flickrIds) { UserPropertyRecord flickrId ->
+            flickrUsers(flickrIds) { IUserProperty flickrId ->
                 id flickrId.owner.id.toString()
                 externalId flickrId.value
                 externalUsername flickrId.owner.additionalAttributes.find { it.name == 'flickrUsername' }?.value

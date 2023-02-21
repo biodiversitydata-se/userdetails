@@ -42,7 +42,7 @@ class UserRoleController {
         def roles = userService.listRoles()
 
         //remove existing roles this user has
-        def usersRoles = user.roles
+        def usersRoles = user?.roles
 
         def acquiredRoles = []
         usersRoles.each { acquiredRoles << it.roleObject }

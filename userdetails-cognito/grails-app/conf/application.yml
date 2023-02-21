@@ -191,3 +191,5 @@ cognito:
     affiliation: 'custom:affiliation'
     roles: ''
     keys: ''
+account:
+  MFAenabled: true

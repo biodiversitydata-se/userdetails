@@ -23,8 +23,6 @@ import au.org.ala.userdetails.LocationService
 import au.org.ala.userdetails.PagedResult
 import au.org.ala.userdetails.PasswordService
 import au.org.ala.userdetails.ResultStreamer
-import au.org.ala.users.RoleRecord
-import au.org.ala.users.UserRecord
 import au.org.ala.web.AuthService
 import au.org.ala.ws.service.WebService
 import grails.converters.JSON
@@ -117,7 +115,7 @@ class GormUserService implements IUserService<User, UserProperty, Role, UserRole
         }
     }
 
-    boolean enableUser(UserRecord user) {
+    boolean enableUser(User user) {
         assert user instanceof User
         try {
             user.activated = true
@@ -172,16 +170,18 @@ class GormUserService implements IUserService<User, UserProperty, Role, UserRole
     PagedResult<User> listUsers(GrailsParameterMap params) {
 
         params.max = Math.min(params.int('max', 100), 1000)
+        def users = []
 
         if (params.q) {
 
             String q = "%${params.q}%"
 
-            return User.findAllByEmailLikeOrLastNameLikeOrFirstNameLike(q, q, q, params)
+            users = User.findAllByEmailLikeOrLastNameLikeOrFirstNameLike(q, q, q, params)
         }
         else{
-            return new PagedResult<User>(list:User.list(params), count: User.count(), nextPageToken: null)
+            users = User.list(params)
         }
+        return new PagedResult<User>(list:users, count: User.count(), nextPageToken: null)
     }
 
     @Override
@@ -495,7 +495,7 @@ class GormUserService implements IUserService<User, UserProperty, Role, UserRole
     PagedResult<Role> listRoles(GrailsParameterMap params) {
         params.max = Math.min(params.int('max', 100), 1000)
         def roles = Role.list(params)
-        return new PagedResult<RoleRecord>(list: roles, count: Role.count(), nextPageToken: null)
+        return new PagedResult<Role>(list: roles, count: Role.count(), nextPageToken: null)
     }
 
     @Override
@@ -535,7 +535,7 @@ class GormUserService implements IUserService<User, UserProperty, Role, UserRole
         def numberIds = things[true]
 
         User.withStatelessSession { Session session ->
-            RoleRecord role = Role.findByRole(params.role)
+            Role role = Role.findByRole(params.role)
 
             def c = User.createCriteria()
             ScrollableResults results = c.scroll {

@@ -19,7 +19,6 @@ import au.org.ala.auth.UpdateCognitoPasswordCommand
 import au.org.ala.auth.UpdatePasswordCommand
 import au.org.ala.recaptcha.RecaptchaClient
 import au.org.ala.users.IUser
-import au.org.ala.users.UserRecord
 import au.org.ala.ws.service.WebService
 import grails.converters.JSON
 
@@ -70,9 +69,9 @@ class RegistrationController {
     }
 
     def passwordReset() {
-        UserRecord user = userService.getUserById(params.userId)
+        IUser user = userService.getUserById(params.userId)
         if (!user) {
-            render(view: 'accountError', model: [msg: "UserRecord not found with ID ${params.userId}"])
+            render(view: 'accountError', model: [msg: "User not found with ID ${params.userId}"])
         } else if (user.tempAuthKey == params.authKey) {
             //keys match, so lets reset password
             render(view: 'passwordReset', model: [user: user, authKey: params.authKey, passwordPolicy: passwordService.buildPasswordPolicy()])
@@ -118,7 +117,7 @@ class RegistrationController {
     }
 
     def updateCognitoPassword(UpdateCognitoPasswordCommand cmd) {
-        UserRecord user = userService.getUserByEmail(cmd.email)
+        IUser user = userService.getUserByEmail(cmd.email)
         if (cmd.hasErrors()) {
             render(view: 'passwordResetCognito', model: [email: cmd.email, code: cmd.code, errors:cmd.errors, passwordMatchFail: true, passwordPolicy: passwordService.buildPasswordPolicy()])
         }

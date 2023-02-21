@@ -16,10 +16,9 @@
 package au.org.ala.userdetails
 
 import au.org.ala.auth.PreAuthorise
-import au.org.ala.users.RoleRecord
+import au.org.ala.users.IRole
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.dao.DataIntegrityViolationException
 
 @PreAuthorise
 class RoleController {
@@ -36,13 +35,13 @@ class RoleController {
 
     def list() {
 
-        PagedResult<RoleRecord> result = userService.listRoles(params)
+        PagedResult<IRole> result = userService.listRoles(params)
 
         [ roleInstanceList: result.list, roleInstanceTotal: result.count, nextToken: result.nextPageToken ]
     }
 
     def create() {
-        [roleInstance: new RoleRecord() ]
+        [roleInstance: userService.newRole(params) ]
     }
 
     def save() {
@@ -59,7 +58,7 @@ class RoleController {
             flash.message = message(code: 'default.created.message', args: [message(code: 'role.label', default: 'Role'), roleInstance.role])
             redirect(action: "list")
         } else {
-            flash.message = 'RoleRecord must consist of uppercase characters and underscores only'
+            flash.message = 'Role must consist of uppercase characters and underscores only'
             redirect(action: "create")
         }
     }

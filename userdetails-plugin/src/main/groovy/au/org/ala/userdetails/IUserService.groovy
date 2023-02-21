@@ -20,10 +20,6 @@ import au.org.ala.users.IRole
 import au.org.ala.users.IUser
 import au.org.ala.users.IUserProperty
 import au.org.ala.users.IUserRole
-import au.org.ala.users.RoleRecord
-import au.org.ala.users.UserPropertyRecord
-import au.org.ala.users.UserRecord
-import au.org.ala.users.UserRoleRecord
 import grails.web.servlet.mvc.GrailsParameterMap
 
 interface IUserService<U extends IUser<? extends Serializable>, P extends IUserProperty<U>, R extends IRole, UR extends IUserRole<U, R>> {
@@ -42,7 +38,7 @@ interface IUserService<U extends IUser<? extends Serializable>, P extends IUserP
 
     boolean disableUser(U user)
 
-    boolean enableUser(UserRecord user)
+    boolean enableUser(U user)
 
     boolean isActive(String email)
 

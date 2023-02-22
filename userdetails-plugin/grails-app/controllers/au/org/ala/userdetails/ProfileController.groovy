@@ -183,4 +183,23 @@ class ProfileController {
         }
         redirect(controller: 'profile')
     }
+
+    def myGalah() {
+        def user = userService.currentUser
+        render view: "myGalah", model: [apikeys: String.join(",", userService.getApikeys(user.userId))]
+    }
+
+    def generateApikey(String application) {
+        if(!application) {
+            flash.message = 'No application name'
+        }
+
+        String usagePlanId = grailsApplication.config.getProperty("apigateway.${application}.usagePlanId")
+
+        if(!usagePlanId) {
+            flash.message = 'No usage plan id to generate api key'
+        }
+        userService.generateApikey(usagePlanId)
+        redirect(action: "myGalah")
+    }
 }

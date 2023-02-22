@@ -100,7 +100,7 @@ class ConfigAuthorisedSystemRepository implements IAuthorisedSystemRepository {
                     def sources = mapPropertySource.getIndices().collect() {mapPropertySource.get(it).getSource() }
                     props = new Properties()
                     sources.each {
-                        props << new PropertySourcesConfig(it).toProperties()
+                        props << new PropertySourcesConfig(it)
                     }
                 }
 

@@ -14,6 +14,7 @@ branches:
     - epic/cognito/develop
     - epic/cognito/cleanup-2
     - epic/cognito/fix-asset-pipeline-issue
+    - epic/cognito/galah-demo
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
   - rm -fr $HOME/.gradle/caches/*/plugin-resolution/

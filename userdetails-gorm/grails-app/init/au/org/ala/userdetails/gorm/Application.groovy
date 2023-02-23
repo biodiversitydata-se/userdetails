@@ -94,7 +94,7 @@ class Application extends GrailsAutoConfiguration {
                              AuthService authService,
                              LocationService locationService,
                              MessageSource messageSource,
-                             WebService webService
+                             WebService webService,
                              AmazonApiGateway gatewayIdp
                              ) {
 

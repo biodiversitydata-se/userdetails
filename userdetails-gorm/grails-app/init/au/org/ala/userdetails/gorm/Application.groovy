@@ -23,6 +23,14 @@ import au.org.ala.userdetails.LocationService
 import au.org.ala.userdetails.PasswordService
 import au.org.ala.web.AuthService
 import au.org.ala.ws.service.WebService
+import com.amazonaws.auth.AWSCredentials
+import com.amazonaws.auth.AWSCredentialsProvider
+import com.amazonaws.auth.AWSStaticCredentialsProvider
+import com.amazonaws.auth.BasicAWSCredentials
+import com.amazonaws.auth.BasicSessionCredentials
+import com.amazonaws.auth.DefaultAWSCredentialsProviderChain
+import com.amazonaws.services.apigateway.AmazonApiGateway
+import com.amazonaws.services.apigateway.AmazonApiGatewayClientBuilder
 import grails.boot.GrailsApp
 import grails.boot.config.GrailsAutoConfiguration
 import grails.core.GrailsApplication
@@ -45,6 +53,40 @@ class Application extends GrailsAutoConfiguration {
         new DataSourceHealthIndicator(dataSource)
     }
 
+    @Bean
+    AWSCredentialsProvider awsCredentialsProvider() {
+
+        String accessKey = grailsApplication.config.getProperty('apigateway.accessKey')
+        String secretKey = grailsApplication.config.getProperty('apigateway.secretKey')
+        String sessionToken = grailsApplication.config.getProperty('apigateway.sessionToken')
+
+        AWSCredentialsProvider credentialsProvider
+        if (accessKey && secretKey) {
+            AWSCredentials credentials
+            if (sessionToken) {
+                credentials = new BasicSessionCredentials(accessKey, secretKey, sessionToken)
+            } else {
+                credentials = new BasicAWSCredentials(accessKey, secretKey)
+            }
+            credentialsProvider = new AWSStaticCredentialsProvider(credentials)
+        } else {
+            credentialsProvider = DefaultAWSCredentialsProviderChain.getInstance()
+        }
+        return credentialsProvider
+    }
+
+    @Bean
+    AmazonApiGateway gatewayIdpClient(AWSCredentialsProvider awsCredentialsProvider) {
+        def region = grailsApplication.config.getProperty('apigateway.region')
+
+        AmazonApiGateway gatewayIdp = AmazonApiGatewayClientBuilder.standard()
+                .withRegion(region)
+                .withCredentials(awsCredentialsProvider)
+                .build()
+
+        return gatewayIdp
+    }
+
     @Bean('userService')
     IUserService userService(GrailsApplication grailsApplication,
                              EmailService emailService,
@@ -53,6 +95,7 @@ class Application extends GrailsAutoConfiguration {
                              LocationService locationService,
                              MessageSource messageSource,
                              WebService webService
+                             AmazonApiGateway gatewayIdp
                              ) {
 
 //        grailsApplication.addArtefact(DomainClassArtefactHandler.TYPE, UserRecord)
@@ -70,6 +113,8 @@ class Application extends GrailsAutoConfiguration {
         userService.messageSource = messageSource
 
         userService.affiliationsEnabled = grailsApplication.config.getProperty('attributes.affiliations.enabled', Boolean, false)
+
+        userService.apiGatewayIdp = gatewayIdp
 
         return userService
     }

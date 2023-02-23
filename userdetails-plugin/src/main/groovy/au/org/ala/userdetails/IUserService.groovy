@@ -187,4 +187,18 @@ interface IUserService<U extends IUser<? extends Serializable>, P extends IUserP
     void removeUserProperty(U userRecord, ArrayList<String> attributes)
 
     List<P> searchProperty(U userRecord, String attribute)
+
+    /***
+     * This method is used to generate an api key for a given aws apigateway usage plan
+     * @param usagePlanId
+     * @return
+     */
+    Map generateApikey(String usagePlanId)
+
+    /***
+     * This method is used to get registered api keys of a user
+     * @param userId
+     * @return
+     */
+    def getApikeys(String userId)
 }

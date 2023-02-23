@@ -75,6 +75,19 @@
                             </div>
                         </div>
                     </g:if>
+                    <div class="d-flex">
+                        <div class="image">
+                            <i class="glyphicon glyphicon-list-alt"></i>
+                        </div>
+                        <div class="content">
+                            <h4 id="myGalah">
+                                <g:link controller="profile" action="myGalah">
+                                    <g:message code="myprofile.myGalah" />
+                                </g:link>
+                            </h4>
+                            <p><g:message code="myprofile.myGalah.desc" /></p>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Column 2 -->

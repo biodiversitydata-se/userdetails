@@ -175,6 +175,7 @@ dependencies {
     api('au.org.ala.plugins:openapi:1.1.0')
 
     testImplementation('com.squareup.retrofit2:retrofit-mock:2.9.0')
+    api 'com.amazonaws:aws-java-sdk-api-gateway:1.12.279'
 }
 
 compileJava.dependsOn(processResources)

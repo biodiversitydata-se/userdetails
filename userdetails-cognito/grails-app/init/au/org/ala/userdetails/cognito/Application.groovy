@@ -20,8 +20,9 @@ import au.org.ala.web.OidcClientProperties
 import au.org.ala.ws.security.JwtProperties
 import au.org.ala.ws.tokens.TokenService
 import com.amazonaws.auth.*
+import com.amazonaws.services.apigateway.AmazonApiGateway
+import com.amazonaws.services.apigateway.AmazonApiGatewayClientBuilder
 import com.amazonaws.services.cognitoidp.AWSCognitoIdentityProvider
-import com.amazonaws.services.cognitoidp.AWSCognitoIdentityProviderClient
 import com.amazonaws.services.cognitoidp.AWSCognitoIdentityProviderClientBuilder
 import grails.boot.GrailsApp
 import grails.boot.config.GrailsAutoConfiguration
@@ -69,9 +70,22 @@ class Application extends GrailsAutoConfiguration {
         return cognitoIdp
     }
 
-    @Bean('userService')
-    IUserService userService(TokenService tokenService, EmailService emailService, AWSCognitoIdentityProvider cognitoIdp, JwtProperties jwtProperties) {
+    @Bean
+    AmazonApiGateway gatewayIdpClient(AWSCredentialsProvider awsCredentialsProvider) {
+        def region = grailsApplication.config.getProperty('cognito.region')
 
+        AmazonApiGateway gatewayIdp = AmazonApiGatewayClientBuilder.standard()
+                .withRegion(region)
+                .withCredentials(awsCredentialsProvider)
+                .build()
+
+        return gatewayIdp
+    }
+
+    @Bean('userService')
+    IUserService userService(TokenService tokenService, EmailService emailService, AWSCognitoIdentityProvider cognitoIdp, JwtProperties jwtProperties, AmazonApiGateway gatewayIdp) {
+
+        def region = grailsApplication.config.getProperty('cognito.region')
         CognitoUserService userService = new CognitoUserService()
         userService.cognitoIdp = cognitoIdp
         userService.poolId = grailsApplication.config.getProperty('cognito.poolId')
@@ -81,6 +95,8 @@ class Application extends GrailsAutoConfiguration {
         userService.jwtProperties = jwtProperties
 
         userService.affiliationsEnabled = grailsApplication.config.getProperty('attributes.affiliations.enabled', Boolean, false)
+
+        userService.apiGatewayIdp = gatewayIdp
 
         return userService
     }

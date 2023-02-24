@@ -53,4 +53,12 @@ public class BcryptPasswordEncoder implements PasswordEncoder {
         }
         return BCrypt.hashpw(password, salt);
     }
+
+    @Override
+    public Boolean matches(String plainPassword, String hashedPassword) {
+        if (plainPassword == null || plainPassword.length() < 1 || hashedPassword == null || hashedPassword.length() < 1) {
+            throw new IllegalArgumentException("Must provide both plain password and hashed password.");
+        }
+        return BCrypt.checkpw(plainPassword, hashedPassword);
+    }
 }

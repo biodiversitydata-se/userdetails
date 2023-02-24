@@ -17,6 +17,11 @@ package au.org.ala.userdetails
 
 import au.org.ala.auth.BulkUserLoadResults
 import au.org.ala.auth.PasswordResetFailedException
+import com.amazonaws.services.apigateway.AmazonApiGateway
+import com.amazonaws.services.apigateway.model.CreateApiKeyRequest
+import com.amazonaws.services.apigateway.model.CreateUsagePlanKeyRequest
+import com.amazonaws.services.apigateway.model.GetApiKeysRequest
+import com.amazonaws.services.apigateway.model.GetApiKeysResult
 import grails.converters.JSON
 import grails.plugin.cache.Cacheable
 import grails.gorm.transactions.NotTransactional
@@ -25,6 +30,7 @@ import grails.util.Environment
 import grails.web.servlet.mvc.GrailsParameterMap
 import org.apache.http.HttpStatus
 import org.grails.orm.hibernate.cfg.GrailsHibernateUtil
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 
 @Transactional
@@ -37,6 +43,8 @@ class UserService {
     def locationService
     def messageSource
     def webService
+    @Autowired
+    AmazonApiGateway apiGatewayIdp
 
     @Value('${attributes.affiliations.enabled:false}')
     boolean affiliationsEnabled = false
@@ -411,6 +419,43 @@ class UserService {
         def affiliations = locationService.affiliationSurvey(locale)
         return results.collect {
             [affiliations[it[0]] ?: it[0], it[1].toString()].toArray(new String[0])
+        }
+    }
+
+    Map generateApikey(String usagePlanId) {
+        if(!usagePlanId){
+            return [apikeys:null, err: "No usage plan id to generate api key"]
+        }
+
+        CreateApiKeyRequest request = new CreateApiKeyRequest()
+        request.enabled = true
+        request.customerId = currentUser.id as String
+        request.name = "API key for user " + currentUser.id as String
+        def response = apiGatewayIdp.createApiKey(request)
+
+        if(response.getSdkHttpMetadata().httpStatusCode == 201) {
+            //add api key to usage plan
+            CreateUsagePlanKeyRequest usagePlanKeyRequest = new CreateUsagePlanKeyRequest()
+            usagePlanKeyRequest.keyId = response.id
+            usagePlanKeyRequest.keyType = "API_KEY"
+            usagePlanKeyRequest.usagePlanId = usagePlanId
+            apiGatewayIdp.createUsagePlanKey(usagePlanKeyRequest)
+
+            return [apikeys:getApikeys(currentUser.id), err: null]
+        }
+        else{
+            return [apikeys:null, err: "Could not generate api key"]
+        }
+    }
+
+    def getApikeys(Long userId) {
+        GetApiKeysRequest getApiKeysRequest = new GetApiKeysRequest().withCustomerId(userId as String).withIncludeValues(true)
+        GetApiKeysResult response = apiGatewayIdp.getApiKeys(getApiKeysRequest)
+        if(response.getSdkHttpMetadata().httpStatusCode == 200){
+            return response.items.value
+        }
+        else{
+            return null
         }
     }
 }

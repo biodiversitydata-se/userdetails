@@ -16,6 +16,13 @@
 package au.org.ala.userdetails
 
 import au.org.ala.recaptcha.RecaptchaClient
+import com.amazonaws.auth.AWSCredentials
+import com.amazonaws.auth.AWSCredentialsProvider
+import com.amazonaws.auth.AWSStaticCredentialsProvider
+import com.amazonaws.auth.BasicAWSCredentials
+import com.amazonaws.auth.BasicSessionCredentials
+import com.amazonaws.services.apigateway.AmazonApiGateway
+import com.amazonaws.services.apigateway.AmazonApiGatewayClientBuilder
 import grails.boot.GrailsApp
 import grails.boot.config.GrailsAutoConfiguration
 import groovy.util.logging.Slf4j
@@ -74,6 +81,40 @@ class Application extends GrailsAutoConfiguration {
         MongoHealthIndicator mongoHealthIndicator(MongoTemplate mongoTemplate) {
             new MongoHealthIndicator(mongoTemplate)
         }
+    }
+
+    @Bean
+    AWSCredentialsProvider awsCredentialsProvider() {
+
+        String accessKey = grailsApplication.config.getProperty('apigateway.accessKey')
+        String secretKey = grailsApplication.config.getProperty('apigateway.secretKey')
+        String sessionToken = grailsApplication.config.getProperty('apigateway.sessionToken')
+
+        AWSCredentialsProvider credentialsProvider
+        if (accessKey && secretKey) {
+            AWSCredentials credentials
+            if (sessionToken) {
+                credentials = new BasicSessionCredentials(accessKey, secretKey, sessionToken)
+            } else {
+                credentials = new BasicAWSCredentials(accessKey, secretKey)
+            }
+            credentialsProvider = new AWSStaticCredentialsProvider(credentials)
+        } else {
+            credentialsProvider = DefaultAWSCredentialsProviderChain.getInstance()
+        }
+        return credentialsProvider
+    }
+
+    @Bean
+    AmazonApiGateway gatewayIdpClient(AWSCredentialsProvider awsCredentialsProvider) {
+        def region = grailsApplication.config.getProperty('apigateway.region')
+
+        AmazonApiGateway gatewayIdp = AmazonApiGatewayClientBuilder.standard()
+                .withRegion(region)
+                .withCredentials(awsCredentialsProvider)
+                .build()
+
+        return gatewayIdp
     }
 
 }

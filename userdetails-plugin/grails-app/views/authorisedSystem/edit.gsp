@@ -44,7 +44,7 @@
 						<fieldset class="form">
 							<g:render template="form"/>
 						</fieldset>
-						<g:if test="${grailsApplication.config.getProperty('enable.IpEdit', boolean, true)}">
+						<g:if test="${grailsApplication.config.getProperty('authorised-systems.edit-enabled', boolean, true)}">
 							<fieldset class="buttons">
 								<g:actionSubmit class="btn btn-primary save" action="update" value="${message(code: 'default.button.update.label', default: 'Update')}" />
 								<g:actionSubmit class="btn btn-danger delete" action="delete" value="${message(code: 'default.button.delete.label', default: 'Delete')}" formnovalidate="" onclick="return confirm('${message(code: 'default.button.delete.confirm.message', default: 'Are you sure?')}');" />

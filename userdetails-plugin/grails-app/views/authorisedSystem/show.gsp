@@ -47,7 +47,7 @@
 						</li>
 
 					</ol>
-					<g:if test="${grailsApplication.config.getProperty('enable.IpEdit', boolean, true)}">
+					<g:if test="${grailsApplication.config.getProperty('authorised-systems.edit-enabled', boolean, true)}">
 						<g:form>
 							<fieldset class="buttons">
 								<g:hiddenField name="id" value="${authorisedSystemInstance?.id}" />

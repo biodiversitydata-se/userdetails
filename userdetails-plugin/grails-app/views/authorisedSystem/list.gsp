@@ -32,7 +32,7 @@
                 <div class="col-md-8">
                     <div class="pull-right">
                         <div class="form-inline" style="margin-bottom: 10px">
-                            <g:if test="${grailsApplication.config.getProperty('enable.IpEdit', boolean, true)}">
+                            <g:if test="${grailsApplication.config.getProperty('authorised-systems.edit-enabled', boolean, true)}">
                                 <g:link class="btn btn-primary" action="create"><i class="fa fa-pencil"></i> <g:message code="default.new.label" args="[entityName]" /></g:link>
                             </g:if>
                             <g:else>
@@ -65,7 +65,7 @@
                                 <td><div class="hostname" host="${authorisedSystemInstance.host}"><i class="fa fa-cog fa-spin"></i></div></td>
                                 <td>${authorisedSystemInstance.description}</td>
                                 <td>
-                                    <g:if test="${grailsApplication.config.getProperty('enable.IpEdit', boolean, true)}">
+                                    <g:if test="${grailsApplication.config.getProperty('authorised-systems.edit-enabled', boolean, true)}">
                                         <a href="${createLink(action:'edit', id:authorisedSystemInstance.id)}" class="btn btn-default btn-sm"><i class="glyphicon glyphicon-edit"></i></a>
                                     </g:if>
                                 </td>

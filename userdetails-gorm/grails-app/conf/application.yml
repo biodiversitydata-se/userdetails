@@ -262,4 +262,5 @@ environments:
     production:
         dataSource:
             dbCreate: "validate"
-enable.IpEdit: true
+authorised-systems:
+  edit-enabled: true

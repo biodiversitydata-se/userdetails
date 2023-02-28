@@ -171,4 +171,5 @@ cognito:
     affiliation: 'custom:affiliation'
     roles: ''
     keys: ''
-enable.IpEdit: false
+authorised-systems:
+  edit-enabled: false

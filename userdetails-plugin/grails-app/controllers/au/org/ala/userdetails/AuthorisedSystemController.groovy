@@ -13,10 +13,12 @@
  * rights and limitations under the License.
  */
 
-package au.org.ala.userdetails.gorm
+package au.org.ala.userdetails
 
 import au.org.ala.auth.PreAuthorise
+import au.org.ala.users.AuthorisedSystemRecord
 import grails.converters.JSON
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.dao.DataIntegrityViolationException
 
 @PreAuthorise
@@ -24,40 +26,27 @@ class AuthorisedSystemController {
 
     static allowedMethods = [save: "POST", update: "POST", delete: "POST"]
 
+    @Autowired
+    IAuthorisedSystemRepository authorisedSystemRepository
+
     def index() {
         redirect(action: "list", params: params)
     }
 
     def list(Integer max) {
         params.max = Math.min(max ?: 10, 100)
-        def list = []
-        def count = 0
-        def query = params.q as String
-        if (query) {
-            def c = AuthorisedSystem.createCriteria()
-            list = c.list(params) {
-                or {
-                    ilike('host', "%${query}%")
-                    ilike('description', "%${query}%")
-                }
-            }
-            count = list.totalCount
-        } else {
-            list = AuthorisedSystem.list(params)
-            count = AuthorisedSystem.count()
-        }
-
-        [authorisedSystemInstanceList: list, authorisedSystemInstanceTotal: count]
+        def response =  authorisedSystemRepository.list(params)
+        [authorisedSystemInstanceList: response.list, authorisedSystemInstanceTotal: response.count]
     }
 
     def create() {
-        [authorisedSystemInstance: new AuthorisedSystem(params)]
+        [authorisedSystemInstance: new AuthorisedSystemRecord()]
     }
 
     def save() {
-        def authorisedSystemInstance = new AuthorisedSystem(params)
-        if (!authorisedSystemInstance.save(flush: true)) {
-            render(view: "create", model: [authorisedSystemInstance: authorisedSystemInstance])
+        def authorisedSystemInstance = authorisedSystemRepository.save(params)
+        if (!authorisedSystemInstance) {
+            render(view: "create", model: [authorisedSystemInstance: new AuthorisedSystemRecord(host: params.host, description: params.description)])
             return
         }
 
@@ -66,7 +55,7 @@ class AuthorisedSystemController {
     }
 
     def show(Long id) {
-        def authorisedSystemInstance = AuthorisedSystem.get(id)
+        def authorisedSystemInstance = authorisedSystemRepository.get(id)
         if (!authorisedSystemInstance) {
             flash.message = message(code: 'default.not.found.message', args: [message(code: 'authorisedSystem.label', default: 'AuthorisedSystem'), id])
             redirect(action: "list")
@@ -77,7 +66,7 @@ class AuthorisedSystemController {
     }
 
     def edit(Long id) {
-        def authorisedSystemInstance = AuthorisedSystem.get(id)
+        def authorisedSystemInstance = authorisedSystemRepository.get(id)
         if (!authorisedSystemInstance) {
             flash.message = message(code: 'default.not.found.message', args: [message(code: 'authorisedSystem.label', default: 'AuthorisedSystem'), id])
             redirect(action: "list")
@@ -87,27 +76,17 @@ class AuthorisedSystemController {
         [authorisedSystemInstance: authorisedSystemInstance]
     }
 
-    def update(Long id, Long version) {
-        def authorisedSystemInstance = AuthorisedSystem.get(id)
+    def update(Long id) {
+        def authorisedSystemInstance = authorisedSystemRepository.get(id)
         if (!authorisedSystemInstance) {
             flash.message = message(code: 'default.not.found.message', args: [message(code: 'authorisedSystem.label', default: 'AuthorisedSystem'), id])
             redirect(action: "list")
             return
         }
 
-        if (version != null) {
-            if (authorisedSystemInstance.version > version) {
-                authorisedSystemInstance.errors.rejectValue("version", "default.optimistic.locking.failure",
-                          [message(code: 'authorisedSystem.label', default: 'AuthorisedSystem')] as Object[],
-                          "Another user has updated this AuthorisedSystem while you were editing")
-                render(view: "edit", model: [authorisedSystemInstance: authorisedSystemInstance])
-                return
-            }
-        }
+        authorisedSystemInstance = authorisedSystemRepository.update(params)
 
-        authorisedSystemInstance.properties = params
-
-        if (!authorisedSystemInstance.save(flush: true)) {
+        if (!authorisedSystemInstance) {
             render(view: "edit", model: [authorisedSystemInstance: authorisedSystemInstance])
             return
         }
@@ -117,7 +96,7 @@ class AuthorisedSystemController {
     }
 
     def delete(Long id) {
-        def authorisedSystemInstance = AuthorisedSystem.get(id)
+        def authorisedSystemInstance = authorisedSystemRepository.get(id)
         if (!authorisedSystemInstance) {
             flash.message = message(code: 'default.not.found.message', args: [message(code: 'authorisedSystem.label', default: 'AuthorisedSystem'), id])
             redirect(action: "list")
@@ -125,7 +104,7 @@ class AuthorisedSystemController {
         }
 
         try {
-            authorisedSystemInstance.delete(flush: true)
+            authorisedSystemRepository.delete(id)
             flash.message = message(code: 'default.deleted.message', args: [message(code: 'authorisedSystem.label', default: 'AuthorisedSystem'), id])
             redirect(action: "list")
         }

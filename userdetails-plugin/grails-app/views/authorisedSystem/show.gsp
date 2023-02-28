@@ -14,7 +14,7 @@
   - rights and limitations under the License.
   --}%
 
-<%@ page import="au.org.ala.users.AuthorisedSystem" %>
+<%@ page import="au.org.ala.users.AuthorisedSystemRecord" %>
 <!DOCTYPE html>
 <html>
 	<head>
@@ -47,13 +47,15 @@
 						</li>
 
 					</ol>
-					<g:form>
-						<fieldset class="buttons">
-							<g:hiddenField name="id" value="${authorisedSystemInstance?.id}" />
-							<g:link class="btn btn-primary" action="edit" id="${authorisedSystemInstance?.id}"><g:message code="default.button.edit.label" default="Edit" /></g:link>
-							<g:actionSubmit class="btn btn-danger" action="delete" value="${message(code: 'default.button.delete.label', default: 'Delete')}" onclick="return confirm('${message(code: 'default.button.delete.confirm.message', default: 'Are you sure?')}');" />
-						</fieldset>
-					</g:form>
+					<g:if test="${grailsApplication.config.getProperty('authorised-systems.edit-enabled', boolean, true)}">
+						<g:form>
+							<fieldset class="buttons">
+								<g:hiddenField name="id" value="${authorisedSystemInstance?.id}" />
+								<g:link class="btn btn-primary" action="edit" id="${authorisedSystemInstance?.id}"><g:message code="default.button.edit.label" default="Edit" /></g:link>
+								<g:actionSubmit class="btn btn-danger" action="delete" value="${message(code: 'default.button.delete.label', default: 'Delete')}" onclick="return confirm('${message(code: 'default.button.delete.confirm.message', default: 'Are you sure?')}');" />
+							</fieldset>
+						</g:form>
+					</g:if>
 				</div>
 			</div>
 		</div>

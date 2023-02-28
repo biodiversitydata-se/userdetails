@@ -53,8 +53,7 @@ class Application extends GrailsAutoConfiguration {
                              AuthService authService,
                              LocationService locationService,
                              MessageSource messageSource,
-                             WebService webService,
-                             ProfileService profileService
+                             WebService webService
                              ) {
 
 //        grailsApplication.addArtefact(DomainClassArtefactHandler.TYPE, UserRecord)
@@ -70,7 +69,6 @@ class Application extends GrailsAutoConfiguration {
 
         userService.grailsApplication = grailsApplication
         userService.messageSource = messageSource
-        userService.profileService = profileService
 
         userService.affiliationsEnabled = grailsApplication.config.getProperty('attributes.affiliations.enabled', Boolean, false)
 

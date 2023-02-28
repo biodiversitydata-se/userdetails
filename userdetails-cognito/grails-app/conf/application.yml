@@ -9,6 +9,7 @@ grails:
             - file:/data/userdetails/config/userdetails-config.properties
             - file:/data/userdetails/config/userdetails-config.yml
             - file:/data/userdetails/config/userdetails-config.groovy
+            - file:/data/userdetails/config/authorised-systems.yml
 
 info:
     app:
@@ -170,3 +171,5 @@ cognito:
     affiliation: 'custom:affiliation'
     roles: ''
     keys: ''
+authorised-systems:
+  edit-enabled: false

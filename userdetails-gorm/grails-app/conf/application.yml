@@ -262,3 +262,5 @@ environments:
     production:
         dataSource:
             dbCreate: "validate"
+authorised-systems:
+  edit-enabled: true

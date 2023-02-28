@@ -13,7 +13,7 @@
   - rights and limitations under the License.
   --}%
 
-<%@ page import="au.org.ala.users.AuthorisedSystem" %>
+<%@ page import="au.org.ala.users.AuthorisedSystemRecord" %>
 <!DOCTYPE html>
 <html>
 	<head>
@@ -32,7 +32,12 @@
                 <div class="col-md-8">
                     <div class="pull-right">
                         <div class="form-inline" style="margin-bottom: 10px">
-                            <g:link class="btn btn-primary" action="create"><i class="fa fa-pencil"></i> <g:message code="default.new.label" args="[entityName]" /></g:link>
+                            <g:if test="${grailsApplication.config.getProperty('authorised-systems.edit-enabled', boolean, true)}">
+                                <g:link class="btn btn-primary" action="create"><i class="fa fa-pencil"></i> <g:message code="default.new.label" args="[entityName]" /></g:link>
+                            </g:if>
+                            <g:else>
+                                <g:link class="btn btn-primary" action="list" params="[reload: true]"><g:message code="reload.config"/></g:link>
+                            </g:else>
                             <div class="form-group">
                                 <label class="sr-only" for="q">Query</label>
                                 <g:textField name="q" class="form-control" value="${params.q}" />
@@ -60,7 +65,9 @@
                                 <td><div class="hostname" host="${authorisedSystemInstance.host}"><i class="fa fa-cog fa-spin"></i></div></td>
                                 <td>${authorisedSystemInstance.description}</td>
                                 <td>
-                                    <a href="${createLink(action:'edit', id:authorisedSystemInstance.id)}" class="btn btn-default btn-sm"><i class="glyphicon glyphicon-edit"></i></a>
+                                    <g:if test="${grailsApplication.config.getProperty('authorised-systems.edit-enabled', boolean, true)}">
+                                        <a href="${createLink(action:'edit', id:authorisedSystemInstance.id)}" class="btn btn-default btn-sm"><i class="glyphicon glyphicon-edit"></i></a>
+                                    </g:if>
                                 </td>
                             </tr>
                         </g:each>

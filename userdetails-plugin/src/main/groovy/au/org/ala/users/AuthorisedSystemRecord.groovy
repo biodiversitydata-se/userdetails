@@ -19,8 +19,10 @@ import grails.web.databinding.WebDataBinding
 import groovy.transform.EqualsAndHashCode
 
 @EqualsAndHashCode
-class AuthorisedSystem implements WebDataBinding, Serializable {
+class AuthorisedSystemRecord<T> implements WebDataBinding, Serializable {
 
+    T id
+    T version
     String host
     String description
 

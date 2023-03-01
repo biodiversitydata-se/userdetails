@@ -99,7 +99,7 @@ class CognitoPasswordOperations implements IPasswordOperations {
 
     @Override
     String getPasswordResetView() {
-        return "passwordResetCognito"
+        return "passwordReset"
     }
 
 }

@@ -25,12 +25,14 @@ class UpdatePasswordCommand implements Validateable {
     String password
     String reenteredPassword
     String authKey
+    String code
 
     static constraints = {
         // note that the password validation is done in the controller actions, not the command
         password blank: false
         reenteredPassword validator: { val, cmd -> val == cmd.password }
         userId nullable: false
-        authKey blank: false
+        authKey nullable: true
+        code nullable: true
     }
 }

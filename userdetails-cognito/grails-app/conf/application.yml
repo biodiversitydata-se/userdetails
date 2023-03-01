@@ -137,6 +137,8 @@ password:
 #    charGroupMinUpperOrLowerCase: 0
     charGroupMinDigit: 1
     charGroupMinSpecial: 1
+  requireAuthKeyCheck: false
+  requireCodeToResetPassword: true
 
 openapi:
   title: UserDetails REST services

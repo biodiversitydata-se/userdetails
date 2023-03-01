@@ -151,10 +151,6 @@ dependencies {
     api 'org.mongodb:mongodb-driver-core:4.6.0'
     api 'org.mongodb:bson:4.6.0'
 
-//    implementation 'com.amazonaws:aws-java-sdk-cognitoidentity:1.12.279'
-//    implementation 'com.amazonaws:aws-java-sdk-cognitoidp:1.12.279'
-//    implementation 'com.amazonaws:aws-java-sdk-cognitosync:1.12.279'
-
 //    implementation "com.auth0:java-jwt:3.18.2"
 //    implementation "com.auth0:jwks-rsa:0.20.0"
 

@@ -64,8 +64,17 @@
     <div class="row">
 
         <g:form useToken="true" name="resetPasswordForm" controller="registration" action="updatePassword">
-            <input id="authKey" type="hidden" name="authKey" value="${authKey}"/>
+            <g:if test="${user?.hasProperty('tempAuthKey')}">
+                <input id="authKey" type="hidden" name="authKey" value="${authKey}"/>
+            </g:if>
             <input id="userId" type="hidden" name="userId" value="${user.id}"/>
+
+            <g:if test="${grailsApplication.config.getProperty('password.requireCodeToResetPassword', Boolean)}">
+                <div class="form-group">
+                    <label for="code">Code sent to your email</label>
+                    <input id="code" type="number" class="form-control" name="code" value=""/>
+                </div>
+            </g:if>
 
             <div class="form-group">
                 <label for="password">Your new password</label>

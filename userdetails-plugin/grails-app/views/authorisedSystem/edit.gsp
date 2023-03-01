@@ -40,7 +40,9 @@
 					</g:hasErrors>
 					<g:form method="post" >
 						<g:hiddenField name="id" value="${authorisedSystemInstance?.id}" />
-						<g:hiddenField name="version" value="${authorisedSystemInstance?.version}" />
+						<g:if test="${authorisedSystemInstance?.hasProperty('version')}">
+							<g:hiddenField name="version" value="${authorisedSystemInstance?.version}" />
+						</g:if>
 						<fieldset class="form">
 							<g:render template="form"/>
 						</fieldset>

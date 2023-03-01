@@ -104,7 +104,7 @@ class UserDetailsTagLib {
                 mb.ul('class': cssClasses) {
                     mb.li {
                         mb.mkp.yieldUnescaped(
-                            g.link(withParams(linkTagAttrs, [token: null])) {
+                            g.link(withParams([token: null], linkTagAttrs)) {
                                 (attrs.start ?: messageSource.getMessage('paginate.start', null, 'First', locale))
                             }
                         )
@@ -131,7 +131,7 @@ class UserDetailsTagLib {
                     if (nextToken) {
                         mb.li {
                             mb.mkp.yieldUnescaped(
-                                    g.link(withParams(linkTagAttrs, [token: nextToken])) {
+                                    g.link(withParams([token: nextToken], linkTagAttrs)) {
                                 (attrs.next ?: messageSource.getMessage('paginate.next', null, '&raquo;', locale))
                             }
                             )

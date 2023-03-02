@@ -206,11 +206,11 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
 
         then:
         1 * userService.getUserById('1') >> user
-        1 * passwordService.resetPassword(user, password, _, _)
+        1 * passwordService.resetPassword(user, password, _, _) >> true
         1 * passwordService.validatePassword(user.email, password) >> new RuleResult(true)
         1 * userService.clearTempAuthKey(user)
         0 * _ // no other interactions
-        response.redirectedUrl == '/registration/passwordResetSuccess'
+        response.redirectedUrl == '/logout?url=%2Fregistration%2FpasswordResetSuccess'
     }
 
     def "Account is registered when a recaptcha response is supplied and recaptcha secret key is defined"() {

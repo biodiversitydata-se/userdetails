@@ -23,6 +23,7 @@ import org.pac4j.core.profile.UserProfile
 import org.pac4j.core.util.FindBest
 import au.org.ala.ws.security.client.AlaAuthClient
 import org.pac4j.jee.context.JEEContextFactory
+import org.pac4j.oidc.credentials.OidcCredentials
 import org.springframework.beans.factory.annotation.Autowired
 
 import javax.servlet.http.HttpServletRequest
@@ -64,28 +65,57 @@ class AuthorisedSystemService {
             ProfileManager profileManager = new ProfileManager(context, config.sessionStore)
             profileManager.setConfig(config)
 
-            def credentials = alaAuthClient.getCredentials(context, config.sessionStore)
-            if (credentials.isPresent()) {
-                def profile = alaAuthClient.getUserProfile(credentials.get(), context, config.sessionStore)
-                if (profile.isPresent()) {
-                    def userProfile = profile.get()
-                    profileManager.save(
-                            alaAuthClient.getSaveProfileInSession(context, userProfile),
-                            userProfile,
-                            alaAuthClient.isMultiProfile(context, userProfile)
-                    )
+//            def credentials = alaAuthClient.getCredentials(context, config.sessionStore)
+            result = alaAuthClient.getCredentials(context, config.sessionStore).map { credentials ->
+                boolean matchesScope
+                if (scope) {
 
-                    result = true
-                    if (role) {
-                        result = userProfile.roles.contains(role)
-                    }
+                    if (credentials instanceof OidcCredentials) {
 
-                    if (result && scope) {
-                        result = userProfile.permissions.contains(scope) || profileHasScope(userProfile, scope)
+                        OidcCredentials oidcCredentials = credentials
+
+                        matchesScope = oidcCredentials.accessToken.scope.contains(scope)
+
+                        if (!matchesScope) {
+                            log.debug "access_token scopes '${oidcCredentials.accessToken.scope}' is missing required scopes ${scope}"
+                        }
+                    } else {
+                        matchesScope = false
+                        log.debug("$credentials are not OidcCredentials, so can't get access_token")
                     }
+                } else {
+                    matchesScope = true
                 }
-            } else if (jwtProperties.fallbackToLegacyBehaviour) {
-                result = isAuthorisedSystem(request)
+
+                boolean matchesRole
+                if (role) {
+
+                    matchesRole = alaAuthClient.getUserProfile(credentials, context, config.sessionStore).map { userProfile ->
+
+                        profileManager.save(
+                                alaAuthClient.getSaveProfileInSession(context, userProfile),
+                                userProfile,
+                                alaAuthClient.isMultiProfile(context, userProfile)
+                        )
+
+                        def userProfileContainsRole = userProfile.roles.contains(role)
+
+                        if (!userProfileContainsRole) {
+                            log.debug "user profile roles '${userProfile.roles}' is missing required role ${role}"
+                        }
+                        return userProfileContainsRole
+                    }.orElseGet {
+                        log.debug "rejecting request because role $role is required but no user profile is available"
+                        false
+                    }
+                } else {
+                    matchesRole = true
+                }
+
+                return matchesScope && matchesRole
+            }.orElseGet {
+                log.debug "no access token present"
+                jwtProperties.fallbackToLegacyBehaviour && isAuthorisedSystem(request)
             }
         } else {
             result = isAuthorisedSystem(request)

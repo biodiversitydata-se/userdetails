@@ -21,7 +21,7 @@ import grails.validation.Validateable
  */
 class UpdatePasswordCommand implements Validateable {
 
-    Long userId
+    String userId
     String password
     String reenteredPassword
     String authKey

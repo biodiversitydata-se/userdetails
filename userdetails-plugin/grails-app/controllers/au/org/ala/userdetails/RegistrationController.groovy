@@ -88,7 +88,7 @@ class RegistrationController {
     }
 
     def updatePassword(UpdatePasswordCommand cmd) {
-        IUser<?> user = userService.getUserById(cmd.userId as String)
+        IUser<?> user = userService.getUserById(cmd.userId)
         if(!user) {
             log.error "Invalid User"
             render(view: 'accountError', model: [msg: "Invalid User"])

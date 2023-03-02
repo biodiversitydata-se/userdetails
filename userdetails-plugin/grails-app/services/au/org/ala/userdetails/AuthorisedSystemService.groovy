@@ -18,6 +18,7 @@ package au.org.ala.userdetails
 import au.org.ala.ws.security.JwtProperties
 import org.pac4j.core.config.Config
 import org.pac4j.core.context.WebContext
+import org.pac4j.core.credentials.Credentials
 import org.pac4j.core.profile.ProfileManager
 import org.pac4j.core.profile.UserProfile
 import org.pac4j.core.util.FindBest
@@ -65,62 +66,83 @@ class AuthorisedSystemService {
             ProfileManager profileManager = new ProfileManager(context, config.sessionStore)
             profileManager.setConfig(config)
 
-//            def credentials = alaAuthClient.getCredentials(context, config.sessionStore)
-            result = alaAuthClient.getCredentials(context, config.sessionStore).map { credentials ->
-                boolean matchesScope
-                if (scope) {
-
-                    if (credentials instanceof OidcCredentials) {
-
-                        OidcCredentials oidcCredentials = credentials
-
-                        matchesScope = oidcCredentials.accessToken.scope.contains(scope)
-
-                        if (!matchesScope) {
-                            log.debug "access_token scopes '${oidcCredentials.accessToken.scope}' is missing required scopes ${scope}"
-                        }
-                    } else {
-                        matchesScope = false
-                        log.debug("$credentials are not OidcCredentials, so can't get access_token")
-                    }
-                } else {
-                    matchesScope = true
-                }
-
-                boolean matchesRole
-                if (role) {
-
-                    matchesRole = alaAuthClient.getUserProfile(credentials, context, config.sessionStore).map { userProfile ->
-
-                        profileManager.save(
-                                alaAuthClient.getSaveProfileInSession(context, userProfile),
-                                userProfile,
-                                alaAuthClient.isMultiProfile(context, userProfile)
-                        )
-
-                        def userProfileContainsRole = userProfile.roles.contains(role)
-
-                        if (!userProfileContainsRole) {
-                            log.debug "user profile roles '${userProfile.roles}' is missing required role ${role}"
-                        }
-                        return userProfileContainsRole
-                    }.orElseGet {
-                        log.debug "rejecting request because role $role is required but no user profile is available"
-                        false
-                    }
-                } else {
-                    matchesRole = true
-                }
-
-                return matchesScope && matchesRole
-            }.orElseGet {
-                log.debug "no access token present"
-                jwtProperties.fallbackToLegacyBehaviour && isAuthorisedSystem(request)
-            }
+            result = alaAuthClient.getCredentials(context, config.sessionStore)
+                    .map { credentials -> checkCredentials(scope, credentials, role, context, profileManager) }
+                    .orElseGet { jwtProperties.fallbackToLegacyBehaviour && isAuthorisedSystem(request) }
         } else {
             result = isAuthorisedSystem(request)
         }
         return result
+    }
+
+    /**
+     * Validate the given credentials against any required scope or role
+     *
+     * @param requiredScope The required scope for the access token, if any
+     * @param credentials The credentials, should be an OidcCredentials instance
+     * @param requiredRole The required role for the user, if any
+     * @param context The web context (request, response)
+     * @param profileManager The profile manager, the user profile if available, will be saved into this profile manager
+     * @return true if the credentials match both the requiredScope and requiredRole
+     */
+    private boolean checkCredentials(String requiredScope, Credentials credentials, String requiredRole, WebContext context, ProfileManager profileManager) {
+        boolean matchesScope
+        if (requiredScope) {
+
+            if (credentials instanceof OidcCredentials) {
+
+                OidcCredentials oidcCredentials = credentials
+
+                matchesScope = oidcCredentials.accessToken.scope.contains(requiredScope)
+
+                if (!matchesScope) {
+                    log.debug "access_token scopes '${oidcCredentials.accessToken.scope}' is missing required scopes ${requiredScope}"
+                }
+            } else {
+                matchesScope = false
+                log.debug("$credentials are not OidcCredentials, so can't get access_token")
+            }
+        } else {
+            matchesScope = true
+        }
+
+        boolean matchesRole
+        Optional<UserProfile> userProfile = alaAuthClient.getUserProfile(credentials, context, config.sessionStore)
+                .map { userProfile -> // save profile into profile manager to match pac4j filter
+                    profileManager.save(
+                            alaAuthClient.getSaveProfileInSession(context, userProfile),
+                            userProfile,
+                            alaAuthClient.isMultiProfile(context, userProfile)
+                    )
+                    userProfile
+                }
+        if (requiredRole) {
+            matchesRole = userProfile
+                    .map {profile -> checkProfileRole(profile, requiredRole) }
+                    .orElseGet {
+                        log.debug "rejecting request because role $requiredRole is required but no user profile is available"
+                        false
+                    }
+        } else {
+            matchesRole = true
+        }
+
+        return matchesScope && matchesRole
+    }
+
+    /**
+     * Checks that the given profile has the required role
+     * @param userProfile
+     * @param requiredRole
+     * @return true if the profile has the role, false otherwise
+     */
+    private boolean checkProfileRole(UserProfile userProfile, String requiredRole) {
+        def userProfileContainsRole = userProfile.roles.contains(requiredRole)
+
+        if (!userProfileContainsRole) {
+            log.debug "user profile roles '${userProfile.roles}' is missing required role ${requiredRole}"
+        }
+        return userProfileContainsRole
     }
 
     private boolean profileHasScope(UserProfile userProfile, String scope) {

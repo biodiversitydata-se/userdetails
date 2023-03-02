@@ -25,25 +25,105 @@
     <div class="row">
         <div class="col-md-12" id="page-body" role="main">
             <h1>User Administration</h1>
-            <ul class="userdetails-menu">
-                <li><g:link controller="user" action="list">Find a user</g:link></li>
-                <li><g:link controller="admin" action="resetPasswordForUser">Reset user password</g:link></li>
-                <li><g:link controller="role" action="list">Roles</g:link></li>
+            <div class="row userdetails-grid">
+                <div class="col-md-3">
+                    <div class="thumbnail">
+                        <div class="image">
+                            <i class="glyphicon glyphicon-user"></i>
+                        </div>
+                        <div class="caption">
+                            <h3>Find a user</h3>
+                            <g:link controller="user" action="list" class="btn btn-primary">Find a user</g:link>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="thumbnail">
+                        <div class="image">
+                            <i class="glyphicon glyphicon-lock"></i>
+                        </div>
+                        <div class="caption">
+                            <h3>Reset user password</h3>
+                            <g:link controller="admin" action="resetPasswordForUser" class="btn btn-primary">Reset user password</g:link>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="thumbnail">
+                        <div class="image">
+                            <i class="glyphicon glyphicon-wrench"></i>
+                        </div>
+                        <div class="caption">
+                            <h3>Roles</h3>
+                            <g:link controller="role" action="list" class="btn btn-primary">Roles</g:link>
+                        </div>
+                    </div>
+                </div>
                 <!-- TODO have these contributed by implementations instead of controlled by feature flags -->
                 <g:if test="${grailsApplication.config.getProperty('userdetails.features.authorisedSystems', Boolean, false)}">
-                    <li><g:link controller="authorisedSystem" action="list">Authorised systems</g:link></li>
+                    <div class="col-md-3">
+                        <div class="thumbnail">
+                            <div class="image">
+                                <i class="glyphicon glyphicon-inbox"></i>
+                            </div>
+                            <div class="caption">
+                                <h3>Authorised systems</h3>
+                                <g:link controller="authorisedSystem" action="list" class="btn btn-primary">Authorised systems</g:link>
+                            </div>
+                        </div>
+                    </div>
                 </g:if>
                 <g:if test="${grailsApplication.config.getProperty('userdetails.features.bulkCreate', Boolean, false)}">
-                    <li><g:link controller="admin" action="bulkUploadUsers">Bulk create user accounts</g:link></li>
+                    <div class="col-md-3">
+                        <div class="thumbnail">
+                            <div class="image">
+                                <i class="glyphicon glyphicon-upload"></i>
+                            </div>
+                            <div class="caption">
+                                <h3>Bulk create user accounts</h3>
+                                <g:link controller="admin" action="bulkUploadUsers" class="btn btn-primary">Bulk create user accounts</g:link>
+                            </div>
+                        </div>
+                    </div>
                 </g:if>
                 <g:if test="${grailsApplication.config.getProperty('userdetails.features.exportUsers', Boolean, false)}">
-                    <li><g:link controller="admin" action="exportUsers">Export users to CSV file</g:link></li>
+                    <div class="col-md-3">
+                        <div class="thumbnail">
+                            <div class="image">
+                                <i class="glyphicon glyphicon-download"></i>
+                            </div>
+                            <div class="caption">
+                                <h3>Export users to CSV file</h3>
+                                <g:link controller="admin" action="exportUsers" class="btn btn-primary">Export users to CSV file</g:link>
+                            </div>
+                        </div>
+                    </div>
                 </g:if>
                 <g:if test="${grailsApplication.config.getProperty('attributes.affiliations.enabled', Boolean, false)}">
-                    <li><g:link controller="admin" action="surveyResults">Get user survey results</g:link></li>
+                    <div class="col-md-3">
+                        <div class="thumbnail">
+                            <div class="image">
+                                <i class="glyphicon glyphicon-th-list"></i>
+                            </div>
+                            <div class="caption">
+                                <h3>Get user survey results</h3>
+                                <g:link controller="admin" action="surveyResults" class="btn btn-primary">Get user survey results</g:link>
+                            </div>
+                        </div>
+                    </div>
                 </g:if>
-                <li><g:link controller="alaAdmin" action="index">ALA admin page</g:link></li>
-            </ul>
+                <div class="col-md-3">
+                    <div class="thumbnail">
+                        <div class="image">
+                            <i class="glyphicon glyphicon-asterisk"></i>
+                        </div>
+                        <div class="caption">
+                            <h3>ALA admin page</h3>
+                            <g:link controller="alaAdmin" action="index" class="btn btn-primary">ALA admin page</g:link>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </body>

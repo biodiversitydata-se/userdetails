@@ -116,6 +116,29 @@ grails:
 security:
   oidc:
     scope: openid profile email ala/attrs ala/roles aws.cognito.signin.user.admin
+    logoutAction: cognito
+
+password:
+  encoder: bcrypt # or legacy
+  generatedLength: 10
+  # Passwords must satisfy this policy.
+  # The minLength policy is always required, even when the policy is disabled. It has a default value of 8.
+  # To remove / disable an aspect of the policy, either remove the item or set to 0 / false, whichever is relevant.
+  policy:
+    enabled: true
+    minLength: 8
+#    maxLength: 64
+    excludeUsername: false
+    excludeUsQwertyKeyboardSequence: false
+    excludeCommonPasswords: false
+    charGroupMinRequired: 4
+    charGroupMinUpperCase: 1
+    charGroupMinLowerCase: 1
+#    charGroupMinUpperOrLowerCase: 0
+    charGroupMinDigit: 1
+    charGroupMinSpecial: 1
+  requireAuthKeyCheck: false
+  requireCodeToResetPassword: true
 
 openapi:
   title: UserDetails REST services
@@ -171,5 +194,7 @@ cognito:
     affiliation: 'custom:affiliation'
     roles: ''
     keys: ''
+account:
+  MFAenabled: true
 authorised-systems:
   edit-enabled: false

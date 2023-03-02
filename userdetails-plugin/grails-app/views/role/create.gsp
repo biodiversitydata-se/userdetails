@@ -34,6 +34,7 @@
                 });
             });
         </asset:script>
+		<meta name="breadcrumbParent" content="${createLink(controller:'role', action:'list')},Role list" />
 	</head>
 	<body>
 	<div class="row">

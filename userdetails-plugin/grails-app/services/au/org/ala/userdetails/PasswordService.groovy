@@ -16,6 +16,7 @@
 package au.org.ala.userdetails
 
 import au.org.ala.auth.PasswordResetFailedException
+import au.org.ala.users.IUser
 import au.org.ala.users.UserRecord
 import au.org.ala.auth.PasswordPolicy
 import au.org.ala.cas.encoding.BcryptPasswordEncoder
@@ -70,15 +71,15 @@ class PasswordService {
     @Autowired
     IPasswordOperations passwordOperations
 
-    void resetAndSendTemporaryPassword(UserRecord user, String emailSubject, String emailTitle, String emailBody, String password) throws PasswordResetFailedException {
+    void resetAndSendTemporaryPassword(IUser<?> user, String emailSubject, String emailTitle, String emailBody, String password) throws PasswordResetFailedException {
         passwordOperations.resetAndSendTemporaryPassword(user, emailSubject, emailTitle, emailBody, password)
     }
 
-    boolean resetPassword(UserRecord user, String newPassword, boolean isPermanent, String confirmationCode) {
+    boolean resetPassword(IUser<?> user, String newPassword, boolean isPermanent, String confirmationCode) {
         return passwordOperations.resetPassword(user, newPassword, isPermanent, confirmationCode)
     }
 
-    String getResetPasswordUrl(UserRecord user) {
+    String getResetPasswordUrl(IUser<?> user) {
         return passwordOperations.getResetPasswordUrl(user)
     }
 
@@ -86,7 +87,7 @@ class PasswordService {
         return passwordOperations.getPasswordResetView()
     }
 
-    String generatePassword(UserRecord user) {
+    String generatePassword(IUser<?> user) {
         if (user == null) {
             throw new IllegalArgumentException("Must provide the user to generate a password.")
         }
@@ -102,7 +103,7 @@ class PasswordService {
      * @param password The plain-text password to match.
      * @return True if the password matches the existing password, otherwise false.
      */
-    boolean checkUserPassword(UserRecord user, String password) {
+    boolean checkUserPassword(IUser<?> user, String password) {
         return passwordOperations.checkUserPassword(user, password)
     }
 
@@ -305,4 +306,12 @@ class PasswordService {
 
         return this.builtPasswordGeneralRules
     }
+
+    private PasswordEncoder getEncoder() {
+        def encoder = passwordEncoderType.equalsIgnoreCase(BCRYPT_ENCODER_TYPE) ?
+                new BcryptPasswordEncoder(bcryptStrength) :
+                new LegacyPasswordEncoder(legacySalt, legacyAlgorithm, true)
+        return encoder
+    }
+
 }

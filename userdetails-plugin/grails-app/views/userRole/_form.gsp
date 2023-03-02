@@ -4,7 +4,7 @@
 
 <div class="form-group fieldcontain ${hasErrors(bean: userRoleInstance, field: 'role', 'error')} required">
 	<label for="role">
-		<g:message code="userRole.role.label" default="Role" />
+		<g:message code="role.label" default="Role" />
 		<span class="required-indicator">*</span>
 	</label>
 	<g:select id="role" name="role.id" from="${ud.roleList()}" optionKey="id" required="" value="${userRoleInstance?.role?.id}" class="form-control many-to-one"/>
@@ -12,7 +12,7 @@
 
 <div class="form-group fieldcontain ${hasErrors(bean: userRoleInstance, field: 'user', 'error')} required">
 	<label for="user">
-		<g:message code="userRole.user.label" default="User" />
+		<g:message code="user.label" default="User" />
 		<span class="required-indicator">*</span>
 	</label>
 	<g:select id="user" name="user.id" from="${ud.userList()}" optionKey="id" required="" value="${userRoleInstance?.user?.id}" class="form-control many-to-one"/>

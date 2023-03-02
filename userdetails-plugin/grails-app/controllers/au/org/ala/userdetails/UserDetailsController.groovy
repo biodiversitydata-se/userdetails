@@ -17,11 +17,9 @@ package au.org.ala.userdetails
 
 
 import au.org.ala.userdetails.marshaller.UserMarshaller
-import au.org.ala.users.UserRecord
 import au.org.ala.web.UserDetails
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import grails.converters.JSON
-import grails.web.servlet.mvc.GrailsParameterMap
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.ArraySchema
@@ -92,9 +90,8 @@ class UserDetailsController {
             render(status: 400, text: 'q parameter is required')
             return
         }
-        def max = params.int('max', 10)
         def streamer = new ResultStreamer(response: response, jsonConfig: UserMarshaller.WITH_PROPERTIES_CONFIG)
-        userService.findScrollableUsersByUserName(q as String, max, streamer)
+        userService.findScrollableUsersByUserName(params, streamer)
     }
 
     @Operation(
@@ -139,7 +136,6 @@ class UserDetailsController {
     @Path("byRole")
     @Produces("application/json")
     def byRole() {
-        def ids = params.list('id')
         def roleName = params.get('role', 'ROLE_USER')
         def includeProps = params.boolean('includeProps', false)
 
@@ -152,20 +148,20 @@ class UserDetailsController {
             return
         }
 
-        userService.findScrollableUsersByIdsAndRole(ids, roleName, streamer)
+        userService.findScrollableUsersByIdsAndRole(params, streamer)
     }
 
     @Operation(
             method = "POST",
             tags = "users",
-            summary = "Get UserRecord Details",
-            description = "Get UserRecord Details.  Required scopes: 'users/read'.",
+            summary = "Get User Details",
+            description = "Get User Details.  Required scopes: 'users/read'.",
             parameters = [
                     @Parameter(
                             name = "userName",
                             in = QUERY,
                             description = "The username of the user",
-                            required = false
+                            required = true
                     ),
                     @Parameter(
                             name = "includeProps",
@@ -176,7 +172,7 @@ class UserDetailsController {
             ],
             responses = [
                     @ApiResponse(
-                            description = "UserRecord Details",
+                            description = "User Details",
                             responseCode = "200",
                             content = [
                                     @Content(
@@ -200,7 +196,7 @@ class UserDetailsController {
             if (userName.isLong()) {
                 user = userService.getUserById(userName)
             } else {
-                user = userService.findByUserNameOrEmail(userName)
+                user = userService.findByUserNameOrEmail(params)
             }
         } else {
             render status:400, text: "Missing parameter: userName"
@@ -225,7 +221,7 @@ class UserDetailsController {
     @Operation(
             method = "POST",
             tags = "users",
-            summary = "Get UserRecord List",
+            summary = "Get User List",
             description = "Get a list of all users.  Required scopes: 'users/read'.",
             deprecated = true,
             responses = [
@@ -254,7 +250,7 @@ class UserDetailsController {
     @Operation(
             method = "POST",
             tags = "users",
-            summary = "Get UserRecord List With Ids",
+            summary = "Get User List With Ids",
             description = "Get a list of all users by their user id.  Required scopes: 'users/read'.",
             deprecated = true,
             responses = [
@@ -283,12 +279,12 @@ class UserDetailsController {
     @Operation(
             method = "POST",
             tags = "users",
-            summary = "Get UserRecord List With Ids",
+            summary = "Get User List With Ids",
             description = "Get a list of all users by their user id.  Required scopes: 'users/read'.",
             deprecated = true,
             responses = [
                     @ApiResponse(
-                            description = "UserRecord Details",
+                            description = "User Details",
                             responseCode = "200",
                             content = [
                                     @Content(
@@ -315,7 +311,7 @@ class UserDetailsController {
             method = "POST",
             tags = "users",
             operationId = "getUserDetailsFromIdList",
-            summary = "Get UserRecord Details by id list",
+            summary = "Get User Details by id list",
             description = "Get a list of user details for a list of user ids.  Required scopes: 'users/read'.",
             requestBody = @RequestBody(
                     description = "The list of user ids to request and whether to include extended properties",
@@ -327,7 +323,7 @@ class UserDetailsController {
             ),
             responses = [
                     @ApiResponse(
-                            description = "UserRecord Details",
+                            description = "User Details",
                             responseCode = "200",
                             content = [
                                     @Content(

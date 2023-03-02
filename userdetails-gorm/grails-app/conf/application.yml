@@ -152,6 +152,8 @@ password:
 #    charGroupMinUpperOrLowerCase: 0
 #    charGroupMinDigit: 0
 #    charGroupMinSpecial: 0
+  requireAuthKeyCheck: true
+  requireCodeToResetPassword: false
 
 openapi:
   title: UserDetails REST services

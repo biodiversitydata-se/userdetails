@@ -16,6 +16,8 @@
 package au.org.ala.userdetails.cognito
 
 import au.org.ala.userdetails.*
+import au.org.ala.web.OidcClientProperties
+import au.org.ala.ws.security.JwtProperties
 import au.org.ala.ws.tokens.TokenService
 import com.amazonaws.auth.*
 import com.amazonaws.services.cognitoidp.AWSCognitoIdentityProvider
@@ -68,7 +70,7 @@ class Application extends GrailsAutoConfiguration {
     }
 
     @Bean('userService')
-    IUserService userService(TokenService tokenService, EmailService emailService, AWSCognitoIdentityProvider cognitoIdp) {
+    IUserService userService(TokenService tokenService, EmailService emailService, AWSCognitoIdentityProvider cognitoIdp, JwtProperties jwtProperties) {
 
         CognitoUserService userService = new CognitoUserService()
         userService.cognitoIdp = cognitoIdp
@@ -76,6 +78,7 @@ class Application extends GrailsAutoConfiguration {
 
         userService.emailService = emailService
         userService.tokenService = tokenService
+        userService.jwtProperties = jwtProperties
 
         userService.affiliationsEnabled = grailsApplication.config.getProperty('attributes.affiliations.enabled', Boolean, false)
 
@@ -83,7 +86,8 @@ class Application extends GrailsAutoConfiguration {
     }
 
     @Bean('passwordOperations')
-    IPasswordOperations passwordOperations() {
-        new CognitoPasswordOperations()
+    IPasswordOperations passwordOperations(AWSCognitoIdentityProvider cognitoIdp, OidcClientProperties oidcClientProperties) {
+        return new CognitoPasswordOperations(cognitoIdp: cognitoIdp, poolId: grailsApplication.config.getProperty('cognito.poolId'),
+                oidcClientProperties: oidcClientProperties)
     }
 }

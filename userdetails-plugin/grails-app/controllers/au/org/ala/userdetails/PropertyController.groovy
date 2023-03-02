@@ -16,8 +16,8 @@
 package au.org.ala.userdetails
 
 import au.org.ala.auth.PreAuthorise
-import au.org.ala.users.UserRecord
-import au.org.ala.users.UserPropertyRecord
+import au.org.ala.users.IUser
+import au.org.ala.users.IUserProperty
 import grails.converters.JSON
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
@@ -86,7 +86,7 @@ class PropertyController extends BaseController {
                             content = [
                                     @Content(
                                             mediaType = "application/json",
-                                            array = @ArraySchema(schema = @Schema(implementation = UserPropertyRecord))
+                                            array = @ArraySchema(schema = @Schema(implementation = IUserProperty))
                                     )
                             ]
                     )
@@ -102,8 +102,8 @@ class PropertyController extends BaseController {
         if (!name || !alaId) {
             badRequest "name and alaId must be provided";
         } else {
-            UserRecord user = userService.getUserById(alaId);
-            List<UserPropertyRecord> props
+            IUser user = userService.getUserById(alaId);
+            List<IUserProperty> props
             if (user) {
                 props = profileService.getUserProperty(user, name)
                 render text: props as JSON, contentType: 'application/json'
@@ -157,7 +157,7 @@ class PropertyController extends BaseController {
                             content = [
                                     @Content(
                                             mediaType = "application/json",
-                                            schema = @Schema(implementation = UserPropertyRecord)
+                                            schema = @Schema(implementation = IUserProperty)
                                     )
                             ]
                     ),
@@ -179,8 +179,8 @@ class PropertyController extends BaseController {
         if (!name || !alaId) {
             badRequest "name and alaId must be provided";
         } else {
-            UserRecord user = userService.getUserById(alaId);
-            UserPropertyRecord property
+            IUser user = userService.getUserById(alaId);
+            IUserProperty property
             if (user) {
                 property = profileService.saveUserProperty(user, name, value);
                 if (!property) {

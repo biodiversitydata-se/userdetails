@@ -18,7 +18,7 @@
 <div class="row">
     <div class="col-md-6">
         <div class="form-group fieldcontain ${hasErrors(bean: userInstance, field: 'firstName', 'error')} ">
-            <label for="fi rstName">
+            <label for="firstName">
                 <g:message code="user.firstName.label" default="First Name"/>
             </label>
             <g:textField name="firstName" class="form-control" value="${userInstance?.firstName}"/>
@@ -72,21 +72,23 @@
             <input id="city" name="city" type="text" class="form-control" value="${props?.city}" />
         </div>
 
-        <div class="form-group checkbox">
-            <label>
-                <g:checkBox name="enableMFA" value="${props?.enableMFA == 'true'}" id="enableMFA" disabled="disabled"/> <g:message code="user.enabledMFA" />
-            </label>
-            <g:if test="${props?.enableMFA == 'true'}">
-                <g:link controller="user" action="disableMfa" params="[userId:userInstance?.email]">Disable MFA</g:link>
-            </g:if>
-        </div>
+        <g:if test="${grailsApplication.config.getProperty('account.MFAenabled', Boolean, false)}">
+            <div class="form-group checkbox">
+                <label>
+                    <g:checkBox name="enableMFA" value="${props?.enableMFA == 'true'}" id="enableMFA" disabled="disabled"/> <g:message code="user.enabledMFA" />
+                </label>
+                <g:if test="${props?.enableMFA == 'true'}">
+                    <g:link controller="user" action="disableMfa" params="[userId:userInstance?.email]">Disable MFA</g:link>
+                </g:if>
+            </div>
+        </g:if>
 
 </div>
 <div class="col-md-6 well well-lg">
     <div class="fieldcontain ${hasErrors(bean: userInstance, field: 'activated', 'error')} ">
         <div class="checkbox">
             <label>
-                <g:checkBox name="activated" value="${userInstance?.activated}" disabled="disabled"/> <g:message code="user.form.activated" />
+                <g:checkBox name="activated" value="${userInstance?.activated}"/> <g:message code="user.form.activated" />
             </label>
         </div>
     </div>

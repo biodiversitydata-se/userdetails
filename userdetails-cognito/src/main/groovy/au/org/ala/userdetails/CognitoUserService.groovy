@@ -12,22 +12,21 @@ import com.amazonaws.ResponseMetadata
 import com.amazonaws.services.cognitoidp.AWSCognitoIdentityProvider
 import com.amazonaws.services.cognitoidp.model.AddCustomAttributesRequest
 import com.amazonaws.services.cognitoidp.model.AdminAddUserToGroupRequest
+import com.amazonaws.services.cognitoidp.model.AdminConfirmSignUpRequest
 import com.amazonaws.services.cognitoidp.model.AdminCreateUserRequest
+import com.amazonaws.services.cognitoidp.model.AdminDeleteUserRequest
 import com.amazonaws.services.cognitoidp.model.AdminDisableUserRequest
 import com.amazonaws.services.cognitoidp.model.AdminEnableUserRequest
 import com.amazonaws.services.cognitoidp.model.AdminGetUserRequest
-import com.amazonaws.services.cognitoidp.model.AdminGetUserResult
 import com.amazonaws.services.cognitoidp.model.AdminListGroupsForUserRequest
 import com.amazonaws.services.cognitoidp.model.AdminRemoveUserFromGroupRequest
 import com.amazonaws.services.cognitoidp.model.AdminSetUserMFAPreferenceRequest
 import com.amazonaws.services.cognitoidp.model.AdminUpdateUserAttributesRequest
 import com.amazonaws.services.cognitoidp.model.AssociateSoftwareTokenRequest
 import com.amazonaws.services.cognitoidp.model.AttributeType
-import com.amazonaws.services.cognitoidp.model.ConfirmForgotPasswordRequest
-import com.amazonaws.services.cognitoidp.model.DescribeUserPoolRequest
-
-import com.amazonaws.services.cognitoidp.model.CreateGroupRequest
 import com.amazonaws.services.cognitoidp.model.CreateGroupResult
+import com.amazonaws.services.cognitoidp.model.DescribeUserPoolRequest
+import com.amazonaws.services.cognitoidp.model.CreateGroupRequest
 import com.amazonaws.services.cognitoidp.model.GetGroupRequest
 import com.amazonaws.services.cognitoidp.model.GetUserRequest
 import com.amazonaws.services.cognitoidp.model.GetUserResult
@@ -37,8 +36,8 @@ import com.amazonaws.services.cognitoidp.model.ListGroupsResult
 import com.amazonaws.services.cognitoidp.model.ListUsersInGroupRequest
 import com.amazonaws.services.cognitoidp.model.ListUsersRequest
 import com.amazonaws.services.cognitoidp.model.ListUsersResult
-import com.amazonaws.services.cognitoidp.model.SchemaAttributeType
 import com.amazonaws.services.cognitoidp.model.ResourceNotFoundException
+import com.amazonaws.services.cognitoidp.model.SchemaAttributeType
 import com.amazonaws.services.cognitoidp.model.SoftwareTokenMfaSettingsType
 import com.amazonaws.services.cognitoidp.model.UserNotFoundException
 import com.amazonaws.services.cognitoidp.model.UserType
@@ -48,7 +47,6 @@ import grails.converters.JSON
 import grails.web.servlet.mvc.GrailsParameterMap
 import groovy.util.logging.Slf4j
 import org.apache.commons.lang3.NotImplementedException
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 
 import java.util.stream.Stream
@@ -65,7 +63,6 @@ class CognitoUserService implements IUserService<UserRecord, UserPropertyRecord,
 
     AWSCognitoIdentityProvider cognitoIdp
     String poolId
-    @Autowired
     JwtProperties jwtProperties
 
     @Value('${attributes.affiliations.enabled:false}')
@@ -82,10 +79,11 @@ class CognitoUserService implements IUserService<UserRecord, UserPropertyRecord,
     }
 
     @Override
-    boolean updateUser(String userId, GrailsParameterMap params) {
+    boolean updateUser(String userId, GrailsParameterMap params, Locale locale) {
 
         UserRecord user = getUserById(userId)
         def isUserLocked = user.locked
+        def isUserActivated = user.activated
 
         def emailRecipients = [ user.email ]
         if (params.email != user.email) {
@@ -94,10 +92,7 @@ class CognitoUserService implements IUserService<UserRecord, UserPropertyRecord,
 
         try {
             user.setProperties(params)
-//            user.activated = true
-//            user.locked = false
 
-//            Collection<AttributeType> userAttributes = user.userProperties.collect { new AttributeType().withName(it.name).withValue(it.value) }
             Collection<AttributeType> userAttributes = new ArrayList<>()
 
             userAttributes.add(new AttributeType().withName('email').withValue(user.email))
@@ -105,9 +100,6 @@ class CognitoUserService implements IUserService<UserRecord, UserPropertyRecord,
 //        userAttributes.add(new AttributeType().withName('userid').withValue(record.id))
             userAttributes.add(new AttributeType().withName('given_name').withValue(user.firstName))
             userAttributes.add(new AttributeType().withName('family_name').withValue(user.lastName))
-
-//            userAttributes.add(new AttributeType().withName('email').withValue(user.email))
-//            userAttributes.add(new AttributeType().withName('email_verified').withValue('false'))
 
             params.findAll {customAttrs.contains(it.key) }
                     .each {userAttributes.add(new AttributeType().withName("custom:${it.key}").withValue(it.value)) }
@@ -120,11 +112,16 @@ class CognitoUserService implements IUserService<UserRecord, UserPropertyRecord,
 
             cognitoIdp.adminUpdateUserAttributes(request)
 
-            //disable user
+            //enable or disable user
             if(params.locked && !isUserLocked){
                 disableUser(user)
             }
             else if(!params.locked && isUserLocked) {
+                enableUser(user)
+            }
+
+            //activate account if not
+            if(params.activated && !isUserActivated){
                 activateAccount(user, params)
             }
 
@@ -141,7 +138,13 @@ class CognitoUserService implements IUserService<UserRecord, UserPropertyRecord,
     @Override
     boolean disableUser(UserRecord user) {
         def response = cognitoIdp.adminDisableUser(new AdminDisableUserRequest().withUsername(user.email).withUserPoolId(poolId))
-        return response.sdkHttpMetadata.httpStatusCode == 200
+        return isSuccessful(response)
+    }
+
+    @Override
+    boolean enableUser(UserRecord user) {
+        def response = cognitoIdp.adminEnableUser(new AdminEnableUserRequest().withUsername(user.email).withUserPoolId(poolId))
+        return isSuccessful(response)
     }
 
     @Override
@@ -169,33 +172,41 @@ class CognitoUserService implements IUserService<UserRecord, UserPropertyRecord,
 
     @Override
     boolean activateAccount(UserRecord user, GrailsParameterMap params) {
-        def request = new AdminEnableUserRequest().withUsername(user.userName).withUserPoolId(poolId)
-        def response = cognitoIdp.adminEnableUser(request)
-        //TODO update custom activated field
-        return response.getSdkHttpMetadata().httpStatusCode == 200
+        if(user.locked) {
+            enableUser(user)
+        }
+        if(!user.activated) {
+            def request = new AdminConfirmSignUpRequest().withUsername(user.userName).withUserPoolId(poolId)
+            cognitoIdp.adminConfirmSignUp(request)
+        }
+        return true
     }
 
     @Override
-    List<UserRecord> listUsers(String query, String paginationToken, int maxResults) {
+    PagedResult<UserRecord> listUsers(GrailsParameterMap params) {
+        //max value for pagination in cognito is 60
+        def max = Math.min(params.int('max', 20), 60)
+        def nextPageToken = null
 
         ListUsersRequest request = new ListUsersRequest()
                 .withUserPoolId(poolId)
-                .withPaginationToken(paginationToken)
-                .withLimit(maxResults)
+                .withPaginationToken(params.token ?: null)
+                .withLimit(max)
 
         Stream<UserType> users
 
-        if (query) {
+        if (params.q) {
 
-            request.withFilter("email ^= \"${query}\"")
+            request.withFilter("email ^= \"${params.q}\"")
 
             ListUsersResult emailResults = cognitoIdp.listUsers(request)
+            nextPageToken = emailResults.paginationToken
 
-            request.withFilter("given_name ^= \"${query}\"")
+            request.withFilter("given_name ^= \"${params.q}\"")
 
             ListUsersResult givenNameResults = cognitoIdp.listUsers(request)
 
-            request.withFilter("family_name ^= \"${query}\"")
+            request.withFilter("family_name ^= \"${params.q}\"")
 
             ListUsersResult familyNameResults = cognitoIdp.listUsers(request)
 
@@ -209,21 +220,24 @@ class CognitoUserService implements IUserService<UserRecord, UserPropertyRecord,
             ListUsersResult results = cognitoIdp.listUsers(request)
 
             users = results.users.stream()
+            nextPageToken = results.paginationToken
         }
 
-        return users.map { userType ->
+        def list =  users.map { userType ->
             cognitoUserTypeToUserRecord(userType, true)
         }.toList()
+
+        return new PagedResult<UserRecord>(list: list, count: null, nextPageToken: nextPageToken)
     }
 
     private UserRecord cognitoUserTypeToUserRecord(UserType userType, boolean findRoles = false) {
         def (Map<String, String> attributes, List<UserPropertyRecord> userProperties) =
-            cognitoAttrsToUserPropertyRecords(userType.attributes, []) // TODO userType doesn't userMFASettingsList (yet?)
+            cognitoAttrsToUserPropertyRecords(userType.attributes, cognitoIdp.adminGetUser(new AdminGetUserRequest().withUsername(userType.username).withUserPoolId(poolId))?.userMFASettingList)
 
-        def user = new UserRecord<String>(
-                id: attributes['name'] ?: userType.username,
+        def user = new UserRecord(
+                id: userType.username,
                 dateCreated: userType.userCreateDate, lastUpdated: userType.userLastModifiedDate,
-                activated: userType.userStatus == "CONFIRMED", locked: !userType.enabled,
+                activated: userType.userStatus != "UNCONFIRMED", locked: !userType.enabled,
                 firstName: attributes['given_name'], lastName: attributes['family_name'],
                 email: attributes['email'], userName: userType.username,
                 userRoles: [],
@@ -252,9 +266,12 @@ class CognitoUserService implements IUserService<UserRecord, UserPropertyRecord,
 
     @Override
     UserRecord registerUser(GrailsParameterMap params) throws Exception {
-        def request = new AdminCreateUserRequest()
-        //TODO need to change
 
+        if(!params.email || isEmailInUse(params.email)){
+            return null
+        }
+
+        def request = new AdminCreateUserRequest()
         request.username = UUID.randomUUID().toString()
         request.userPoolId = poolId
         request.desiredDeliveryMediums = ["EMAIL"]
@@ -269,54 +286,17 @@ class CognitoUserService implements IUserService<UserRecord, UserPropertyRecord,
         params.findAll {customAttrs.contains(it.key) }
                 .each {userAttributes.add(new AttributeType().withName("custom:${it.key}").withValue(it.value as String)) }
 
-        userAttributes.add(new AttributeType().withName('custom:activated').withValue("0"))
-        userAttributes.add(new AttributeType().withName('custom:disabled').withValue("0"))
-//        userAttributes.add(new AttributeType().withName('custom:authority').withValue("ROLE_USER"))
-//        userAttributes.add(new AttributeType().withName('custom:role').withValue("ROLE_USER"))
-        userAttributes.add(new AttributeType().withName('custom:expired').withValue("0"))
-
         request.userAttributes = userAttributes
 
         def userResponse = cognitoIdp.adminCreateUser(request)
 
         if (userResponse.user) {
 
-            RoleRecord role
-
-            try {
-
-                GroupType groupType = getCognitoGroup('user')
-
-                role = new RoleRecord(role: groupType.groupName, description: groupType.description)
-
-            } catch (ResourceNotFoundException e) {
-
-                CreateGroupResult result = cognitoIdp.createGroup(
-                        new CreateGroupRequest()
-                                .withGroupName('user')
-                                .withDescription('User role')
-//                                .withRoleArn()
-                                .withUserPoolId(poolId)
-                )
-
-                role = new RoleRecord(role: result.group.groupName, description: result.group.description)
-            }
-
-            addUserRole(userResponse.user.username, role.role)
-
-            Map<String, String> attributes = userResponse.user.attributes.collectEntries { [(it.name): it.value] }
-            Collection<UserPropertyRecord> userProperties = attributes
-                    .findAll { !mainAttrs.contains(it.key) }
-                    .collect {
-                        if (it.key.startsWith('custom:')) {
-                            new UserPropertyRecord(name: it.key.substring(7), value: it.value)
-                        } else {
-                            new UserPropertyRecord(name: it.key, value: it.value)
-                        }
-                    }
-
             UserRecord user = cognitoUserTypeToUserRecord(userResponse.user, true)
-            
+
+            //add ROLE_USER role
+            addUserRole(user.userName, "ROLE_USER")
+
             //disable user
             disableUser(user)
 
@@ -341,7 +321,8 @@ class CognitoUserService implements IUserService<UserRecord, UserPropertyRecord,
 
     @Override
     void deleteUser(UserRecord user) {
-        throw new NotImplementedException()
+        def request = new AdminDeleteUserRequest().withUserPoolId(poolId).withUsername(user.userName)
+        cognitoIdp.adminDeleteUser(request)
     }
 
     @Override
@@ -358,26 +339,13 @@ class CognitoUserService implements IUserService<UserRecord, UserPropertyRecord,
         }
 
         try {
+            userResponse = cognitoIdp.adminGetUser(new AdminGetUserRequest().withUsername(userId).withUserPoolId(poolId))
+            (attributes, userProperties) = cognitoAttrsToUserPropertyRecords(userResponse.userAttributes, userResponse.userMFASettingList)
 
-            if (userId.isLong()) {
-                ListUsersRequest request = new ListUsersRequest()
-                        .withUserPoolId(poolId)
-                        .withFilter("name=\"${userId}\"")
-
-                ListUsersResult response = cognitoIdp.listUsers(request)
-                userResponse = response.users.first()
-                (attributes, userProperties) = cognitoAttrsToUserPropertyRecords(userResponse.attributes, userResponse.mFAOptions)
-            }
-
-            else {
-                userResponse = cognitoIdp.adminGetUser(new AdminGetUserRequest().withUsername(userId).withUserPoolId(poolId))
-                (attributes, userProperties) = cognitoAttrsToUserPropertyRecords(userResponse.userAttributes, userResponse.userMFASettingList)
-            }
-
-            UserRecord user = new UserRecord<String>(
-                    id: attributes['name'] ?: userResponse.username,
+            UserRecord user = new UserRecord(
+                    id: userResponse.username,
                     dateCreated: userResponse.userCreateDate, lastUpdated: userResponse.userLastModifiedDate,
-                    activated: userResponse.userStatus == "CONFIRMED", locked: !userResponse.enabled,
+                    activated: userResponse.userStatus != "UNCONFIRMED", locked: !userResponse.enabled,
                     firstName: attributes['given_name'], lastName: attributes['family_name'],
                     email: attributes['email'], userName: userResponse.username,
                     userRoles: [],
@@ -422,10 +390,15 @@ class CognitoUserService implements IUserService<UserRecord, UserPropertyRecord,
             def (Map<String, String> attributes, List<UserPropertyRecord> userProperties) =
                 cognitoAttrsToUserPropertyRecords(userResponse.userAttributes, userResponse.userMFASettingList)
 
-            UserRecord user = new UserRecord<String>(
-                    id: attributes['name'] ?: userResponse.username,
-//                dateCreated: userResponse.userCreateDate, lastUpdated: userResponse.userLastModifiedDate,
-//                activated: userResponse.userStatus == "CONFIRMED", locked: !userResponse.enabled,
+            ListUsersRequest request = new ListUsersRequest()
+                    .withUserPoolId(poolId)
+            request.withFilter("username = \"${userResponse.username}\"")
+            def response = cognitoIdp.listUsers(request)
+
+            UserRecord user = new UserRecord(
+                    id: userResponse.username,
+                    dateCreated: response.users[0].userCreateDate, lastUpdated: response.users[0].userLastModifiedDate,
+                    activated: response.users[0].userStatus != "UNCONFIRMED", locked: !response.users[0].enabled,
                     firstName: attributes['given_name'], lastName: attributes['family_name'],
                     email: attributes['email'], userName: userResponse.username,
                     userProperties: userProperties
@@ -477,7 +450,7 @@ class CognitoUserService implements IUserService<UserRecord, UserPropertyRecord,
 
         ListGroupsResult result = cognitoIdp.listGroups(new ListGroupsRequest()
                 .withUserPoolId(poolId)
-                .withNextToken(params.token))
+                .withNextToken(params.token ?: null))
 
         def roles = result.groups.collect { groupType ->
             new RoleRecord(role: (jwtProperties.getRolePrefix() + groupType.groupName).toUpperCase(), description: groupType.description)
@@ -499,11 +472,13 @@ class CognitoUserService implements IUserService<UserRecord, UserPropertyRecord,
     @Override
     boolean addUserRole(String userId, String roleName) {
 
-        if (checkGroupExists(roleName)) {
+        String cognitoRoleName = getCognitoRoleName(roleName)
+
+        if (checkGroupExists(cognitoRoleName)) {
             def addUserToGroupResult = cognitoIdp.adminAddUserToGroup(
                 new AdminAddUserToGroupRequest()
                     .withUsername(userId)
-                    .withGroupName(roleName)
+                    .withGroupName(cognitoRoleName)
                     .withUserPoolId(poolId)
             )
 
@@ -515,11 +490,14 @@ class CognitoUserService implements IUserService<UserRecord, UserPropertyRecord,
 
     @Override
     boolean removeUserRole(String userId, String roleName) {
+
+        String cognitoRoleName = getCognitoRoleName(roleName)
+
         if (checkGroupExists(roleName)) {
             def removeUserFromGroupResult = cognitoIdp.adminRemoveUserFromGroup(
                     new AdminRemoveUserFromGroupRequest()
                             .withUsername(userId)
-                            .withGroupName(roleName)
+                            .withGroupName(cognitoRoleName)
                             .withUserPoolId(poolId)
             )
 
@@ -529,12 +507,28 @@ class CognitoUserService implements IUserService<UserRecord, UserPropertyRecord,
     }
 
     private GroupType getCognitoGroup(String roleName) {
-        def getGroupResult = cognitoIdp.getGroup(
-                new GetGroupRequest()
-                        .withGroupName(roleName)
-                        .withUserPoolId(poolId)
-        )
-        return isSuccessful(getGroupResult) ? getGroupResult.group : null
+
+        String cognitoRoleName = getCognitoRoleName(roleName)
+
+        try {
+            def getGroupResult = cognitoIdp.getGroup(
+                    new GetGroupRequest()
+                            .withGroupName(cognitoRoleName)
+                            .withUserPoolId(poolId)
+            )
+            return isSuccessful(getGroupResult) ? getGroupResult.group : null
+        }
+        catch (ResourceNotFoundException e){
+
+            def roleInstance = new RoleRecord(role: cognitoRoleName, description: cognitoRoleName)
+            def role = addRole(roleInstance)
+            if(role) {
+                return cognitoRoleName
+            }
+            else {
+                return null
+            }
+        }
     }
 
     private boolean checkGroupExists(String roleName) {
@@ -543,30 +537,57 @@ class CognitoUserService implements IUserService<UserRecord, UserPropertyRecord,
     }
 
     @Override
-    void findScrollableUsersByUserName(String username, int maxResults, ResultStreamer resultStreamer) {
-        streamUserResults(resultStreamer, listUsers(username, null, maxResults))
+    void findScrollableUsersByUserName(GrailsParameterMap params, ResultStreamer resultStreamer) {
+        def token = null
+        resultStreamer.init()
+        try {
+            do {
+                def users = listUsers(token ? params + [token: token] : params)
+                users.list.each(resultStreamer.&offer)
+                token = users.nextPageToken
+            } while (token)
+            resultStreamer.complete()
+        } catch(e) {
+            log.error('error streaming results', e)
+        } finally {
+            resultStreamer.finalise()
+        }
     }
 
     @Override
-    void findScrollableUsersByIdsAndRole(List<String> ids, String roleName, ResultStreamer resultStreamer) {
+    void findScrollableUsersByIdsAndRole(GrailsParameterMap params, ResultStreamer resultStreamer) {
 
-        def things = ids.groupBy { it.isLong() }
-        def userIds = things[false]
-        def numberIds = things[true]
+        def ids = params.list('id')
 
-        ListUsersInGroupRequest request = new ListUsersInGroupRequest().withUserPoolId(poolId)
+        def groupName = getCognitoRoleName(params.role)
 
-        request.groupName = roleName.split(jwtProperties.getRolePrefix())[1].toLowerCase()
+        def token = null
+        resultStreamer.init()
+        try {
+            do {
 
-        def response = cognitoIdp.listUsersInGroup(request)
-        def users = response.users.findAll
-                {(!numberIds && !userIds) || numberIds?.contains(it.attributes.find{ attr -> attr.name == "name"}?.value) || userIds?.contains(it.username)}.stream()
+                ListUsersInGroupRequest request = new ListUsersInGroupRequest().withUserPoolId(poolId)
+                request.groupName = groupName
+                if (token) {
+                    request.nextToken = token
+                }
 
-        def results = users.map { userType ->
-            cognitoUserTypeToUserRecord(userType, true)
-        }.toList()
+                def response = cognitoIdp.listUsersInGroup(request)
 
-        streamUserResults(resultStreamer, results)
+                def users = response.users
+                        .findAll {(!ids) || ids?.contains(it.username) || ids?.contains(it.attributes.find{att -> att.name == "email"}.value)}
+                        .collect { userType -> cognitoUserTypeToUserRecord(userType, true) }
+
+                users.each(resultStreamer.&offer)
+
+                token = response.nextToken
+            } while (token)
+            resultStreamer.complete()
+        } catch(e) {
+            log.error('error streaming results', e)
+        } finally {
+            resultStreamer.finalise()
+        }
     }
 
     @Override
@@ -627,7 +648,7 @@ class CognitoUserService implements IUserService<UserRecord, UserPropertyRecord,
         List<UserPropertyRecord> propList = []
 
         if(userRecord && attribute) {
-            propList = userRecord.userProperties.findAll { it.name == attribute }
+            propList.addAll(userRecord.userProperties.findAll { it.name == attribute })
         }
         else if(attribute){
             //cannot implement this since cognito does not support custom attribute search
@@ -642,13 +663,12 @@ class CognitoUserService implements IUserService<UserRecord, UserPropertyRecord,
 
     @Override
     RoleRecord addRole(RoleRecord roleRecord) {
-        def group = getCognitoGroup(roleRecord.role)
         if (!checkGroupExists(roleRecord.role)) {
+            String cognitoRoleName = getCognitoRoleName(roleRecord.role)
             def createGroupResult = cognitoIdp.createGroup(
                     new CreateGroupRequest()
-                            .withGroupName(roleRecord.role)
+                            .withGroupName(cognitoRoleName)
                             .withDescription(roleRecord.description)
-//                        .withRoleArn()
                             .withUserPoolId(poolId)
             )
             if (createGroupResult.group) {
@@ -663,30 +683,35 @@ class CognitoUserService implements IUserService<UserRecord, UserPropertyRecord,
 
     @Override
     List<String[]> listNamesAndEmails() {
+        //Deprecated apis
         throw new NotImplementedException()
     }
 
     @Override
     List<String[]> listIdsAndNames() {
+        //Deprecated apis
         throw new NotImplementedException()
     }
 
     @Override
     List<String[]> listUserDetails() {
+        //Deprecated apis
         throw new NotImplementedException()
     }
 
     @Override
     PagedResult<UserRoleRecord> findUserRoles(String role, GrailsParameterMap params) {
-        def max = Math.min(params.int('max', 100), 1000)
+        //max value for pagination in cognito is 60
+        def max = Math.min(params.int('max', 5), 60)
         if (role) {
             def group = getCognitoGroup(role)
             if (group) {
+                String cognitoRoleName = getCognitoRoleName(role)
                 def listUsersInGroupResult = cognitoIdp.listUsersInGroup(
                         new ListUsersInGroupRequest()
-                                .withGroupName(role)
+                                .withGroupName(cognitoRoleName)
                                 .withLimit(max)
-                                .withNextToken(params.token)
+                                .withNextToken(params.token ?: null)
                                 .withUserPoolId(poolId)
                 )
                 if (isSuccessful(listUsersInGroupResult)) {
@@ -709,8 +734,7 @@ class CognitoUserService implements IUserService<UserRecord, UserPropertyRecord,
 
     @Override
     def sendAccountActivation(UserRecord user) {
-        //this email can be sent via cognito
-        //emailService.sendCognitoAccountActivation(user)
+        //this email is sent via cognito
     }
 
     //    *********** MFA services *************
@@ -752,7 +776,7 @@ class CognitoUserService implements IUserService<UserRecord, UserPropertyRecord,
                 .withUsername(userId)
         mfaRequest.setSoftwareTokenMfaSettings(new SoftwareTokenMfaSettingsType(enabled: enable))
         def response = cognitoIdp.adminSetUserMFAPreference(mfaRequest)
-        if (response.sdkHttpMetadata.httpStatusCode != 200) {
+        if (!isSuccessful(response)) {
             throw new RuntimeException("Couldn't set MFA preference")
         }
     }
@@ -763,8 +787,26 @@ class CognitoUserService implements IUserService<UserRecord, UserPropertyRecord,
     }
 
     @Override
-    UserRecord findByUserNameOrEmail(String userName) {
-        return listUsers(userName, null, 1)?[0]
+    UserRecord findByUserNameOrEmail(GrailsParameterMap params) {
+        def isUserNameUUID
+
+        try{
+            UUID.fromString(params.userName)
+            isUserNameUUID = true
+        }
+        catch (Exception ex){
+            isUserNameUUID = false
+        }
+
+        if(params.userName.isLong() || isUserNameUUID){
+            return getUserById(params.userName)
+        }
+        else {
+            params.q = params.userName
+            params.max = 1
+            return listUsers(params)?.list[0]
+        }
+
     }
 
     def getUserDetailsFromIdList(List idList){
@@ -776,12 +818,7 @@ class CognitoUserService implements IUserService<UserRecord, UserPropertyRecord,
                 .withLimit(1)
 
         idList.forEach{
-            if(it instanceof Number) {
-                request.withFilter("name = \"${it.toString()}\"")
-            }
-            else{
-                request.withFilter("username = \"${it.toString()}\"")
-            }
+            request.withFilter("username = \"${it.toString()}\"")
             def response = cognitoIdp.listUsers(request)
             users.addAll(response.users)
         }
@@ -805,17 +842,15 @@ class CognitoUserService implements IUserService<UserRecord, UserPropertyRecord,
         return cognitoIdp.adminUpdateUserAttributes(updateUserRequest)
     }
 
+    String getCognitoRoleName(String role) {
+        return role.contains(jwtProperties.getRolePrefix()) ? role.split(jwtProperties.getRolePrefix())[1].toLowerCase() : role
+    }
+
     private void streamUserResults(ResultStreamer resultStreamer, List<UserRecord> results) {
         resultStreamer.init()
         try {
-            int count = 0
-
-            for(UserRecord elem : results){
-                resultStreamer.offer(elem)
-
-//                if (count++ % 50 == 0) {
-//                    break
-//                }
+            results.each {
+                resultStreamer.offer(it)
             }
         } finally {
             resultStreamer.finalise()

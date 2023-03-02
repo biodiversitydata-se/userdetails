@@ -13,28 +13,28 @@
  * rights and limitations under the License.
  */
 
-package au.org.ala.userdetails.marshaller
+package au.org.ala.userdetails.gorm.marshaller
 
-import au.org.ala.userdetails.*
-import au.org.ala.users.RoleRecord
-import au.org.ala.users.UserPropertyRecord
-import au.org.ala.users.UserRecord
-import au.org.ala.users.UserRoleRecord
+import au.org.ala.userdetails.gorm.Password
+import au.org.ala.userdetails.gorm.Role
+import au.org.ala.userdetails.gorm.User
+import au.org.ala.userdetails.gorm.UserDetailsSpec
+import au.org.ala.userdetails.gorm.UserProperty
+import au.org.ala.userdetails.gorm.UserRole
+import au.org.ala.userdetails.marshaller.UserMarshaller
+import au.org.ala.users.IUser
 import grails.converters.JSON
 import grails.testing.gorm.DataTest
-import spock.lang.Ignore
 
 /**
  * Tests the UserMarshaller
  */
-//@Mock([User, Role, UserRole, UserProperty])
-@Ignore
 class UserMarshallerSpec extends UserDetailsSpec implements DataTest {
 
-    private UserRecord user
+    private IUser<Long> user
 
     void setupSpec() {
-//        mockDomains(UserRecord, RoleRecord, UserRoleRecord, UserPropertyRecord)
+        mockDomains(Role, User, Password, UserRole, UserProperty)
     }
 
     void setup() {
@@ -45,7 +45,7 @@ class UserMarshallerSpec extends UserDetailsSpec implements DataTest {
     void "JSON serialization of the User object should be output in a specific format"() {
         when:
         registerMarshallers()
-        UserRecord user = createUser()
+        IUser<Long> user = createUser()
         def expectedSerializedProperies = ['userId', 'userName', 'firstName', 'lastName', 'email', 'roles', 'activated', 'locked']
         JSON json = user as JSON
         Map deserializedJson = JSON.parse(json.toString())
@@ -67,7 +67,7 @@ class UserMarshallerSpec extends UserDetailsSpec implements DataTest {
     void "There should be a named JSON configuration that allows the properties of a User to be included in the serialized user data"() {
         when:
         JSON json
-        UserRecord user = createUser()
+        IUser<Long> user = createUser()
         registerMarshallers()
 
         def expectedSerializedProperties = ['userId', 'userName', 'firstName', 'lastName', 'email', 'roles', 'activated', 'locked', 'props']

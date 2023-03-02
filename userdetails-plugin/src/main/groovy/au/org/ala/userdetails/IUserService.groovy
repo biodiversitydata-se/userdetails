@@ -20,10 +20,6 @@ import au.org.ala.users.IRole
 import au.org.ala.users.IUser
 import au.org.ala.users.IUserProperty
 import au.org.ala.users.IUserRole
-import au.org.ala.users.RoleRecord
-import au.org.ala.users.UserPropertyRecord
-import au.org.ala.users.UserRecord
-import au.org.ala.users.UserRoleRecord
 import grails.web.servlet.mvc.GrailsParameterMap
 
 interface IUserService<U extends IUser<? extends Serializable>, P extends IUserProperty<U>, R extends IRole, UR extends IUserRole<U, R>> {
@@ -38,9 +34,11 @@ interface IUserService<U extends IUser<? extends Serializable>, P extends IUserP
 
     //    *********** User related services *************
 
-    boolean updateUser(String userId, GrailsParameterMap params)
+    boolean updateUser(String userId, GrailsParameterMap params, Locale locale)
 
     boolean disableUser(U user)
+
+    boolean enableUser(U user)
 
     boolean isActive(String email)
 
@@ -50,7 +48,20 @@ interface IUserService<U extends IUser<? extends Serializable>, P extends IUserP
 
     boolean activateAccount(U user, GrailsParameterMap params)
 
-    List<U> listUsers(String query, String paginationToken, int maxResults)
+    /***
+     * This method can be used to search users
+     * The following paging params are always supported:
+     *  - max: Maximum number of items to retrieve at a time
+     * The following paging params are supported in GORM:
+     *  - offset: The number of items to skip forward
+     *  - sort: the field to sort results by
+     *  - order: whether to sort 'asc'ending or 'desc'ending
+     * The following paging params are supported in Cognito:
+     *  - token: The paging token provided by the back end API
+     * @param params
+     * @return
+     */
+    PagedResult<U> listUsers(GrailsParameterMap params)
 
     Collection<U> listUsers()
 
@@ -83,13 +94,39 @@ interface IUserService<U extends IUser<? extends Serializable>, P extends IUserP
 
     List<String[]> countByProfileAttribute(String s, Date date, Locale locale)
 
-    void findScrollableUsersByUserName(String username, int maxResults, ResultStreamer resultStreamer)
+    /***
+     * This method can be used to get users by username
+     * The following paging params are always supported:
+     *  - max: Maximum number of items to retrieve at a time
+     * The following paging params are supported in GORM:
+     *  - offset: The number of items to skip forward
+     *  - sort: the field to sort results by
+     *  - order: whether to sort 'asc'ending or 'desc'ending
+     * The following paging params are supported in Cognito:
+     *  - token: The paging token provided by the back end API
+     * @param params
+     * @param resultStreamer
+     */
+    void findScrollableUsersByUserName(GrailsParameterMap params, ResultStreamer resultStreamer)
 
-    void findScrollableUsersByIdsAndRole(List<String> ids, String roleName, ResultStreamer resultStreamer)
+    /***
+     * This method can be used to get users by role and ids
+     * The following paging params are always supported:
+     *  - max: Maximum number of items to retrieve at a time
+     * The following paging params are supported in GORM:
+     *  - offset: The number of items to skip forward
+     *  - sort: the field to sort results by
+     *  - order: whether to sort 'asc'ending or 'desc'ending
+     * The following paging params are supported in Cognito:
+     *  - token: The paging token provided by the back end API
+     * @param params
+     * @param resultStreamer
+     */
+    void findScrollableUsersByIdsAndRole(GrailsParameterMap params, ResultStreamer resultStreamer)
 
     def getUserDetailsFromIdList(List idList)
 
-    U findByUserNameOrEmail(String username)
+    U findByUserNameOrEmail(GrailsParameterMap params)
 
     List<String[]> listNamesAndEmails()
 

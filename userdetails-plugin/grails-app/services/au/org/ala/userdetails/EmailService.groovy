@@ -16,7 +16,7 @@
 package au.org.ala.userdetails
 
 import au.org.ala.auth.PasswordResetFailedException
-import au.org.ala.users.UserRecord
+import au.org.ala.users.IUser
 import grails.web.mapping.LinkGenerator
 
 class EmailService {
@@ -82,22 +82,6 @@ class EmailService {
         }
     }
 
-    def sendCognitoAccountActivation(user) throws PasswordResetFailedException {
-        try {
-            sendMail {
-                from grailsApplication.config.getProperty('emailSenderTitle') + "<" + grailsApplication.config.getProperty('emailSender') + ">"
-                subject "Activate your account"
-                to user.email
-                body(view: '/email/activateAccount',
-                        plugin: "email-confirmation",
-                        model: [userName: user.firstName, link: getServerUrl() + "activateAccount/" + user.email, orgNameLong: grailsApplication.config.getProperty('skin.orgNameLong')]
-                )
-            }
-        } catch (Exception ex) {
-            throw new PasswordResetFailedException(ex)
-        }
-    }
-
     def sendAccountActivationSuccess(user, activatedAlerts) throws PasswordResetFailedException {
         try {
             sendMail {
@@ -114,7 +98,7 @@ class EmailService {
         }
     }
 
-    def sendUpdateProfileSuccess(UserRecord user, List<String> emailRecipients) throws PasswordResetFailedException {
+    def sendUpdateProfileSuccess(IUser user, List<String> emailRecipients) throws PasswordResetFailedException {
         try {
             sendMail {
                 from grailsApplication.config.getProperty('emailSenderTitle')+"<" + grailsApplication.config.getProperty('emailSender') + ">"

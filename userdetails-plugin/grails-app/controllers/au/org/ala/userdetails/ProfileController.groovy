@@ -16,8 +16,7 @@
 package au.org.ala.userdetails
 
 import au.org.ala.oauth.apis.InaturalistApi
-import au.org.ala.users.UserPropertyRecord
-import au.org.ala.users.UserRecord
+import au.org.ala.users.IUser
 import com.github.scribejava.core.builder.ServiceBuilder
 import com.github.scribejava.apis.FlickrApi
 import com.github.scribejava.core.exceptions.OAuthException
@@ -101,7 +100,7 @@ class ProfileController {
         def body = response.body
         def inaturalistUser = JSON.parse(body)
 
-        UserRecord user = userService.currentUser
+        IUser user = userService.currentUser
 
         if (user) {
             if (accessToken.expiresIn == null) {
@@ -143,12 +142,12 @@ class ProfileController {
         }
 
         //store the user's flickr ID.
-        UserRecord user = userService.currentUser
+        IUser user = userService.currentUser
 
         if (user) {
             //store flickrID & flickrUsername
-            userService.addOrUpdateProperty(user, FLICKR_ID, URLDecoder.decode(model.get("user_nsid"), "UTF-8"))
-            userService.addOrUpdateProperty(user, FLICKR_USERNAME, model.get("username"))
+            userService.addOrUpdateProperty(user, FLICKR_ID, URLDecoder.decode(model.get("user_nsid") as String, "UTF-8"))
+            userService.addOrUpdateProperty(user, FLICKR_USERNAME, model.get("username") as String)
         } else {
             flash.message = "Failed to retrieve user details!"
         }
@@ -164,7 +163,7 @@ class ProfileController {
 
     def removeLink() {
         String provider = params['provider']
-        UserRecord user = userService.currentUser
+        IUser user = userService.currentUser
         List<String> attrs
         switch (provider) {
             case 'flickr': attrs = FLICKR_ATTRS

@@ -13,30 +13,28 @@
  * rights and limitations under the License.
  */
 
-package au.org.ala.userdetails
+package au.org.ala.userdetails.gorm
 
-import au.org.ala.users.RoleRecord
-import au.org.ala.users.UserPropertyRecord
+import au.org.ala.userdetails.AuthorisedSystemService
+import au.org.ala.userdetails.RoleBasedInterceptor
+import au.org.ala.userdetails.UserRoleController
+import au.org.ala.users.IUser
 import au.org.ala.users.UserRecord
-import au.org.ala.users.UserRoleRecord
 import grails.testing.gorm.DataTest
 import grails.testing.web.interceptor.InterceptorUnitTest
 import org.apache.http.HttpStatus
 import org.grails.web.util.GrailsApplicationAttributes
-import spock.lang.Ignore
 
 /**
  * See the API for {@link grails.test.mixin.web.InterceptorUnitTestMixin} for usage instructions
  */
-@Ignore // TODO Fix this
 class RoleBasedInterceptorSpec extends UserDetailsSpec implements InterceptorUnitTest<RoleBasedInterceptor>, DataTest {
 
     def controller
-    private UserRecord user
+    private IUser<?> user
 
     def setupSpec() {
-//        mockDomains(UserRecord, RoleRecord, UserRoleRecord, UserPropertyRecord)
-//        mockDataService(AuthorisedSystemService)
+        mockDomains(Role, User, Password, UserRole, UserProperty)
     }
 
     def setup() {

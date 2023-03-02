@@ -13,12 +13,12 @@
  * rights and limitations under the License.
  */
 
-package au.org.ala.userdetails
+package au.org.ala.userdetails.gorm
 
-import au.org.ala.users.RoleRecord
+import au.org.ala.userdetails.IUserService
+import au.org.ala.userdetails.UserRoleController
+import au.org.ala.users.IUser
 import au.org.ala.users.UserRecord
-import au.org.ala.users.UserPropertyRecord
-import au.org.ala.users.UserRoleRecord
 import au.org.ala.ws.security.JwtProperties
 import grails.converters.JSON
 import grails.testing.gorm.DataTest
@@ -26,22 +26,17 @@ import grails.testing.web.controllers.ControllerUnitTest
 import org.apache.http.HttpStatus
 import org.grails.spring.beans.factory.InstanceFactoryBean
 import org.pac4j.core.config.Config
-import org.pac4j.http.client.direct.DirectBearerAuthClient
-import spock.lang.Ignore
+import au.org.ala.ws.security.client.AlaAuthClient
 
 /**
  * Specification for the UserRoleController
  */
-@Ignore
-//@TestFor(UserRoleController)
-//@TestMixin(InterceptorUnitTestMixin)
-//@Mock([AuthorisedSystemService, UserRecord, RoleRecord, UserRoleRecord, UserPropertyRecord])
 class UserRoleControllerSpec extends UserDetailsSpec implements ControllerUnitTest<UserRoleController>, DataTest {
 
-    private UserRecord user
+    private IUser<?> user
 
     void setupSpec() {
-//        mockDomains(UserRecord, RoleRecord, UserRoleRecord, UserPropertyRecord)
+        mockDomains(Role, User, Password, UserRole, UserProperty)
     }
 
     void setup() {
@@ -51,10 +46,11 @@ class UserRoleControllerSpec extends UserDetailsSpec implements ControllerUnitTe
                 fallbackToLegacyBehaviour = true
             }
             config(InstanceFactoryBean, Stub(Config), Config)
-            directBearerAuthClient(InstanceFactoryBean, Stub(DirectBearerAuthClient), DirectBearerAuthClient)
-            authorisedSystemService(UserDetailsSpec.UnAuthorised)
+            alaAuthClient(InstanceFactoryBean, Stub(AlaAuthClient), AlaAuthClient)
+            userService(InstanceFactoryBean, Mock(IUserService), IUserService)
         }
         user = createUser()
+        controller.userService = new GormUserService()
     }
 
     void "user role list should return a model when HTML requested"() {

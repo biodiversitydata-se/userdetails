@@ -120,10 +120,8 @@
                     </g:if></p>
                 </g:if>
 
-                <g:if test="${!edit}">
-                    <g:render template="passwordPolicy"
-                              model="[passwordPolicy: passwordPolicy]"/>
-                </g:if>
+                <g:render template="passwordPolicy"
+                          model="[passwordPolicy: passwordPolicy]"/>
 
                 <h2><g:message code="create.account.policy.title" /></h2>
                 <p>
@@ -136,7 +134,7 @@
                     <g:message code="create.account.tos.description"
                                args="[grailsApplication.config.getProperty('skin.orgNameShort'), grailsApplication.config.getProperty('termsOfUse')]" />
                 </p>
-                <g:if test="${edit}">
+                <g:if test="${edit && grailsApplication.config.getProperty('account.MFAenabled', Boolean, false)}">
                     <h2><g:message code="user.enableMFA.title" /></h2>
                     <g:if test="${props?.enableMFA == 'true'}">
                         <p><g:message code="user.enabledMFA.description" />
@@ -262,14 +260,16 @@
                     <input id="city" name="city" type="text" class="form-control" value="${props?.city}" />
                 </div>
                 <g:if test="${edit}">
-                    <div class="form-group checkbox">
-                        <label>
-                            <g:checkBox name="enableMFA" value="${props?.enableMFA == 'true'}" id="enableMFA" disabled="disabled"/> <g:message code="user.enabledMFA" />
-                        </label>
-                        <g:if test="${props?.enableMFA == 'true'}">
-                            <g:link controller="Registration" action="disableMfa" params="[userId:user?.email]">Disable MFA</g:link>
-                        </g:if>
-                    </div>
+                    <g:if test="${grailsApplication.config.getProperty('account.MFAenabled', Boolean, false)}">
+                        <div class="form-group checkbox">
+                            <label>
+                                <g:checkBox name="enableMFA" value="${props?.enableMFA == 'true'}" id="enableMFA" disabled="disabled"/> <g:message code="user.enabledMFA" />
+                            </label>
+                            <g:if test="${props?.enableMFA == 'true'}">
+                                <g:link controller="Registration" action="disableMfa" params="[userId:user?.email]">Disable MFA</g:link>
+                            </g:if>
+                        </div>
+                    </g:if>
                     <g:if test="${grailsApplication.config.getProperty('userdetails.features.requirePasswordForUserUpdate', Boolean, true)}">
                         <div class="form-group">
                             <label for="confirmUserPassword">

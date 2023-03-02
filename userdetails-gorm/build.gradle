@@ -17,9 +17,6 @@ plugins {
     id "com.gorylenko.gradle-git-properties" version "2.4.1"
 }
 
-version "3.1.0-SNAPSHOT"
-group "au.org.ala"
-
 apply plugin:"eclipse"
 apply plugin:"idea"
 apply plugin:"war"
@@ -113,6 +110,7 @@ dependencies {
     implementation 'com.zaxxer:HikariCP:5.0.1'
     implementation 'mysql:mysql-connector-java:8.0.29'
     testRuntimeOnly "com.h2database:h2"
+    testImplementation('com.squareup.retrofit2:retrofit-mock:2.9.0')
 
 }
 
@@ -179,7 +177,7 @@ publishing {
     repositories {
         maven {
             name 'Nexus'
-            url "https://nexus.ala.org.au/content/repositories/${project.version.endsWith('-SNAPSHOT') ? 'snapshots' : 'releases' }"
+            url "https://nexus.ala.org.au/content/repositories/${project.version.endsWith('-SNAPSHOT') ? 'snapshots' : 'releases'}"
             credentials {
                 username = System.getenv('TRAVIS_DEPLOY_USERNAME')
                 password = System.getenv('TRAVIS_DEPLOY_PASSWORD')

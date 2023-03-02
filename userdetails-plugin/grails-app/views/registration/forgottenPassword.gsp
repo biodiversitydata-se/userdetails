@@ -64,7 +64,7 @@
             <p class="well">
                 <g:message code="forgotten.password.description.send.pass" />
                 <br/>
-                <g:message code="forgotten.password..valid.hours" />
+                <g:message code="forgotten.password..valid.hours" args="[validHours]" />
             </p>
         </div>
 

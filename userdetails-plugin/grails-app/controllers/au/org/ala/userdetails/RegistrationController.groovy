@@ -15,10 +15,9 @@
 
 package au.org.ala.userdetails
 
-import au.org.ala.auth.UpdateCognitoPasswordCommand
 import au.org.ala.auth.UpdatePasswordCommand
 import au.org.ala.recaptcha.RecaptchaClient
-import au.org.ala.users.UserRecord
+import au.org.ala.users.IUser
 import au.org.ala.ws.service.WebService
 import grails.converters.JSON
 
@@ -69,23 +68,40 @@ class RegistrationController {
     }
 
     def passwordReset() {
-        UserRecord user = userService.getUserById(params.userId)
+        IUser user = userService.getUserById(params.userId)
+        boolean isAuthkeyCheckRequired = grailsApplication.config.getProperty("password.requireAuthKeyCheck", Boolean)
+
         if (!user) {
-            render(view: 'accountError', model: [msg: "UserRecord not found with ID ${params.userId}"])
-        } else if (user.tempAuthKey == params.authKey) {
-            //keys match, so lets reset password
-            render(view: 'passwordReset', model: [user: user, authKey: params.authKey, passwordPolicy: passwordService.buildPasswordPolicy()])
-        } else {
-            render(view: 'authKeyExpired')
+            render(view: 'accountError', model: [msg: "User not found with ID ${params.userId}"])
+        }
+        if(isAuthkeyCheckRequired) {
+            if (user.tempAuthKey == params.authKey) {
+                //keys match, so lets reset password
+                render(view: 'passwordReset', model: [user: user, authKey: params.authKey, passwordPolicy: passwordService.buildPasswordPolicy()])
+            } else {
+                render(view: 'authKeyExpired')
+            }
+        }
+        else{
+            render(view: 'passwordReset', model: [user: user, authKey: null, passwordPolicy: passwordService.buildPasswordPolicy()])
         }
     }
 
     def updatePassword(UpdatePasswordCommand cmd) {
-        UserRecord user = userService.getUserById(cmd.userId as String)
+        IUser<?> user = userService.getUserById(cmd.userId)
+        if(!user) {
+            log.error "Invalid User"
+            render(view: 'accountError', model: [msg: "Invalid User"])
+        }
 
         // since the email address is the user name, use the part before the @ as the username
         def username = user?.userName ?: user?.email ?: ''
         def validationResult = passwordService.validatePassword(username, cmd?.password)
+
+        boolean isCodeRequired = grailsApplication.config.getProperty("password.requireCodeToResetPassword", Boolean)
+        if(isCodeRequired && !cmd.code){
+            cmd.errors.rejectValue('code', "updatePasswordCommand.code.blank.error", "Code is required to reset the password.")
+        }
         buildErrorMessages(validationResult, cmd.errors)
 
         if (cmd.hasErrors()) {
@@ -93,50 +109,25 @@ class RegistrationController {
         }
         else {
             withForm {
-                if (user.tempAuthKey == cmd.authKey) {
-                    //update the password
-                    try {
-                        passwordService.resetPassword(user, cmd.password, true, null)
-                        userService.clearTempAuthKey(user)
-                        redirect(controller: 'registration', action: 'passwordResetSuccess')
-                        log.info("Password successfully reset for user: " + cmd.userId)
-                    } catch (e) {
-                        log.error("Couldn't reset password", e)
-                        render(view: 'accountError', model: [msg: "Failed to reset password"])
-                    }
-                } else {
-                    log.error "Password was not reset as AUTH_KEY did not match -- ${user.tempAuthKey} vs ${cmd.authKey}"
-                    render(view: 'accountError', model: [msg: "Password was not reset as AUTH_KEY did not match"])
-                }
-            }
-            .invalidToken {
-                redirect(action: 'duplicateSubmit', model: [msg: ""])
-            }
-        }
-
-    }
-
-    def updateCognitoPassword(UpdateCognitoPasswordCommand cmd) {
-        UserRecord user = userService.getUserByEmail(cmd.email)
-        if (cmd.hasErrors()) {
-            render(view: 'passwordResetCognito', model: [email: cmd.email, code: cmd.code, errors:cmd.errors, passwordMatchFail: true, passwordPolicy: passwordService.buildPasswordPolicy()])
-        }
-        else {
-            withForm {
-                if(!user) {
-                    log.error "Invalid email ${cmd.email}"
-                    render(view: 'accountError', model: [msg: "Invalid email ${cmd.email}"])
-                }
+                boolean isAuthkeyCheckRequired = grailsApplication.config.getProperty("password.requireAuthKeyCheck", Boolean)
                 //update the password
                 try {
-                    def success = passwordService.resetPassword(user, cmd.password, true, cmd.code)
-                    if(success) {
-                        Map resp = webService.get("${grailsApplication.config.getProperty('grails.serverURL')}/logout?")
-                        redirect(controller: 'registration', action: 'passwordResetSuccess')
-                        log.info("Password successfully reset for user: " + cmd.email)
+                    if(!isAuthkeyCheckRequired || (isAuthkeyCheckRequired && user.tempAuthKey == cmd.authKey)) {
+                        def success = passwordService.resetPassword(user, cmd.password, true, cmd.code)
+                        if (isAuthkeyCheckRequired) {
+                            userService.clearTempAuthKey(user)
+                        }
+
+                        if (success) {
+                            redirect(uri: '/logout', params: [url: grailsLinkGenerator.link(controller: 'registration', action: 'passwordResetSuccess')])
+                            log.info("Password successfully reset for user: " + user.email)
+                        } else {
+                            render(view: 'accountError', model: [msg: "Failed to reset password"])
+                        }
                     }
-                    else{
-                        render(view: 'accountError', model: [msg: "Failed to reset password"])
+                    else if(isAuthkeyCheckRequired && user.tempAuthKey != cmd.authKey){
+                        log.error "Password was not reset as AUTH_KEY did not match -- ${user.tempAuthKey} vs ${cmd.authKey}"
+                        render(view: 'accountError', model: [msg: "Password was not reset as AUTH_KEY did not match"])
                     }
                 } catch (e) {
                     log.error("Couldn't reset password", e)
@@ -194,7 +185,7 @@ class RegistrationController {
         if (user) {
             try {
                 passwordService.resetAndSendTemporaryPassword(user, null, null, null, null)
-                render(view: passwordService.getPasswordResetView(), model: [email: params.email, passwordPolicy: passwordService.buildPasswordPolicy()])
+                render(view: passwordService.getPasswordResetView(), model: [user: user, passwordPolicy: passwordService.buildPasswordPolicy()])
             } catch (Exception e) {
                 log.error("Problem starting password reset for email address: " + params.email)
                 log.error(e.getMessage(), e)
@@ -216,7 +207,7 @@ class RegistrationController {
             def success = userService.disableUser(user)
 
             if (success) {
-                redirect(controller: 'logout', action: 'logout', params: [appUrl: grailsApplication.config.getProperty('grails.serverURL') + '/registration/accountDisabled'])
+                redirect(uri: '/logout', params: [url: grailsLinkGenerator.link(controller: 'registration', action: 'accountDisabled')])
             } else {
                 render(view: "accountError", model: [msg: "Failed to disable user profile - unknown error"])
             }
@@ -239,11 +230,8 @@ class RegistrationController {
                     render(view: "accountError", model: [msg: msg])
                     return
                 }
-                // and username and email address must be kept in sync
-//                params.userName = params.email
             }
 
-            // TODO might need to remove this for delegated auth?
             if (requirePasswordForUserUpdate) {
                 def isCorrectPassword = passwordService.checkUserPassword(user, params.confirmUserPassword)
                 if (!isCorrectPassword) {
@@ -253,7 +241,7 @@ class RegistrationController {
                 }
             }
 
-            def success = userService.updateUser(user.userId, params)
+            def success = userService.updateUser(user.userId, params, request.locale)
 
             if (success) {
                 redirect(controller: 'profile')
@@ -343,7 +331,13 @@ class RegistrationController {
 
     def forgottenPassword() {
         def currentUser = userService.getCurrentUser()
-        render(view: 'forgottenPassword', model: [currentUser: currentUser])
+        def validHours = 48
+
+        boolean isCodeRequired = grailsApplication.config.getProperty("password.requireCodeToResetPassword", Boolean)
+        if(isCodeRequired){
+            validHours = 1
+        }
+        render(view: 'forgottenPassword', model: [currentUser: currentUser, validHours: validHours])
     }
 
     def activateAccount() {

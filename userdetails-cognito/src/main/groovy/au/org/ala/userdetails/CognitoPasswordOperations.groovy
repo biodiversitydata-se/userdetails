@@ -1,14 +1,15 @@
 package au.org.ala.userdetails
 
 import au.org.ala.auth.PasswordResetFailedException
+import au.org.ala.users.IUser
 import au.org.ala.users.UserRecord
+import au.org.ala.web.OidcClientProperties
 import com.amazonaws.services.cognitoidp.AWSCognitoIdentityProvider
 import com.amazonaws.services.cognitoidp.model.AdminInitiateAuthRequest
 import com.amazonaws.services.cognitoidp.model.AdminResetUserPasswordRequest
 import com.amazonaws.services.cognitoidp.model.AdminSetUserPasswordRequest
 import com.amazonaws.services.cognitoidp.model.AuthFlowType
 import com.amazonaws.services.cognitoidp.model.ConfirmForgotPasswordRequest
-import grails.core.GrailsApplication
 import groovy.util.logging.Slf4j
 import org.apache.commons.codec.digest.HmacAlgorithms
 import org.apache.commons.codec.digest.HmacUtils
@@ -16,13 +17,12 @@ import org.apache.commons.codec.digest.HmacUtils
 @Slf4j
 class CognitoPasswordOperations implements IPasswordOperations {
 
-    GrailsApplication grailsApplication
-
     AWSCognitoIdentityProvider cognitoIdp
     String poolId
+    OidcClientProperties oidcClientProperties
 
     @Override
-    boolean resetPassword(UserRecord user, String newPassword, boolean isPermanent, String confirmationCode) {
+    boolean resetPassword(IUser<?> user, String newPassword, boolean isPermanent, String confirmationCode) {
         if(!user || !newPassword) {
             return false
         }
@@ -41,9 +41,8 @@ class CognitoPasswordOperations implements IPasswordOperations {
                 def request = new ConfirmForgotPasswordRequest().withUsername(user.email)
                 request.password = newPassword
                 request.confirmationCode = confirmationCode
-                request.clientId = grailsApplication.config.getProperty('security.oidc.client-id')
-                request.secretHash = calculateSecretHash(grailsApplication.config.getProperty('security.oidc.client-id'),
-                        grailsApplication.config.getProperty('security.oidc.secret'), user.email)
+                request.clientId = oidcClientProperties.getClientId()
+                request.secretHash = calculateSecretHash(oidcClientProperties.getClientId(), oidcClientProperties.getSecret(), user.email)
                 def response = cognitoIdp.confirmForgotPassword(request)
                 return response.getSdkHttpMetadata().httpStatusCode == 200
             }
@@ -53,7 +52,7 @@ class CognitoPasswordOperations implements IPasswordOperations {
     }
 
     @Override
-    void resetAndSendTemporaryPassword(UserRecord user, String emailSubject, String emailTitle, String emailBody, String password) throws PasswordResetFailedException {
+    void resetAndSendTemporaryPassword(IUser<?> user, String emailSubject, String emailTitle, String emailBody, String password) throws PasswordResetFailedException {
         def request = new AdminResetUserPasswordRequest()
         request.username = user.email
         request.userPoolId = poolId
@@ -62,10 +61,9 @@ class CognitoPasswordOperations implements IPasswordOperations {
     }
 
     @Override
-    boolean checkUserPassword(UserRecord user, String password) {
-        // TODO this is untested
-        def clientId = grailsApplication.config.getProperty('security.oidc.client-id')
-        def secret = grailsApplication.config.getProperty('security.oidc.secret')
+    boolean checkUserPassword(IUser<?> user, String password) {
+        def clientId = oidcClientProperties.getClientId()
+        def secret = oidcClientProperties.getSecret()
         try {
             def authResult = cognitoIdp.adminInitiateAuth(new AdminInitiateAuthRequest()
                     .withAuthFlow(AuthFlowType.ADMIN_USER_PASSWORD_AUTH)
@@ -77,7 +75,6 @@ class CognitoPasswordOperations implements IPasswordOperations {
                             SECRET_HASH: calculateSecretHash(clientId, secret, user.userName)
                     ])
             )
-            // TODO Test this and sign out?
             return authResult.authenticationResult != null
         } catch (e) {
             log.debug("Exception caught while checking user password", e)
@@ -96,13 +93,13 @@ class CognitoPasswordOperations implements IPasswordOperations {
     }
 
     @Override
-    String getResetPasswordUrl(UserRecord user) {
+    String getResetPasswordUrl(IUser<?> user) {
         return null
     }
 
     @Override
     String getPasswordResetView() {
-        return "passwordResetCognito"
+        return "passwordReset"
     }
 
 }

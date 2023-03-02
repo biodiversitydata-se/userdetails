@@ -34,11 +34,44 @@
         </g:if>
 
         <h1><g:message code="userdetails.index.accounts" args="[grailsApplication.config.getProperty('skin.orgNameShort')]" /></h1>
-        <ul class="userdetails-menu">
-            <li><g:link controller="registration" action="createAccount"><g:message code="userdetails.index.create.new.account" /></g:link></li>
-            <li><g:link controller="registration" action="forgottenPassword"><g:message code="userdetails.index.reset.password" /></g:link></li>
-            <li><g:link controller="profile"><g:message code="userdetails.index.my.profile" /></g:link></li>
-        </ul>
+
+        <div class="row userdetails-grid">
+            <div class="col-md-3">
+                <div class="thumbnail">
+                    <div class="image">
+                        <i class="glyphicon glyphicon-plus"></i>
+                    </div>
+                    <div class="caption">
+                        <h3><g:message code="userdetails.index.create.new.account" /></h3>
+                        <g:link controller="registration" action="createAccount" class="btn btn-primary"><g:message code="userdetails.index.create.new.account" /></g:link>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="thumbnail">
+                    <div class="image">
+                        <i class="glyphicon glyphicon-lock"></i>
+                    </div>
+                    <div class="caption">
+                        <h3><g:message code="userdetails.index.reset.password" /></h3>
+                        <g:link controller="registration" action="forgottenPassword" class="btn btn-primary"><g:message code="userdetails.index.reset.password" /></g:link>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="thumbnail">
+                    <div class="image">
+                        <i class="glyphicon glyphicon-user"></i>
+                    </div>
+                    <div class="caption">
+                        <h3><g:message code="userdetails.index.my.profile" /></h3>
+                        <g:link controller="profile" class="btn btn-primary"><g:message code="userdetails.index.my.profile" /></g:link>
+                    </div>
+                </div>
+            </div>
+        </div>
 
     </div>
     <auth:ifAllGranted roles="ROLE_ADMIN">

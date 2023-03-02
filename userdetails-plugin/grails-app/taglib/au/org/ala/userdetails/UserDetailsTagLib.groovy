@@ -13,7 +13,7 @@ class UserDetailsTagLib {
 
     static namespace = 'ud'
 
-    static defaultEncodeAs = [taglib:'html']
+    //static defaultEncodeAs = [taglib:'html']
     //static encodeAsForTags = [tagName: [taglib:'html'], otherTagName: [taglib:'none']]
     static returnObjectForTags = ['roleList', 'userList']
 
@@ -63,18 +63,15 @@ class UserDetailsTagLib {
             def locale = RequestContextUtils.getLocale(request)
 
             def action = (attrs.action ? attrs.action : (params.action ? params.action : "index"))
-            def prevToken = extractPrevToken() //attrs.prevToken
+            def prevToken = extractPrevToken() //this gives the token for current search not for previous page
             def nextToken = attrs.nextToken
             def max = params.int('max')
 
-            if (!max) max = (attrs.int('max') ?: 10)
+            if (!max) max = (attrs.int('max') ?: 20)
 
             def linkParams = [:]
             if (attrs.params) linkParams.putAll(attrs.params)
-//            linkParams.offset = offset - max
             linkParams.max = max
-//            if (params.sort) linkParams.sort = params.sort
-//            if (params.order) linkParams.order = params.order
 
             def linkTagAttrs = [action: action]
             if (attrs.namespace) {
@@ -105,55 +102,45 @@ class UserDetailsTagLib {
             MarkupBuilder mb = new MarkupBuilder(writer)
             mb.nav('aria-label': "Page navigation") {
                 mb.ul('class': cssClasses) {
-                    if (!prevToken) {
-                        mb.li {
-//                            mb.mkp.yieldUnescaped(
-                            g.link(withParams([token: null], linkTagAttrs)) {
+                    mb.li {
+                        mb.mkp.yieldUnescaped(
+                            g.link(withParams(linkTagAttrs, [token: null])) {
                                 (attrs.start ?: messageSource.getMessage('paginate.start', null, 'First', locale))
                             }
-//                            )
-                        }
-                    } else {
-                        mb.li('class': 'disabled') {
-                            mb.span {
-                                mb.mkp.yield(
-                                        (attrs.start ?: messageSource.getMessage('paginate.start', null, 'First', locale))
-                                )
-                            }
-                        }
+                        )
                     }
 
-                    if (prevToken) {
-                        mb.li {
+//                    if (prevToken) {
+//                        mb.li {
 //                            mb.mkp.yieldUnescaped(
-                                    g.link(withParams([token: prevToken], linkTagAttrs)) {
-                                (attrs.prev ?: messageSource.getMessage('paginate.prev', null, '&laquo;', locale))
-                            }
+//                                    g.link(withParams([token: prevToken], linkTagAttrs)) {
+//                                (attrs.prev ?: messageSource.getMessage('paginate.prev', null, '&laquo;', locale))
+//                                }
 //                            )
-                        }
-                    } else {
-                        mb.li('class': 'disabled') {
-                            mb.span {
-                                mb.mkp.yield(
-                                        (attrs.prev ?: messageSource.getMessage('paginate.prev', null, '&laquo;', locale))
-                                )
-                            }
-                        }
-                    }
+//                        }
+//                    } else {
+//                        mb.li('class': 'disabled') {
+//                            mb.span {
+//                                mb.mkp.yieldUnescaped(
+//                                        (attrs.prev ?: messageSource.getMessage('paginate.prev', null, '&laquo;', locale))
+//                                )
+//                            }
+//                        }
+//                    }
 
                     if (nextToken) {
                         mb.li {
-//                            mb.mkp.yieldUnescaped(
-                                    g.link(withParams([token: nextToken], linkTagAttrs)) {
-                                (attrs.prev ?: messageSource.getMessage('paginate.next', null, '&raquo;', locale))
+                            mb.mkp.yieldUnescaped(
+                                    g.link(withParams(linkTagAttrs, [token: nextToken])) {
+                                (attrs.next ?: messageSource.getMessage('paginate.next', null, '&raquo;', locale))
                             }
-//                            )
+                            )
                         }
                     } else {
                         mb.li('class': 'disabled') {
                             mb.span {
-                                mb.mkp.yield(
-                                        (attrs.prev ?: messageSource.getMessage('paginate.next', null, '&raquo;', locale))
+                                mb.mkp.yieldUnescaped(
+                                        (attrs.next ?: messageSource.getMessage('paginate.next', null, '&raquo;', locale))
                                 )
                             }
                         }
@@ -183,7 +170,7 @@ class UserDetailsTagLib {
     }
 
     private Map withParams(Map attrs, Map<String, Object> extraParams) {
-        Map params = attrs.params.clone()
+        Map params = ((Map) attrs.params?.clone()) ?: [:]
         extraParams.each {
             if (it.value == null) {
                 params.remove(it.key)
@@ -191,9 +178,9 @@ class UserDetailsTagLib {
                 params.put(it.key, it.value)
             }
         }
-        attrs.clone()
-        attrs.params = params
-        attrs
+        def newAttrs = (Map) attrs.clone()
+        newAttrs.params = params
+        newAttrs
     }
 
 }

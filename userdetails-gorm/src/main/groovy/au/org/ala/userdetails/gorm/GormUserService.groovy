@@ -22,17 +22,12 @@ import au.org.ala.userdetails.IUserService
 import au.org.ala.userdetails.LocationService
 import au.org.ala.userdetails.PagedResult
 import au.org.ala.userdetails.PasswordService
-import au.org.ala.userdetails.ProfileService
 import au.org.ala.userdetails.ResultStreamer
-import au.org.ala.users.RoleRecord
-import au.org.ala.users.UserPropertyRecord
-import au.org.ala.users.UserRecord
 import au.org.ala.web.AuthService
 import au.org.ala.ws.service.WebService
 import grails.converters.JSON
 import grails.core.GrailsApplication
 import grails.plugin.cache.Cacheable
-import grails.gorm.transactions.NotTransactional
 import grails.gorm.transactions.Transactional
 import grails.util.Environment
 import grails.web.servlet.mvc.GrailsParameterMap
@@ -68,19 +63,18 @@ class GormUserService implements IUserService<User, UserProperty, Role, UserRole
         return params ? new Role(params) : new Role()
     }
 
-//    @Override
-//    UserRole newRole(GrailsParameterMap params) {
-//        return params ? new UserRole(params) : new UserRole()
-//    }
-//
-//    @Override
-//    UserPropertyRecord newProperty(GrailsParameterMap params) {
-//        return params ? new UserProperty(params) : new UserProperty()
-//    }
-
-    boolean updateUser(String userId, GrailsParameterMap params) {
+    boolean updateUser(String userId, GrailsParameterMap params, Locale locale) {
 
         User user = getUserById(userId)
+
+        if (params.version != null) {
+            if (user.version > params.version) {
+                user.errors.rejectValue("version", "default.optimistic.locking.failure",
+                        [messageSource.getMessage('user.label', [] as Object[], 'User', locale)] as Object[],
+                        "Another user has updated this User while you were editing")
+                return false
+            }
+        }
 
         def emailRecipients = [user.email]
         if (params.email != user.email) {
@@ -114,6 +108,18 @@ class GormUserService implements IUserService<User, UserProperty, Role, UserRole
                 log.error("Alerts returned ${resp} when trying to disable the user's alerts. " +
                         "The user has been disabled, but their alerts are still active.")
             }
+            true
+        } catch (Exception e){
+            log.error(e.getMessage(), e)
+            false
+        }
+    }
+
+    boolean enableUser(User user) {
+        assert user instanceof User
+        try {
+            user.activated = true
+            user.save(failOnError: true, flush: true)
             true
         } catch (Exception e){
             log.error(e.getMessage(), e)
@@ -161,16 +167,21 @@ class GormUserService implements IUserService<User, UserProperty, Role, UserRole
     }
 
     @Override
-    List<User> listUsers(String query, String paginationToken, int maxResults) {
+    PagedResult<User> listUsers(GrailsParameterMap params) {
 
-        if (query) {
+        params.max = Math.min(params.int('max', 100), 1000)
+        def users = []
 
-            String q = "%${query}%"
+        if (params.q) {
 
-            return User.findAllByEmailLikeOrLastNameLikeOrFirstNameLike(q, q, q, [offset: paginationToken as int, max: maxResults ])
+            String q = "%${params.q}%"
+
+            users = User.findAllByEmailLikeOrLastNameLikeOrFirstNameLike(q, q, q, params)
         }
-
-        return User.list([offset: (paginationToken ?: 0) as int, max: maxResults ])
+        else{
+            users = User.list(params)
+        }
+        return new PagedResult<User>(list:users, count: User.count(), nextPageToken: null)
     }
 
     @Override
@@ -304,6 +315,7 @@ class GormUserService implements IUserService<User, UserProperty, Role, UserRole
         }
     }
 
+    @Transactional
     User registerUser(GrailsParameterMap params) throws Exception {
 
         //does a user with the supplied email address exist
@@ -371,7 +383,12 @@ class GormUserService implements IUserService<User, UserProperty, Role, UserRole
 
     @Override
     User getUserById(String userId) {
-        return User.get(userId as Long)
+        if(userId.isNumber()) {
+            return User.get(userId as Long)
+        }
+        else{
+            return User.findByEmail(userId)
+        }
     }
 
     @Override
@@ -478,13 +495,8 @@ class GormUserService implements IUserService<User, UserProperty, Role, UserRole
     PagedResult<Role> listRoles(GrailsParameterMap params) {
         params.max = Math.min(params.int('max', 100), 1000)
         def roles = Role.list(params)
-        return new PagedResult<RoleRecord>(list: roles, count: Role.count(), nextPageToken: null)
+        return new PagedResult<Role>(list: roles, count: Role.count(), nextPageToken: null)
     }
-
-//    Role createRole(GrailsParameterMap params) {
-//
-//
-//    }
 
     @Override
     boolean addUserRole(String userId, String roleId) {
@@ -496,7 +508,10 @@ class GormUserService implements IUserService<User, UserProperty, Role, UserRole
     }
 
     @Override
-    void findScrollableUsersByUserName(String username, int max, ResultStreamer resultStreamer) {
+    void findScrollableUsersByUserName(GrailsParameterMap params, ResultStreamer resultStreamer) {
+        String username = params.q
+        int max = params.int('max', 10)
+
         User.withStatelessSession { Session session ->
             def c = User.createCriteria()
             ScrollableResults results = c.scroll {
@@ -513,14 +528,14 @@ class GormUserService implements IUserService<User, UserProperty, Role, UserRole
     }
 
     @Override
-    void findScrollableUsersByIdsAndRole(List<String> ids, String roleName, ResultStreamer resultStreamer) {
+    void findScrollableUsersByIdsAndRole(GrailsParameterMap params, ResultStreamer resultStreamer) {
 
-        def things = ids.groupBy { it.isLong() }
+        def things = params.list('id').groupBy { it.isLong() }
         def userIds = things[false]
         def numberIds = things[true]
 
         User.withStatelessSession { Session session ->
-            RoleRecord role = Role.findByRole(roleName)
+            Role role = Role.findByRole(params.role)
 
             def c = User.createCriteria()
             ScrollableResults results = c.scroll {
@@ -591,8 +606,8 @@ class GormUserService implements IUserService<User, UserProperty, Role, UserRole
     }
 
     @Override
-    User findByUserNameOrEmail(String username) {
-        return User.findByUserNameOrEmail(username, username)
+    User findByUserNameOrEmail(GrailsParameterMap params) {
+        return User.findByUserNameOrEmail(params.userName, params.userName)
     }
 
     @Override
@@ -609,11 +624,6 @@ class GormUserService implements IUserService<User, UserProperty, Role, UserRole
     List<String[]> listUserDetails() {
         return User.findUserDetails()
     }
-
-//    @Override
-//    RoleRecord findRole(String role) {
-//        return Role.findByRole(role)
-//    }
 
     @Override
     PagedResult<Role> findUserRoles(String roleName, GrailsParameterMap params) {
@@ -652,7 +662,7 @@ class GormUserService implements IUserService<User, UserProperty, Role, UserRole
             int count = 0
 
             while (results.next()) {
-                UserRecord user = ((UserRecord) results.get()[0])
+                User user = ((User) results.get()[0])
 
                 resultStreamer.offer(user)
 

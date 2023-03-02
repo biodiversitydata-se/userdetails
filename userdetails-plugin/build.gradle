@@ -18,9 +18,6 @@ plugins {
     id "java-library"
 }
 
-version "3.1.0-SNAPSHOT"
-group "au.org.ala"
-
 apply plugin:"eclipse"
 apply plugin:"idea"
 apply plugin:"org.grails.grails-plugin"
@@ -104,14 +101,17 @@ dependencies {
     testRuntimeOnly "org.seleniumhq.selenium:selenium-chrome-driver:4.0.0"
     testRuntimeOnly "org.seleniumhq.selenium:selenium-firefox-driver:4.0.0"
 
+    // Grails backwards compat?
+    api 'org.grails.plugins:converters:4.0.1'
+
     // Groovy backwards compat
     runtimeOnly 'org.codehaus.groovy:groovy-dateutil'
 
     // Grails plugin dependencies
 
     api "org.grails.plugins:ala-bootstrap3:4.1.0"
-    api "org.grails.plugins:ala-ws-plugin:3.1.2"
-    api "org.grails.plugins:ala-ws-security-plugin:4.3.5-SNAPSHOT"
+    api "org.grails.plugins:ala-ws-plugin:3.2.0-SNAPSHOT"
+    api "org.grails.plugins:ala-ws-security-plugin:4.4.0-SNAPSHOT"
     api "org.grails.plugins:ala-auth:5.2.0-SNAPSHOT"
     api "org.grails.plugins:ala-admin-plugin:2.3.0"
 
@@ -151,10 +151,6 @@ dependencies {
     api 'org.mongodb:mongodb-driver-core:4.6.0'
     api 'org.mongodb:bson:4.6.0'
 
-//    implementation 'com.amazonaws:aws-java-sdk-cognitoidentity:1.12.279'
-//    implementation 'com.amazonaws:aws-java-sdk-cognitoidp:1.12.279'
-//    implementation 'com.amazonaws:aws-java-sdk-cognitosync:1.12.279'
-
 //    implementation "com.auth0:java-jwt:3.18.2"
 //    implementation "com.auth0:jwks-rsa:0.20.0"
 
@@ -170,7 +166,7 @@ dependencies {
         exclude module: 'bootstrap' // dependency from skin
     }
 
-    implementation 'org.passay:passay:1.6.0'
+    api 'org.passay:passay:1.6.0' // not technically required in api scope but required in some gorm tests
 
     api('au.org.ala.plugins:openapi:1.1.0')
 
@@ -238,7 +234,7 @@ publishing {
     repositories {
         maven {
             name 'Nexus'
-            url "https://nexus.ala.org.au/content/repositories/${project.version.endsWith('-SNAPSHOT') ? 'snapshots' : 'releases' }"
+            url "https://nexus.ala.org.au/content/repositories/${project.version.endsWith('-SNAPSHOT') ? 'snapshots' : 'releases'}"
             credentials {
                 username = System.getenv('TRAVIS_DEPLOY_USERNAME')
                 password = System.getenv('TRAVIS_DEPLOY_PASSWORD')
@@ -253,3 +249,4 @@ publishing {
         }
     }
 }
+

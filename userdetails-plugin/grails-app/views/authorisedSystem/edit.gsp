@@ -40,11 +40,13 @@
 					</g:hasErrors>
 					<g:form method="post" >
 						<g:hiddenField name="id" value="${authorisedSystemInstance?.id}" />
-						<g:hiddenField name="version" value="${authorisedSystemInstance?.version}" />
+						<g:if test="${authorisedSystemInstance?.hasProperty('version')}">
+							<g:hiddenField name="version" value="${authorisedSystemInstance?.version}" />
+						</g:if>
 						<fieldset class="form">
 							<g:render template="form"/>
 						</fieldset>
-						<g:if test="${grailsApplication.config.getProperty('authorised-systems.edit-enabled', boolean, true)}">
+						<g:if test="${grailsApplication.config.getProperty('authorised-systems.edit-enabled', Boolean, true)}">
 							<fieldset class="buttons">
 								<g:actionSubmit class="btn btn-primary save" action="update" value="${message(code: 'default.button.update.label', default: 'Update')}" />
 								<g:actionSubmit class="btn btn-danger delete" action="delete" value="${message(code: 'default.button.delete.label', default: 'Delete')}" formnovalidate="" onclick="return confirm('${message(code: 'default.button.delete.confirm.message', default: 'Are you sure?')}');" />

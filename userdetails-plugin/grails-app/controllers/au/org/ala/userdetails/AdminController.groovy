@@ -17,8 +17,6 @@ package au.org.ala.userdetails
 
 import au.org.ala.auth.PreAuthorise
 import au.org.ala.users.IUser
-import au.org.ala.users.RoleRecord
-import au.org.ala.users.UserRecord
 import com.opencsv.CSVWriterBuilder
 import com.opencsv.RFC4180ParserBuilder
 import org.springframework.beans.factory.annotation.Autowired

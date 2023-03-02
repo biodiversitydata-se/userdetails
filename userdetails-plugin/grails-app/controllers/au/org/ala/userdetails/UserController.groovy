@@ -16,7 +16,7 @@
 package au.org.ala.userdetails
 
 import au.org.ala.auth.PreAuthorise
-import au.org.ala.users.UserRecord
+import au.org.ala.users.IUser
 import grails.gorm.transactions.Transactional
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
@@ -37,33 +37,17 @@ class UserController {
         redirect(action: "list", params: params)
     }
 
-    def list(Integer max) {
-
-        String paginationToken = params.paginationToken
-        int maxResults = Math.min(max ?: 20, 5000)
-
-        if (params.q) {
-
-            def userList = userService.listUsers(params.q, paginationToken, maxResults)
-//            def userList = UserRecord.findAllByEmailLikeOrLastNameLikeOrFirstNameLike(q,q,q)
-            [ userInstanceList: userList, userInstanceTotal: userList.size(), q: params.q ]
-
-        } else {
-
-            def userList = userService.listUsers(null, paginationToken, maxResults)
-
-            [ userInstanceList: userList, userInstanceTotal: userList.size() ]
-//            [ userInstanceList: UserRecord.list(params), userInstanceTotal: UserRecord.count() ]
-        }
+    def list() {
+            def result = userService.listUsers(params)
+            [ userInstanceList: result.list, userInstanceTotal: result.count, nextToken: result.nextPageToken ]
     }
 
     def create() {
         [userInstance: userService.newUser(params)]
     }
 
-    @Transactional
     def save() {
-        UserRecord user = userService.registerUser(params)
+        IUser user = userService.registerUser(params)
 
         if (!user) {
             render(view: "create", model: [userInstance: userService.newUser(params)])
@@ -80,7 +64,7 @@ class UserController {
         def userInstance = userService.getUserById(id)
 
         if (!userInstance) {
-            flash.message = message(code: 'default.not.found.message', args: [message(code: 'user.label', default: 'UserRecord'), id])
+            flash.message = message(code: 'default.not.found.message', args: [message(code: 'user.label', default: 'User'), id])
             redirect(action: "list")
             return
         }
@@ -93,7 +77,7 @@ class UserController {
     def edit(String id) {
         def userInstance = userService.getUserById(id)
         if (!userInstance) {
-            flash.message = message(code: 'default.not.found.message', args: [message(code: 'user.label', default: 'UserRecord'), id])
+            flash.message = message(code: 'default.not.found.message', args: [message(code: 'user.label', default: 'User'), id])
             redirect(action: "list")
             return
         }
@@ -105,43 +89,28 @@ class UserController {
         def userInstance= userService.getUserById(id)
 
         if (!userInstance) {
-            flash.message = message(code: 'default.not.found.message', args: [message(code: 'user.label', default: 'UserRecord'), id])
+            flash.message = message(code: 'default.not.found.message', args: [message(code: 'user.label', default: 'User'), id])
             redirect(action: "list")
             return
         }
 
-        // TODO: deal with optimistic locking
-//        if (version != null) {
-//            if (userInstance.version > version) {
-//                userInstance.errors.rejectValue("version", "default.optimistic.locking.failure",
-//                          [message(code: 'user.label', default: 'UserRecord')] as Object[],
-//                          "Another user has updated this UserRecord while you were editing")
-//                render(view: "edit", model: [userInstance: userInstance])
-//                return
-//            }
-//        }
-//
-//        if (userInstance.email != params.email) {
-//            params.userName = params.email
-//        }
-
-        def success = userService.updateUser(id, params)
+        def success = userService.updateUser(id, params, request.locale)
 
         if (!success) {
             render(view: "edit", model: [ userInstance: userInstance ])
             return
         }
 
-        flash.message = message(code: 'default.updated.message', args: [message(code: 'user.label', default: 'UserRecord'), userInstance.id])
+        flash.message = message(code: 'default.updated.message', args: [message(code: 'user.label', default: 'User'), userInstance.id])
         redirect(action: "show", id: userInstance.id)
     }
 
-    def delete(Long id) {
+    def delete(String id) {
 
-        def userInstance = userService.getUserById(id as String)
+        def userInstance = userService.getUserById(id)
 
         if (!userInstance) {
-            flash.message = message(code: 'default.not.found.message', args: [message(code: 'user.label', default: 'UserRecord'), id])
+            flash.message = message(code: 'default.not.found.message', args: [message(code: 'user.label', default: 'User'), id])
             redirect(action: "list")
             return
         }
@@ -149,10 +118,10 @@ class UserController {
         try {
             log.info("${request.userPrincipal?.name} is attempting to delete user ${userInstance.userName}")
             userService.deleteUser(userInstance)
-            flash.message = message(code: 'default.deleted.message', args: [message(code: 'user.label', default: 'UserRecord'), id])
+            flash.message = message(code: 'default.deleted.message', args: [message(code: 'user.label', default: 'User'), id])
             redirect(action: "list")
         } catch (DataIntegrityViolationException e) {
-            flash.message = message(code: 'default.not.deleted.message', args: [message(code: 'user.label', default: 'UserRecord'), id])
+            flash.message = message(code: 'default.not.deleted.message', args: [message(code: 'user.label', default: 'User'), id])
             redirect(action: "show", id: id)
         }
 

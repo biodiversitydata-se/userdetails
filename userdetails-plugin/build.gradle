@@ -171,6 +171,7 @@ dependencies {
     api('au.org.ala.plugins:openapi:1.1.0')
 
     testImplementation('com.squareup.retrofit2:retrofit-mock:2.9.0')
+    testImplementation 'io.github.joke:spock-mockable:2.3.0'
 }
 
 compileJava.dependsOn(processResources)
@@ -199,6 +200,7 @@ tasks.withType(GroovyCompile) {
 
 tasks.withType(Test) {
     useJUnitPlatform()
+    jvmArgs += ["-javaagent:${classpath.find { it.name.contains('spock-mockable') }.absolutePath}"]
 }
 
 // enable if you wish to package this plugin as a standalone application

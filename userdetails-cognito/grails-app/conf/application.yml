@@ -158,6 +158,8 @@ openapi:
         scopes:
           users/read: Read or list any or all user records
           users/write: Write to a user's record, eg update a user's attributes.
+  server-urls:
+    - https://api.ala.org.au/userdetails
 
 environments:
     development:

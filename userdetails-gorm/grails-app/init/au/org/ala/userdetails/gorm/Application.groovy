@@ -75,8 +75,8 @@ class Application extends GrailsAutoConfiguration {
     }
 
     @Bean('authorisedSystemRepository')
-    IAuthorisedSystemRepository authorisedSystemRepository() {
-        new GormAuthorisedSystemRepository()
+    IAuthorisedSystemRepository authorisedSystemRepository(MessageSource messageSource) {
+        new GormAuthorisedSystemRepository(messageSource)
     }
 
     @Bean('passwordOperations')

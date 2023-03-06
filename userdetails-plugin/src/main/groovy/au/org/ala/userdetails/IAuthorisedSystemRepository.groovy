@@ -1,12 +1,14 @@
 package au.org.ala.userdetails
 
-import au.org.ala.users.AuthorisedSystemRecord
+import au.org.ala.users.IAuthorisedSystem
 import grails.web.servlet.mvc.GrailsParameterMap
 
 /**
  * Abstract checking whether a host is allowed
  */
 interface IAuthorisedSystemRepository {
+
+    IAuthorisedSystem create(GrailsParameterMap params)
 
     /**
      * Return true if the given host parameter is authorised
@@ -17,11 +19,11 @@ interface IAuthorisedSystemRepository {
 
     def list(GrailsParameterMap params)
 
-    AuthorisedSystemRecord save(GrailsParameterMap params)
+    IAuthorisedSystem save(GrailsParameterMap params)
 
-    AuthorisedSystemRecord get(Long id)
+    IAuthorisedSystem get(Long id)
 
-    AuthorisedSystemRecord update(GrailsParameterMap params)
+    IAuthorisedSystem update(GrailsParameterMap params, Locale locale)
 
     Boolean delete(Long id)
 }

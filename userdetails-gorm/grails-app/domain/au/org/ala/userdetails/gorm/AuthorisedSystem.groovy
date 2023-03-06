@@ -15,9 +15,9 @@
 
 package au.org.ala.userdetails.gorm
 
-import au.org.ala.users.AuthorisedSystemRecord
+import au.org.ala.users.IAuthorisedSystem
 
-class AuthorisedSystem extends AuthorisedSystemRecord<Long> {
+class AuthorisedSystem implements IAuthorisedSystem<Long> {
 
     String host
     String description

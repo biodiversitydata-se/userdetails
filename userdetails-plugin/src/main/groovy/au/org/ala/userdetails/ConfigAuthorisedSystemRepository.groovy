@@ -1,6 +1,7 @@
 package au.org.ala.userdetails
 
 import au.org.ala.users.AuthorisedSystemRecord
+import au.org.ala.users.IAuthorisedSystem
 import grails.core.GrailsApplication
 import grails.util.Environment
 import grails.web.servlet.mvc.GrailsParameterMap
@@ -16,6 +17,11 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 class ConfigAuthorisedSystemRepository implements IAuthorisedSystemRepository {
 
     GrailsApplication grailsApplication
+
+    @Override
+    IAuthorisedSystem create(GrailsParameterMap params) {
+        return new AuthorisedSystemRecord(host: params.host, description: params.description)
+    }
 
     @Override
     Boolean findByHost(String host) {
@@ -53,12 +59,12 @@ class ConfigAuthorisedSystemRepository implements IAuthorisedSystemRepository {
     }
 
     @Override
-    AuthorisedSystemRecord save(GrailsParameterMap params) {
+    IAuthorisedSystem save(GrailsParameterMap params) {
         throw new NotImplementedException()
     }
 
     @Override
-    AuthorisedSystemRecord get(Long id) {
+    IAuthorisedSystem get(Long id) {
         def records = grailsApplication.config.getProperty('authorised.systems', List, [])
                 .collect{ it as AuthorisedSystemRecord }
         return records.find{ it.id == id }
@@ -66,7 +72,7 @@ class ConfigAuthorisedSystemRepository implements IAuthorisedSystemRepository {
 
 
     @Override
-    AuthorisedSystemRecord update(GrailsParameterMap params) {
+    IAuthorisedSystem update(GrailsParameterMap params, Locale locale) {
         throw new NotImplementedException()
     }
 

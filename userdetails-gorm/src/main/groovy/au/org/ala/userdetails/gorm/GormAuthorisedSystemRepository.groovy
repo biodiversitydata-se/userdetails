@@ -1,21 +1,40 @@
 package au.org.ala.userdetails.gorm
 
 import au.org.ala.userdetails.IAuthorisedSystemRepository
+import au.org.ala.userdetails.NotFoundException
 import au.org.ala.users.AuthorisedSystemRecord
-import grails.converters.JSON
+import au.org.ala.users.IAuthorisedSystem
+import grails.gorm.transactions.NotTransactional
+import grails.gorm.transactions.Transactional
 import grails.web.servlet.mvc.GrailsParameterMap
 import groovy.util.logging.Slf4j
+import org.springframework.context.MessageSource
 import org.springframework.dao.DataIntegrityViolationException
 
 @Slf4j
+@Transactional
 class GormAuthorisedSystemRepository implements IAuthorisedSystemRepository {
 
+    MessageSource messageSource
+
+    GormAuthorisedSystemRepository(MessageSource messageSource) {
+        this.messageSource = messageSource
+    }
+
     @Override
+    @NotTransactional
+    IAuthorisedSystem create(GrailsParameterMap params) {
+        return new AuthorisedSystem(params)
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     Boolean findByHost(String host) {
         return AuthorisedSystem.findByHost(host) != null
     }
 
     @Override
+    @Transactional(readOnly = true)
     def list(GrailsParameterMap params) {
         def list = []
         def count = 0
@@ -38,7 +57,7 @@ class GormAuthorisedSystemRepository implements IAuthorisedSystemRepository {
     }
 
     @Override
-    AuthorisedSystemRecord save(GrailsParameterMap params) {
+    IAuthorisedSystem save(GrailsParameterMap params) {
         def authorisedSystemInstance = new AuthorisedSystem(host: params.host, description: params.description)
         if (!authorisedSystemInstance.save(flush: true)) {
             return null
@@ -47,30 +66,30 @@ class GormAuthorisedSystemRepository implements IAuthorisedSystemRepository {
     }
 
     @Override
-    AuthorisedSystemRecord get(Long id) {
+    @Transactional(readOnly = true)
+    IAuthorisedSystem get(Long id) {
         def authorisedSystemInstance = AuthorisedSystem.get(id)
         return authorisedSystemInstance
     }
 
     @Override
-    AuthorisedSystemRecord update(GrailsParameterMap params) {
+    IAuthorisedSystem update(GrailsParameterMap params, Locale locale) {
         def authorisedSystemInstance = AuthorisedSystem.get(params.id as Long)
         if (!authorisedSystemInstance) {
-            return null
+            throw new NotFoundException('')
         }
 
         if (params.version != null) {
             if (authorisedSystemInstance.version > params.version as Long) {
-                log.error("Another user has updated this AuthorisedSystem while you were editing")
+                authorisedSystemInstance.errors.rejectValue("version", "default.optimistic.locking.failure",
+                        [messageSource.getMessage('authorisedSystem.label', [] as Object[], 'AuthorisedSystem', locale)] as Object[],
+                        "Another user has updated this AuthorisedSystem while you were editing")
                 return null
             }
         }
 
         authorisedSystemInstance.properties = params
-
-        if (!authorisedSystemInstance.save(flush: true)) {
-            return null
-        }
+        authorisedSystemInstance = authorisedSystemInstance.save(validate: true, failOnError: true)
 
         return authorisedSystemInstance
     }

@@ -18,6 +18,7 @@ package au.org.ala.userdetails
 import au.org.ala.auth.PreAuthorise
 import au.org.ala.users.AuthorisedSystemRecord
 import grails.converters.JSON
+import grails.gorm.transactions.Transactional
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.dao.DataIntegrityViolationException
 
@@ -40,13 +41,13 @@ class AuthorisedSystemController {
     }
 
     def create() {
-        [authorisedSystemInstance: new AuthorisedSystemRecord()]
+        [authorisedSystemInstance: authorisedSystemRepository.create(params)]
     }
 
     def save() {
         def authorisedSystemInstance = authorisedSystemRepository.save(params)
         if (!authorisedSystemInstance) {
-            render(view: "create", model: [authorisedSystemInstance: new AuthorisedSystemRecord(host: params.host, description: params.description)])
+            render(view: "create", model: [authorisedSystemInstance: authorisedSystemRepository.create(params)])
             return
         }
 
@@ -76,23 +77,22 @@ class AuthorisedSystemController {
         [authorisedSystemInstance: authorisedSystemInstance]
     }
 
+    @Transactional
     def update(Long id) {
-        def authorisedSystemInstance = authorisedSystemRepository.get(id)
-        if (!authorisedSystemInstance) {
+
+        try {
+            def authorisedSystemInstance = authorisedSystemRepository.update(params, request.locale)
+            if (!authorisedSystemInstance) {
+                render(view: "edit", model: [authorisedSystemInstance: authorisedSystemInstance])
+                return
+            }
+            flash.message = message(code: 'default.updated.message', args: [message(code: 'authorisedSystem.label', default: 'AuthorisedSystem'), authorisedSystemInstance.id])
+            redirect(action: "show", id: authorisedSystemInstance.id)
+        } catch (NotFoundException e) {
             flash.message = message(code: 'default.not.found.message', args: [message(code: 'authorisedSystem.label', default: 'AuthorisedSystem'), id])
             redirect(action: "list")
             return
         }
-
-        authorisedSystemInstance = authorisedSystemRepository.update(params)
-
-        if (!authorisedSystemInstance) {
-            render(view: "edit", model: [authorisedSystemInstance: authorisedSystemInstance])
-            return
-        }
-
-        flash.message = message(code: 'default.updated.message', args: [message(code: 'authorisedSystem.label', default: 'AuthorisedSystem'), authorisedSystemInstance.id])
-        redirect(action: "show", id: authorisedSystemInstance.id)
     }
 
     def delete(Long id) {

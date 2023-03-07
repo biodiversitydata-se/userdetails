@@ -55,7 +55,7 @@ class UserDetailsTagLib {
         def params = attrs.get('params')
 
         if (total != null) {
-            hf.paginate(attrs, body)
+            out << hf.paginate(attrs, body)
         } else {
 
             def writer = out

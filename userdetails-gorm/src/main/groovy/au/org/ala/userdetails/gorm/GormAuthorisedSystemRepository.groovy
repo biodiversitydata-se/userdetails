@@ -2,7 +2,6 @@ package au.org.ala.userdetails.gorm
 
 import au.org.ala.userdetails.IAuthorisedSystemRepository
 import au.org.ala.userdetails.NotFoundException
-import au.org.ala.users.AuthorisedSystemRecord
 import au.org.ala.users.IAuthorisedSystem
 import grails.gorm.transactions.NotTransactional
 import grails.gorm.transactions.Transactional

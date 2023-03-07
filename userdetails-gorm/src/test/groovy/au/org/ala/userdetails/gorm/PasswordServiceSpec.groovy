@@ -106,7 +106,7 @@ class PasswordServiceSpec extends UserDetailsSpec implements ServiceUnitTest<Pas
                 type: PasswordService.BCRYPT_ENCODER_TYPE,
                 created: new Date().toTimestamp(),
                 status: service.passwordOperations.STATUS_CURRENT
-        ).save()
+        ).save(flush: true)
 
         when:
         def isMatch = service.checkUserPassword(user, password)
@@ -133,7 +133,7 @@ class PasswordServiceSpec extends UserDetailsSpec implements ServiceUnitTest<Pas
                 type: PasswordService.BCRYPT_ENCODER_TYPE,
                 created: new Date().toTimestamp(),
                 status: service.passwordOperations.STATUS_CURRENT
-        ).save()
+        ).save(flush: true)
 
         when:
         def isMatch = service.checkUserPassword(user, wrongPassword)
@@ -166,7 +166,7 @@ class PasswordServiceSpec extends UserDetailsSpec implements ServiceUnitTest<Pas
                 type: PasswordService.BCRYPT_ENCODER_TYPE,
                 created: new Date().toTimestamp(),
                 status: service.passwordOperations.STATUS_CURRENT
-        ).save()
+        ).save(flush: true)
 
         when:
         def isMatch = service.checkUserPassword(user, wrongPassword)

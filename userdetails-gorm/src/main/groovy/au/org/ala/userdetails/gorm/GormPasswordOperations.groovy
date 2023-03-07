@@ -9,8 +9,10 @@ import au.org.ala.userdetails.IPasswordOperations
 import au.org.ala.users.IUser
 import au.org.ala.users.UserRecord
 import grails.gorm.transactions.NotTransactional
+import grails.gorm.transactions.Transactional
 import org.springframework.beans.factory.annotation.Value
 
+@Transactional
 class GormPasswordOperations implements IPasswordOperations {
 
     static final String BCRYPT_ENCODER_TYPE = 'bcrypt'
@@ -30,6 +32,7 @@ class GormPasswordOperations implements IPasswordOperations {
 
     EmailService emailService
 
+    @Transactional
     @Override
     boolean resetPassword(IUser<?> user, String newPassword, boolean isPermanent, String confirmationCode) {
         assert user instanceof User
@@ -54,7 +57,7 @@ class GormPasswordOperations implements IPasswordOperations {
         return true
     }
 
-
+    @Transactional
     @Override
     void resetAndSendTemporaryPassword(IUser<?> user, String emailSubject, String emailTitle, String emailBody, String password = null) throws PasswordResetFailedException {
         assert user instanceof User
@@ -76,6 +79,7 @@ class GormPasswordOperations implements IPasswordOperations {
         }
     }
 
+    @NotTransactional
     @Override
     String getPasswordResetView() {
         return "startPasswordReset"
@@ -87,6 +91,7 @@ class GormPasswordOperations implements IPasswordOperations {
      * @param password The plain-text password to match.
      * @return True if the password matches the existing password, otherwise false.
      */
+    @Transactional(readOnly = true)
     boolean checkUserPassword(IUser<?> user, String password) {
         assert user instanceof User
         if (!password || password.size() < 1) {
@@ -115,6 +120,7 @@ class GormPasswordOperations implements IPasswordOperations {
      * @param hashedPassword The encoded password.
      * @return True if the passwords match, otherwise false.
      */
+    @NotTransactional
     Boolean comparePasswords(String plainPassword, String hashedPassword) {
         if (!plainPassword || plainPassword.length() < 1 || !hashedPassword || hashedPassword.length() < 1) {
             throw new IllegalArgumentException("Must supply a plain text password and a hashed password to be compared.")
@@ -125,6 +131,7 @@ class GormPasswordOperations implements IPasswordOperations {
         return encodedPassword
     }
 
+    @NotTransactional
     private PasswordEncoder getEncoder() {
         def encoder = passwordEncoderType.equalsIgnoreCase(BCRYPT_ENCODER_TYPE) ?
                 new BcryptPasswordEncoder(bcryptStrength) :
@@ -132,6 +139,7 @@ class GormPasswordOperations implements IPasswordOperations {
         return encoder
     }
 
+    @NotTransactional
     private getPasswordType() {
         return passwordEncoderType.equalsIgnoreCase(BCRYPT_ENCODER_TYPE) ? BCRYPT_ENCODER_TYPE : LEGACY_ENCODER_TYPE
     }

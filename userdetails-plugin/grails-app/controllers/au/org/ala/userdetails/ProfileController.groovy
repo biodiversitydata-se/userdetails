@@ -182,4 +182,48 @@ class ProfileController {
         }
         redirect(controller: 'profile')
     }
+
+    def myClientAndApikey() {
+        def user = userService.currentUser
+        def clientId = user.additionalAttributes.find { it.name == 'clientId' }?.value
+        render view: "myClientAndApikey", model: [apikeys: String.join(",", userService.getApikeys(user.userId)), clientId: clientId]
+    }
+
+    def generateApikey(String application) {
+        if(!application) {
+            render(view: "myClientAndApikey", model:[ errors: ['No application name']])
+            return
+        }
+
+        String usagePlanId = grailsApplication.config.getProperty("apigateway.${application}.usagePlanId")
+
+        if(!usagePlanId) {
+            render(view: "myClientAndApikey", model:[ errors: ['No usage plan id to generate api key']])
+            return
+        }
+        def response = userService.generateApikey(usagePlanId)
+        if(response.error) {
+            render view: "myClientAndApikey", model:[ errors: [response.error]]
+            return
+        }
+        redirect(action: "myClientAndApikey")
+    }
+
+    def generateClient() {
+
+        def isForGalah = params.forGalah? true: false
+        List<String> callbackURLs = params.list('callbackURLs').findAll {it != ""}
+
+        if(!isForGalah && callbackURLs.empty){
+            render(view: "myClientAndApikey", model:[ errors: ["callbackURLs cannot be empty if the client is not for Galah"]])
+            return
+        }
+
+        def response = userService.generateClient(userService.currentUser.userId, callbackURLs, isForGalah)
+        if(response.error) {
+            render(view: "myClientAndApikey", model:[ errors: [response.error]])
+            return
+        }
+        redirect(action: "myClientAndApikey")
+    }
 }

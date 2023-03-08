@@ -198,3 +198,6 @@ account:
   MFAenabled: true
 authorised-systems:
   edit-enabled: false
+oauth.support.dynamic.client.registration: true
+oauth.support.dynamic.client.scopes: ["email", "openid", "profile", "ala/attrs" , "ala/roles"]
+tokenApp.tokenGeneration.url: https://tokens-cognito-support.dev.ala.org.au?step=generation

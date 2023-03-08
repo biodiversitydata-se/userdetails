@@ -34,7 +34,30 @@ interface IUserService<U extends IUser<? extends Serializable>, P extends IUserP
 
     //    *********** User related services *************
 
+    /**
+     * Update user method intended for user self service updates.  Things like
+     * activation and locking should not be available through this method.
+     * This method should also notify a user of changes they made to their account.
+     *
+     * @param userId The user id
+     * @param params The request params with the updates
+     * @param locale The user's locale
+     * @return true if the update succeeded
+     */
     boolean updateUser(String userId, GrailsParameterMap params, Locale locale)
+
+    /**
+     * Admin user update, allows additional settings such as locked, activated, etc
+     * to be set.
+     *
+     * No user notification is required from this method.
+     *
+     * @param userId The user id
+     * @param params The request params with the updates
+     * @param locale The user's locale
+     * @return true if the update succeeded
+     */
+    boolean adminUpdateUser(String userId, GrailsParameterMap params, Locale locale)
 
     boolean disableUser(U user)
 

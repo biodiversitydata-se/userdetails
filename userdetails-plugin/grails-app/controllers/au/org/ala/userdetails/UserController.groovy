@@ -94,7 +94,7 @@ class UserController {
             return
         }
 
-        def success = userService.updateUser(id, params, request.locale)
+        def success = userService.adminUpdateUser(id, params, request.locale)
 
         if (!success) {
             render(view: "edit", model: [ userInstance: userInstance ])

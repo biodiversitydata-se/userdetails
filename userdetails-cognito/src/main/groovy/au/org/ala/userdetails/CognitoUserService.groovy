@@ -91,27 +91,50 @@ class CognitoUserService implements IUserService<UserRecord, UserPropertyRecord,
         }
 
         try {
-            user.setProperties(params)
+            baseUpdateUser(user, params, userId)
 
-            Collection<AttributeType> userAttributes = new ArrayList<>()
+            emailService.sendUpdateProfileSuccess(user, emailRecipients)
+            return true
 
-            userAttributes.add(new AttributeType().withName('email').withValue(user.email))
+        } catch (Exception e) {
+            log.error(e.getMessage(), e)
+        }
+
+        return false
+    }
+
+    private void baseUpdateUser(UserRecord user, GrailsParameterMap params, String userId) {
+        user.setProperties(params)
+
+        Collection<AttributeType> userAttributes = new ArrayList<>()
+
+        userAttributes.add(new AttributeType().withName('email').withValue(user.email))
 //            userAttributes.add(new AttributeType().withName('userName').withValue(user.userName))
 //        userAttributes.add(new AttributeType().withName('userid').withValue(record.id))
-            userAttributes.add(new AttributeType().withName('given_name').withValue(user.firstName))
-            userAttributes.add(new AttributeType().withName('family_name').withValue(user.lastName))
+        userAttributes.add(new AttributeType().withName('given_name').withValue(user.firstName))
+        userAttributes.add(new AttributeType().withName('family_name').withValue(user.lastName))
 
-            params.findAll {customAttrs.contains(it.key) }
-                    .each {userAttributes.add(new AttributeType().withName("custom:${it.key}").withValue(it.value)) }
+        params.findAll { customAttrs.contains(it.key) }
+                .each { userAttributes.add(new AttributeType().withName("custom:${it.key}").withValue(it.value)) }
 
-            AdminUpdateUserAttributesRequest request =
-                    new AdminUpdateUserAttributesRequest()
-                            .withUserPoolId(poolId)
-                            .withUsername(userId)
-                            .withUserAttributes(userAttributes)
+        AdminUpdateUserAttributesRequest request =
+                new AdminUpdateUserAttributesRequest()
+                        .withUserPoolId(poolId)
+                        .withUsername(userId)
+                        .withUserAttributes(userAttributes)
 
-            cognitoIdp.adminUpdateUserAttributes(request)
+        cognitoIdp.adminUpdateUserAttributes(request)
+    }
 
+    @Override
+    boolean adminUpdateUser(String userId, GrailsParameterMap params, Locale locale) {
+
+        UserRecord user = getUserById(userId)
+        def isUserLocked = user.locked
+        def isUserActivated = user.activated
+
+        try {
+            baseUpdateUser(user, params, userId)
             //enable or disable user
             if(params.locked && !isUserLocked){
                 disableUser(user)
@@ -125,7 +148,6 @@ class CognitoUserService implements IUserService<UserRecord, UserPropertyRecord,
                 activateAccount(user, params)
             }
 
-            emailService.sendUpdateProfileSuccess(user, emailRecipients)
             return true
 
         } catch (Exception e) {

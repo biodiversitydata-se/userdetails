@@ -20,6 +20,7 @@ import au.org.ala.auth.PasswordResetFailedException
 import au.org.ala.userdetails.EmailService
 import au.org.ala.userdetails.IUserService
 import au.org.ala.userdetails.LocationService
+import au.org.ala.userdetails.NotFoundException
 import au.org.ala.userdetails.PagedResult
 import au.org.ala.userdetails.PasswordService
 import au.org.ala.userdetails.ResultStreamer
@@ -96,6 +97,38 @@ class GormUserService implements IUserService<User, UserProperty, Role, UserRole
             log.error(e.getMessage(), e)
             false
         }
+    }
+
+    boolean adminUpdateUser(String userId, GrailsParameterMap params, Locale locale) {
+
+        User userInstance = getUserById(userId)
+
+        if (!userInstance) {
+            throw new NotFoundException("$userId not found")
+        }
+
+        if (params.version != null) {
+            if (userInstance.version > params.version) {
+                userInstance.errors.rejectValue("version", "default.optimistic.locking.failure",
+                        [messageSource.getMessage('user.label', [] as Object[], 'User', locale)] as Object[],
+                        "Another user has updated this User while you were editing")
+                return false
+            }
+        }
+
+        if (userInstance.email != params.email) {
+            params.userName = params.email
+        }
+
+        userInstance.properties = params
+
+        if (!userInstance.save(validate: true)) {
+            return false
+        }
+
+        updateProperties(userInstance, params)
+
+        return true
     }
 
     boolean disableUser(User user) {

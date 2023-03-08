@@ -935,7 +935,7 @@ class CognitoUserService implements IUserService<UserRecord, UserPropertyRecord,
         request.clientName = "Client for user " + userId
         request.allowedOAuthFlows = ["code"]
         request.generateSecret = false
-        request.supportedIdentityProviders = ["COGNITO", "Facebook", "Google", "AAF"] //"SignInWithApple"
+        request.supportedIdentityProviders = ["COGNITO", "Facebook", "Google", "AAF", "SignInWithApple"]
         request.preventUserExistenceErrors = "ENABLED"
         request.explicitAuthFlows = ["ALLOW_REFRESH_TOKEN_AUTH", "ALLOW_CUSTOM_AUTH", "ALLOW_USER_SRP_AUTH", "ALLOW_USER_PASSWORD_AUTH"]
         request.allowedOAuthFlowsUserPoolClient = true

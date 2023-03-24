@@ -515,7 +515,7 @@ class CognitoUserService implements IUserService<UserRecord, UserPropertyRecord,
 
         String cognitoRoleName = getCognitoRoleName(roleName)
 
-        if (checkGroupExists(roleName)) {
+        if (checkGroupExists(cognitoRoleName)) {
             def removeUserFromGroupResult = cognitoIdp.adminRemoveUserFromGroup(
                     new AdminRemoveUserFromGroupRequest()
                             .withUsername(userId)

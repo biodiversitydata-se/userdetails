@@ -9,11 +9,6 @@ import au.org.ala.ws.security.JwtProperties
 import au.org.ala.ws.tokens.TokenService
 import com.amazonaws.AmazonWebServiceResult
 import com.amazonaws.ResponseMetadata
-import com.amazonaws.services.apigateway.AmazonApiGateway
-import com.amazonaws.services.apigateway.model.CreateApiKeyRequest
-import com.amazonaws.services.apigateway.model.CreateUsagePlanKeyRequest
-import com.amazonaws.services.apigateway.model.GetApiKeysRequest
-import com.amazonaws.services.apigateway.model.GetApiKeysResult
 import com.amazonaws.services.cognitoidp.AWSCognitoIdentityProvider
 import com.amazonaws.services.cognitoidp.model.AddCustomAttributesRequest
 import com.amazonaws.services.cognitoidp.model.AdminAddUserToGroupRequest
@@ -29,8 +24,6 @@ import com.amazonaws.services.cognitoidp.model.AdminSetUserMFAPreferenceRequest
 import com.amazonaws.services.cognitoidp.model.AdminUpdateUserAttributesRequest
 import com.amazonaws.services.cognitoidp.model.AssociateSoftwareTokenRequest
 import com.amazonaws.services.cognitoidp.model.AttributeType
-import com.amazonaws.services.cognitoidp.model.CreateUserPoolClientRequest
-import com.amazonaws.services.cognitoidp.model.CreateUserPoolClientResult
 import com.amazonaws.services.cognitoidp.model.DescribeUserPoolRequest
 import com.amazonaws.services.cognitoidp.model.CreateGroupRequest
 import com.amazonaws.services.cognitoidp.model.GetGroupRequest
@@ -50,7 +43,6 @@ import com.amazonaws.services.cognitoidp.model.UserType
 import com.nimbusds.oauth2.sdk.token.AccessToken
 import com.amazonaws.services.cognitoidp.model.VerifySoftwareTokenRequest
 import grails.converters.JSON
-import grails.core.GrailsApplication
 import grails.web.servlet.mvc.GrailsParameterMap
 import groovy.util.logging.Slf4j
 import org.apache.commons.lang3.NotImplementedException
@@ -71,8 +63,6 @@ class CognitoUserService implements IUserService<UserRecord, UserPropertyRecord,
     AWSCognitoIdentityProvider cognitoIdp
     String poolId
     JwtProperties jwtProperties
-    AmazonApiGateway apiGatewayIdp
-    GrailsApplication grailsApplication
 
     @Value('${attributes.affiliations.enabled:false}')
     boolean affiliationsEnabled = false
@@ -524,7 +514,7 @@ class CognitoUserService implements IUserService<UserRecord, UserPropertyRecord,
 
         String cognitoRoleName = getCognitoRoleName(roleName)
 
-        if (checkGroupExists(roleName)) {
+        if (checkGroupExists(cognitoRoleName)) {
             def removeUserFromGroupResult = cognitoIdp.adminRemoveUserFromGroup(
                     new AdminRemoveUserFromGroupRequest()
                             .withUsername(userId)
@@ -668,7 +658,7 @@ class CognitoUserService implements IUserService<UserRecord, UserPropertyRecord,
     }
 
     @Override
-    void removeUserProperty(UserRecord userRecord, ArrayList<String> attributes) {x
+    void removeUserProperty(UserRecord userRecord, ArrayList<String> attributes) {
         attributes.each {
             addCustomUserProperty(userRecord, it, null)
         }
@@ -888,79 +878,4 @@ class CognitoUserService implements IUserService<UserRecord, UserPropertyRecord,
         }
         resultStreamer.complete()
     }
-
-    @Override
-    Map generateApikey(String usagePlanId) {
-        if(!usagePlanId){
-            return [apikeys:null, err: "No usage plan id to generate api key"]
-        }
-
-        CreateApiKeyRequest request = new CreateApiKeyRequest()
-        request.enabled = true
-        request.customerId = currentUser.userId
-        request.name = "API key for user " + currentUser.userId
-        def response = apiGatewayIdp.createApiKey(request)
-
-        if(isSuccessful(response)) {
-            //add api key to usage plan
-            CreateUsagePlanKeyRequest usagePlanKeyRequest = new CreateUsagePlanKeyRequest()
-            usagePlanKeyRequest.keyId = response.id
-            usagePlanKeyRequest.keyType = "API_KEY"
-            usagePlanKeyRequest.usagePlanId = usagePlanId
-            apiGatewayIdp.createUsagePlanKey(usagePlanKeyRequest)
-
-            return [apikeys:getApikeys(currentUser.userId), error: null]
-        }
-        else{
-            return [apikeys:null, error: "Could not generate api key"]
-        }
-    }
-
-    @Override
-    def getApikeys(String userId) {
-
-        GetApiKeysRequest getApiKeysRequest = new GetApiKeysRequest().withCustomerId(userId).withIncludeValues(true)
-        GetApiKeysResult response = apiGatewayIdp.getApiKeys(getApiKeysRequest)
-        if(isSuccessful(response)){
-            return response.items.value
-        }
-        else{
-            return null
-        }
-    }
-
-    @Override
-    def generateClient(String userId, List<String> callbackURLs, boolean forGalah){
-        CreateUserPoolClientRequest request =  new CreateUserPoolClientRequest().withUserPoolId(poolId)
-        request.clientName = "Client for user " + userId
-        request.allowedOAuthFlows = ["code"]
-        request.generateSecret = false
-        request.supportedIdentityProviders = ["COGNITO", "Facebook", "Google", "AAF", "SignInWithApple"]
-        request.preventUserExistenceErrors = "ENABLED"
-        request.explicitAuthFlows = ["ALLOW_REFRESH_TOKEN_AUTH", "ALLOW_CUSTOM_AUTH", "ALLOW_USER_SRP_AUTH", "ALLOW_USER_PASSWORD_AUTH"]
-        request.allowedOAuthFlowsUserPoolClient = true
-
-        def scopes = grailsApplication.config.getProperty('oauth.support.dynamic.client.scopes', List, [])
-
-        if(scopes) {
-            request.allowedOAuthScopes = scopes
-        }
-
-        request.callbackURLs = callbackURLs
-        if(forGalah) {
-            request.callbackURLs.addAll(grailsApplication.config.getProperty('oauth.support.dynamic.client.galah.callbackURLs', List, []))
-        }
-
-        CreateUserPoolClientResult response = cognitoIdp.createUserPoolClient(request)
-
-        if(isSuccessful(response)){
-            //update user custom attribute with new clientId
-            addCustomUserProperty(currentUser, "clientId", response.userPoolClient.clientId)
-            return [apikeys: response.userPoolClient.clientId, error: null]
-        }
-        else{
-            return [clientId: null, error: "Could not generate client"]
-        }
-    }
-
 }

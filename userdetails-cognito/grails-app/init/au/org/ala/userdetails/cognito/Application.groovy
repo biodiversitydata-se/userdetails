@@ -95,8 +95,6 @@ class Application extends GrailsAutoConfiguration {
         userService.jwtProperties = jwtProperties
 
         userService.affiliationsEnabled = grailsApplication.config.getProperty('attributes.affiliations.enabled', Boolean, false)
-        userService.apiGatewayIdp = gatewayIdp
-        userService.grailsApplication = grailsApplication
 
         return userService
     }
@@ -105,5 +103,17 @@ class Application extends GrailsAutoConfiguration {
     IPasswordOperations passwordOperations(AWSCognitoIdentityProvider cognitoIdp, OidcClientProperties oidcClientProperties) {
         return new CognitoPasswordOperations(cognitoIdp: cognitoIdp, poolId: grailsApplication.config.getProperty('cognito.poolId'),
                 oidcClientProperties: oidcClientProperties)
+    }
+
+    @Bean('applicationService')
+    IApplicationService applicationService(AWSCognitoIdentityProvider cognitoIdp, AmazonApiGateway gatewayIdp) {
+
+        CognitoApplicationService applicationService = new CognitoApplicationService()
+        applicationService.cognitoIdp = cognitoIdp
+        applicationService.poolId = grailsApplication.config.getProperty('cognito.poolId')
+        applicationService.apiGatewayIdp = gatewayIdp
+        applicationService.config = grailsApplication.config
+
+        return applicationService
     }
 }

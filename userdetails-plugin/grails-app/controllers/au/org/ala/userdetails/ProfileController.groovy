@@ -46,6 +46,8 @@ class ProfileController {
     @Autowired
     @Qualifier('userService')
     IUserService userService
+    @Autowired
+    IApplicationService applicationService
 
     def index() {
 
@@ -186,7 +188,7 @@ class ProfileController {
     def myClientAndApikey() {
         def user = userService.currentUser
         def clientId = user.additionalAttributes.find { it.name == 'clientId' }?.value
-        render view: "myClientAndApikey", model: [apikeys: String.join(",", userService.getApikeys(user.userId)), clientId: clientId]
+        render view: "myClientAndApikey", model: [apikeys: String.join(",", applicationService.getApikeys(user.userId)), clientId: clientId]
     }
 
     def generateApikey(String application) {
@@ -201,7 +203,7 @@ class ProfileController {
             render(view: "myClientAndApikey", model:[ errors: ['No usage plan id to generate api key']])
             return
         }
-        def response = userService.generateApikey(usagePlanId)
+        def response = applicationService.generateApikey(usagePlanId)
         if(response.error) {
             render view: "myClientAndApikey", model:[ errors: [response.error]]
             return
@@ -219,7 +221,7 @@ class ProfileController {
             return
         }
 
-        def response = userService.generateClient(userService.currentUser.userId, callbackURLs, isForGalah)
+        def response = applicationService.generateClient(userService.currentUser.userId, callbackURLs, isForGalah)
         if(response.error) {
             render(view: "myClientAndApikey", model:[ errors: [response.error]])
             return

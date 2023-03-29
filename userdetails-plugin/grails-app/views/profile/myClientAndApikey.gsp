@@ -42,16 +42,16 @@
                         <g:message code="my.client.id" /><code>${clientId}</code>
                         <div>
                             <br/>
-                            <a href="${grailsApplication.config.getProperty('tokenApp.tokenGeneration.url')}&client-id=${clientId}" target="_blank">Click here to generate an access token</a>
+                            <a href="${grailsApplication.config.getProperty('tokenApp.tokenGeneration.url')}&client_id=${clientId}" target="_blank">Click here to generate an access token</a>
                         </div>
                     </g:if>
                     <g:else>
                         <br/>
                         <h4><g:message code="myprofile.my.client.create" /></h4>
-                        <div class="form-group">
-                            <label for="callbackURLs"><g:message code="myclient.callbackURLs" /></label>
-                            <input id="callbackURLs" name="callbackURLs" type="text" class="form-control"/>
-                        </div>
+%{--                        <div class="form-group">--}%
+%{--                            <label for="callbackURLs"><g:message code="myclient.callbackURLs" /></label>--}%
+%{--                            <input id="callbackURLs" name="callbackURLs" type="text" class="form-control"/>--}%
+%{--                        </div>--}%
                         <div class="form-group">
                             <div class="checkbox">
                                 <label>

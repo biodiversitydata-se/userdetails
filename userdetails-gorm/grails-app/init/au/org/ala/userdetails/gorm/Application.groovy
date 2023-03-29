@@ -16,6 +16,7 @@
 package au.org.ala.userdetails.gorm
 
 import au.org.ala.userdetails.EmailService
+import au.org.ala.userdetails.IApplicationService
 import au.org.ala.userdetails.IAuthorisedSystemRepository
 import au.org.ala.userdetails.IPasswordOperations
 import au.org.ala.userdetails.IUserService
@@ -126,5 +127,14 @@ class Application extends GrailsAutoConfiguration {
     @Bean('passwordOperations')
     IPasswordOperations passwordOperations(EmailService emailService) {
         new GormPasswordOperations(emailService: emailService)
+    }
+
+    @Bean('applicationService')
+    IApplicationService applicationService(AmazonApiGateway gatewayIdp) {
+
+        GormApplicationService applicationService = new GormApplicationService()
+        applicationService.apiGatewayIdp = gatewayIdp
+
+        return applicationService
     }
 }

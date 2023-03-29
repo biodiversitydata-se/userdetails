@@ -95,6 +95,8 @@ class Application extends GrailsAutoConfiguration {
         userService.jwtProperties = jwtProperties
 
         userService.affiliationsEnabled = grailsApplication.config.getProperty('attributes.affiliations.enabled', Boolean, false)
+        userService.apiGatewayIdp = gatewayIdp
+        userService.grailsApplication = grailsApplication
 
         return userService
     }

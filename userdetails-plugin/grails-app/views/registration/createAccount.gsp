@@ -134,7 +134,7 @@
                     <g:message code="create.account.tos.description"
                                args="[grailsApplication.config.getProperty('skin.orgNameShort'), grailsApplication.config.getProperty('termsOfUse')]" />
                 </p>
-                <g:if test="${edit && grailsApplication.config.getProperty('account.MFAenabled', Boolean, false)}">
+                <g:if test="${edit && visibleMFA}">
                     <h2><g:message code="user.enableMFA.title" /></h2>
                     <g:if test="${props?.enableMFA == 'true'}">
                         <p><g:message code="user.enabledMFA.description" />
@@ -260,7 +260,7 @@
                     <input id="city" name="city" type="text" class="form-control" value="${props?.city}" />
                 </div>
                 <g:if test="${edit}">
-                    <g:if test="${grailsApplication.config.getProperty('account.MFAenabled', Boolean, false)}">
+                    <g:if test="${visibleMFA}">
                         <div class="form-group checkbox">
                             <label>
                                 <g:checkBox name="enableMFA" value="${props?.enableMFA == 'true'}" id="enableMFA" disabled="disabled"/> <g:message code="user.enabledMFA" />

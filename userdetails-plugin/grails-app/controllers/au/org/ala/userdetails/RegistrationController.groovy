@@ -18,9 +18,10 @@ package au.org.ala.userdetails
 import au.org.ala.auth.UpdatePasswordCommand
 import au.org.ala.recaptcha.RecaptchaClient
 import au.org.ala.users.IUser
+import au.org.ala.ws.security.JwtProperties
 import au.org.ala.ws.service.WebService
 import grails.converters.JSON
-
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.passay.RuleResult
@@ -48,6 +49,8 @@ class RegistrationController {
     RecaptchaClient recaptchaClient
     WebService webService
     def messageSource
+    @Autowired
+    JwtProperties jwtProperties
 
     @Value('${userdetails.features.requirePasswordForUserUpdate:true}')
     boolean requirePasswordForUserUpdate
@@ -58,13 +61,14 @@ class RegistrationController {
 
     def createAccount() {
         render(view: 'createAccount', model: [
-                passwordPolicy: passwordService.buildPasswordPolicy(),
+                passwordPolicy: passwordService.buildPasswordPolicy(), visibleMFA: false
         ])
     }
 
     def editAccount() {
         def user = userService.currentUser
-        render(view: 'createAccount', model: [edit: true, user: user, props: user?.propsAsMap(), passwordPolicy: passwordService.buildPasswordPolicy()])
+        render(view: 'createAccount', model: [edit: true, user: user, props: user?.propsAsMap(), passwordPolicy: passwordService.buildPasswordPolicy(),
+                visibleMFA: isMFAVisible(user)])
     }
 
     def passwordReset() {
@@ -236,7 +240,8 @@ class RegistrationController {
                 def isCorrectPassword = passwordService.checkUserPassword(user, params.confirmUserPassword)
                 if (!isCorrectPassword) {
                     flash.message = 'Incorrect password. Could not update account details. Please try again.'
-                    render(view: 'createAccount', model: [edit: true, user: user, props: user?.propsAsMap(), passwordPolicy: passwordService.buildPasswordPolicy()])
+                    render(view: 'createAccount', model: [edit: true, user: user, props: user?.propsAsMap(), passwordPolicy: passwordService.buildPasswordPolicy(),
+                                                          visibleMFA: isMFAVisible(user)])
                     return
                 }
             }
@@ -269,13 +274,15 @@ class RegistrationController {
                     if (!verifyResponse.success) {
                         log.warn('Recaptcha verify reported an error: {}', verifyResponse)
                         flash.message = 'There was an error with the captcha, please try again'
-                        render(view: 'createAccount', model: [edit: false, user: params, props: params, passwordPolicy: passwordService.buildPasswordPolicy()])
+                        render(view: 'createAccount', model: [edit: false, user: params, props: params, passwordPolicy: passwordService.buildPasswordPolicy(),
+                                                              visibleMFA: false])
                         return
                     }
                 } else {
                     log.warn("error from recaptcha {}", response)
                     flash.message = 'There was an error with the captcha, please try again'
-                    render(view: 'createAccount', model: [edit: false, user: params, props: params, passwordPolicy: passwordService.buildPasswordPolicy()])
+                    render(view: 'createAccount', model: [edit: false, user: params, props: params, passwordPolicy: passwordService.buildPasswordPolicy(),
+                                                          visibleMFA: false])
                     return
                 }
             }
@@ -284,14 +291,16 @@ class RegistrationController {
             if (!paramsEmail || userService.isEmailInUse(paramsEmail)) {
                 def inactiveUser = !userService.isActive(paramsEmail)
                 def lockedUser = userService.isLocked(paramsEmail)
-                render(view: 'createAccount', model: [edit: false, user: params, props: params, alreadyRegistered: true, inactiveUser: inactiveUser, lockedUser: lockedUser, passwordPolicy: passwordService.buildPasswordPolicy()])
+                render(view: 'createAccount', model: [edit: false, user: params, props: params, alreadyRegistered: true, inactiveUser: inactiveUser,
+                                                      lockedUser: lockedUser, passwordPolicy: passwordService.buildPasswordPolicy(),visibleMFA: false])
             } else {
 
                 def passwordValidation = passwordService.validatePassword(paramsEmail, paramsPassword)
                 if (!passwordValidation.valid) {
                     log.warn("The password for user name '${paramsEmail}' did not meet the validation criteria '${passwordValidation}'")
                     flash.message = "The selected password does not meet the password policy. Please try again with a different password. ${buildErrorMessages(passwordValidation)}"
-                    render(view: 'createAccount', model: [edit: false, user: params, props: params, passwordPolicy: passwordService.buildPasswordPolicy()])
+                    render(view: 'createAccount', model: [edit: false, user: params, props: params, passwordPolicy: passwordService.buildPasswordPolicy(),
+                                                          visibleMFA: false])
                     return
                 }
 
@@ -415,5 +424,14 @@ class RegistrationController {
             }
         }
         return results.unique().sort().join(' ')
+    }
+
+    private isMFAVisible(userInstance) {
+        boolean isMFAEnabled = grailsApplication.config.getProperty('account.MFAenabled', Boolean, false)
+        List MFAUnsupportedRoles = grailsApplication.config.getProperty('users.delegated-group-names', List, []).collect { jwtProperties.getRolePrefix() + it.toUpperCase()}
+        boolean hasMFAUnsupportedRoles = userInstance.roles.stream().anyMatch(userRoleRecord ->
+                MFAUnsupportedRoles.contains(userRoleRecord.role.role))
+
+        return isMFAEnabled && !hasMFAUnsupportedRoles
     }
 }

@@ -114,7 +114,6 @@ class Application extends GrailsAutoConfiguration {
         userService.messageSource = messageSource
 
         userService.affiliationsEnabled = grailsApplication.config.getProperty('attributes.affiliations.enabled', Boolean, false)
-        userService.apiGatewayIdp = gatewayIdp
 
         return userService
     }

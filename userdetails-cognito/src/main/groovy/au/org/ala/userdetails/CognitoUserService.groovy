@@ -70,9 +70,12 @@ class CognitoUserService implements IUserService<UserRecord, UserPropertyRecord,
 
     @Override
     UserRecord newUser(GrailsParameterMap params) {
-        return params ? new UserRecord(params) : new UserRecord()
+        UserRecord newUser = new UserRecord()
+        newUser.setProperties(params)
+        return newUser
     }
 
+    @Override
     RoleRecord newRole(GrailsParameterMap params) {
         return params ? new RoleRecord(role: params.role, description: params.description) : new RoleRecord()
     }

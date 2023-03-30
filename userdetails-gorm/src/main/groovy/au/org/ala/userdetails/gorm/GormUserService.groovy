@@ -26,11 +26,6 @@ import au.org.ala.userdetails.PasswordService
 import au.org.ala.userdetails.ResultStreamer
 import au.org.ala.web.AuthService
 import au.org.ala.ws.service.WebService
-import com.amazonaws.services.apigateway.AmazonApiGateway
-import com.amazonaws.services.apigateway.model.CreateApiKeyRequest
-import com.amazonaws.services.apigateway.model.CreateUsagePlanKeyRequest
-import com.amazonaws.services.apigateway.model.GetApiKeysRequest
-import com.amazonaws.services.apigateway.model.GetApiKeysResult
 import grails.converters.JSON
 import grails.core.GrailsApplication
 import grails.plugin.cache.Cacheable
@@ -38,7 +33,6 @@ import grails.gorm.transactions.Transactional
 import grails.util.Environment
 import grails.web.servlet.mvc.GrailsParameterMap
 import groovy.util.logging.Slf4j
-import org.apache.commons.lang3.NotImplementedException
 import org.apache.http.HttpStatus
 import org.grails.datastore.mapping.core.Session
 import org.grails.orm.hibernate.cfg.GrailsHibernateUtil
@@ -57,7 +51,6 @@ class GormUserService implements IUserService<User, UserProperty, Role, UserRole
     LocationService locationService
     MessageSource messageSource
     WebService webService
-    AmazonApiGateway apiGatewayIdp
 
     @Value('${attributes.affiliations.enabled:false}')
     boolean affiliationsEnabled = false

@@ -83,8 +83,7 @@ class Application extends GrailsAutoConfiguration {
     }
 
     @Bean('userService')
-    IUserService userService(TokenService tokenService, EmailService emailService, AWSCognitoIdentityProvider cognitoIdp, JwtProperties jwtProperties,
-                             AmazonApiGateway gatewayIdp) {
+    IUserService userService(TokenService tokenService, EmailService emailService, AWSCognitoIdentityProvider cognitoIdp, JwtProperties jwtProperties) {
 
         CognitoUserService userService = new CognitoUserService()
         userService.cognitoIdp = cognitoIdp

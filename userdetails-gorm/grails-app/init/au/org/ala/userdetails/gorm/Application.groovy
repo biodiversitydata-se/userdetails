@@ -95,8 +95,7 @@ class Application extends GrailsAutoConfiguration {
                              AuthService authService,
                              LocationService locationService,
                              MessageSource messageSource,
-                             WebService webService,
-                             AmazonApiGateway gatewayIdp
+                             WebService webService
                              ) {
 
 //        grailsApplication.addArtefact(DomainClassArtefactHandler.TYPE, UserRecord)

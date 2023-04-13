@@ -53,7 +53,7 @@
                                 <br/>
                                 <br/>
                                 <p><g:message code="myclient.desc.3" /> <a href="${grailsApplication.config.getProperty('oauth.support.dynamic.client.postmanExample')}" target="_blank">Postman example</a>.</p>
-                                <p>You can also use the ALA <a href="${grailsApplication.config.getProperty('tokenApp.tokenGeneration.url')}&client_id=${clientId}" target="_blank">tokens app</a> to generate an access token.</p>
+                                <p>You can also use the ALA <a href="${grailsApplication.config.getProperty('tokenApp.url')}?step=generation&client_id=${clientId}" target="_blank">tokens app</a> to generate an access token.</p>
                             </g:if>
                             <g:else>
 
@@ -65,6 +65,7 @@
                                         </label>
                                     </div>
                                 </div>
+                                 <p>For generation of full detailed clients with callback urls and custom scopes, please use the ALA <a href="${grailsApplication.config.getProperty('tokenApp.url')}?step=registration" target="_blank">tokens app</a> instead.</p>
                                 <button id="generateClient" class="btn btn-primary"><g:message code="myprofile.generate.client" /> </button>
                             </g:else>
                         </g:form>

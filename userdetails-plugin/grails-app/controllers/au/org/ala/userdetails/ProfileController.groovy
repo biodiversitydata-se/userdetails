@@ -215,6 +215,9 @@ class ProfileController {
 
         def isForGalah = params.forGalah? true: false
         List<String> callbackURLs = params.list('callbackURLs').findAll {it != ""}
+        // add default defaultCallbackURLs if available
+        callbackURLs.addAll(grailsApplication.config.getProperty('oauth.support.dynamic.client.defaultCallbackURLs', List, []))
+
 
         if(!isForGalah && callbackURLs.empty){
             render(view: "myClientAndApikey", model:[ errors: ["callbackURLs cannot be empty if the client is not for Galah"]])

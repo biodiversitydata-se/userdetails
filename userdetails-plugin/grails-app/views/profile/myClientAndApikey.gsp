@@ -22,67 +22,76 @@
     <asset:stylesheet src="userdetails.css" />
 </head>
 <body>
-
 <div id="myClientAndApikey">
     <h1><g:message code="myprofile.myClientAndApikey" /></h1>
-    <g:if test="${errors}">
-        <div class="alert alert-danger">
-            <g:each in="${errors}" var="err">
-                <p><g:message error="${err}"/></p>
-            </g:each>
-        </div>
-    </g:if>
-    <g:if test="${grailsApplication.config.getProperty('oauth.support.dynamic.client.registration', Boolean, false)}">
-        <div class="row">
-            <div class="col-md-4">
-                <h3><g:message code="myprofile.my.client" /></h3>
-                <g:form name="generateApikeyForm" controller="profile" action="generateClient">
-                    <p><g:message code="myclient.desc" /></p>
-                    <g:if test="${clientId}">
-                        <g:message code="my.client.id" /><code>${clientId}</code>
-                        <div>
+    <h5><g:message code="myprofile.myClientAndApikey.about" /> <a href="https://docs.ala.org.au" target="_blank">docs.ala.org.au</a>.</h5>
+    <br/>
+    <ul class="nav nav-tabs">
+        <li class="active"><a  data-toggle="tab" href="#ex1-tabs-1"><g:message code="myprofile.my.client" /></a></li>
+        <li ><a data-toggle="tab" href="#ex1-tabs-2"><g:message code="myprofile.my.apikey" /></a></li>
+    </ul>
+
+    <div class="tab-content">
+        <div id="ex1-tabs-1" class="tab-pane fade in active">
+            <g:if test="${errors}">
+                <div class="alert alert-danger">
+                    <g:each in="${errors}" var="err">
+                        <p><g:message error="${err}"/></p>
+                    </g:each>
+                </div>
+            </g:if>
+            <g:if test="${grailsApplication.config.getProperty('oauth.support.dynamic.client.registration', Boolean, false)}">
+                <div class="row">
+                    <div class="col-md-8">
+                        <g:form name="generateClientForm" controller="profile" action="generateClient">
                             <br/>
-                            <a href="${grailsApplication.config.getProperty('tokenApp.tokenGeneration.url')}&client_id=${clientId}" target="_blank">Click here to generate an access token</a>
-                        </div>
-                    </g:if>
-                    <g:else>
-                        <br/>
-                        <h4><g:message code="myprofile.my.client.create" /></h4>
-%{--                        <div class="form-group">--}%
-%{--                            <label for="callbackURLs"><g:message code="myclient.callbackURLs" /></label>--}%
-%{--                            <input id="callbackURLs" name="callbackURLs" type="text" class="form-control"/>--}%
-%{--                        </div>--}%
-                        <div class="form-group">
-                            <div class="checkbox">
-                                <label>
-                                    <g:checkBox name="forGalah"/> Is this for Galah?
-                                </label>
-                            </div>
-                        </div>
-                        <button id="generateClient" class="btn btn-primary"><g:message code="myprofile.generate.client" /></button>
-                    </g:else>
-                </g:form>
-            </div>
+                            <p><g:message code="myclient.desc.1" /></p>
+                            <p><g:message code="myclient.desc.2" /></p>
+                            <g:if test="${clientId}">
+                                <g:message code="my.client.id" /><code>${clientId}</code>
+                                <div>
+                                    <br/>
+                                    <a href="${grailsApplication.config.getProperty('tokenApp.tokenGeneration.url')}&client_id=${clientId}" target="_blank">Click here to generate an access token</a>
+                                </div>
+                            </g:if>
+                            <g:else>
+                                <br/>
+%{--                            TODO  un-hide after full client app management is implemented. Currently susing default callback url list and galah callback url list for all use cases  - i.e for both galah and non-galah usage--}%
+                                <div class="form-group" hidden>
+                                    <div class="checkbox">
+                                        <label>
+                                            <g:checkBox checked="true" name="forGalah"/> Is this for Galah?
+                                        </label>
+                                    </div>
+                                </div>
+                                <button id="generateClient" class="btn btn-primary"><g:message code="myprofile.generate.client" /></button>
+                            </g:else>
+                        </g:form>
+                    </div>
+                </div>
+                <br/>
+            </g:if>
         </div>
-        <br/>
-    </g:if>
-    <div class="row">
-        <div class="col-md-12">
-            <h3><g:message code="myprofile.my.apikey" /></h3>
-            <h4><g:message code="myprofile.my.apikey.desc" /></h4>
-            <g:form name="generateApikeyForm" controller="profile" action="generateApikey" params="[application:'galah']">
-                <br/>
-                <p><g:message code="generate.apikey.desc.1" /></p>
-                <p><g:message code="generate.apikey.desc.2" /></p>
-                <br/>
-                <g:if test="${apikeys}">
-                    <g:message code="my.apikey" /><code>${apikeys}</code>
-                </g:if>
-                <g:else>
-                    <button id="generateApikey" class="btn btn-primary"><g:message code="myprofile.generate.apikey" /></button>
-                </g:else>
-            </g:form>
-            <br/>
+        <div id="ex1-tabs-2" class="tab-pane fade">
+            <div class="row">
+                <div class="col-md-8">
+                    <br/>
+                    <p><g:message code="myprofile.my.apikey.about" /> <a href="https://galah.ala.org.au" target="_blank">galah.ala.org.au</a>.</p>
+                    <p><g:message code="myprofile.my.apikey.desc" /></p>
+                    <g:form name="generateApikeyForm" controller="profile" action="generateApikey" params="[application:'galah']">
+                        <br/>
+                        <g:if test="${apikeys}">
+                            <g:message code="my.apikey" /><code>${apikeys}</code>
+                        </g:if>
+                        <g:else>
+                            <button id="generateApikey" class="btn btn-primary"><g:message code="myprofile.generate.apikey" /></button>
+                        </g:else>
+                    </g:form>
+                </div>
+                <div class="col-md-4">
+                    <p style="margin-top: 10px" class="well"><g:message code="generate.apikey.desc.1" /></p>
+                </div>
+            </div>
         </div>
     </div>
 </div>

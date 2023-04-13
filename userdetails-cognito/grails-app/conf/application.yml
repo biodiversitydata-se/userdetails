@@ -198,6 +198,7 @@ account:
   MFAenabled: true
 authorised-systems:
   edit-enabled: false
+oauth.support.dynamic.client.defaultCallbackURLs: ["http://localhost:8080", "http://localhost:8080/*", "https://tokens.ala.org.au", "https://tokens.ala.org.au/*", "https://tokens.test.ala.org.au", "https://tokens.test.ala.org.au/*","https://tokens-cognito-support.dev.ala.org.au", "https://tokens-cognito-support.dev.ala.org.au/*" ]
 oauth.support.dynamic.client.registration: true
 oauth.support.dynamic.client.scopes: ["email", "openid", "profile", "ala/attrs" , "ala/roles"]
 oauth.support.dynamic.client.galah.callbackURLs: ["http://localhost:1410", "http://localhost:1410/", "http://localhost:1410/*"]

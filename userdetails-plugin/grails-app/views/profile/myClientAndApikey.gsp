@@ -47,16 +47,17 @@
                             <br/>
                             <p><g:message code="myclient.desc.1" /></p>
                             <p><g:message code="myclient.desc.2" /></p>
+                            <br/>
                             <g:if test="${clientId}">
                                 <g:message code="my.client.id" /><code>${clientId}</code>
-                                <div>
-                                    <br/>
-                                    <a href="${grailsApplication.config.getProperty('tokenApp.tokenGeneration.url')}&client_id=${clientId}" target="_blank">Click here to generate an access token</a>
-                                </div>
+                                <br/>
+                                <br/>
+                                <p><g:message code="myclient.desc.3" /> <a href="${grailsApplication.config.getProperty('oauth.support.dynamic.client.postmanExample')}" target="_blank">Postman example</a>.</p>
+                                <p>You can also use the ALA <a href="${grailsApplication.config.getProperty('tokenApp.tokenGeneration.url')}&client_id=${clientId}" target="_blank">tokens app</a> to generate an access token.</p>
                             </g:if>
                             <g:else>
-                                <br/>
-%{--                            TODO  un-hide after full client app management is implemented. Currently susing default callback url list and galah callback url list for all use cases  - i.e for both galah and non-galah usage--}%
+
+                            %{-- TODO  un-hide after full client app management is implemented. Currently susing default callback url list and galah callback url list for all use cases  - i.e for both galah and non-galah usage--}%
                                 <div class="form-group" hidden>
                                     <div class="checkbox">
                                         <label>
@@ -64,10 +65,15 @@
                                         </label>
                                     </div>
                                 </div>
-                                <button id="generateClient" class="btn btn-primary"><g:message code="myprofile.generate.client" /></button>
+                                <button id="generateClient" class="btn btn-primary"><g:message code="myprofile.generate.client" /> </button>
                             </g:else>
                         </g:form>
                     </div>
+                    <g:if test="${clientId}">
+                        <div class="col-md-4">
+                            <p style="margin-top: 10px" class="well">For further documentation on authentication and authorisation, please see ALA API <a href="https://docs.ala.org.au/#authentication-code-flow" target="_blank">authentication docs</a>.</p>
+                        </div>
+                    </g:if>
                 </div>
                 <br/>
             </g:if>

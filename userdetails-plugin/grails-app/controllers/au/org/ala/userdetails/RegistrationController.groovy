@@ -21,12 +21,23 @@ import au.org.ala.users.IUser
 import au.org.ala.ws.security.JwtProperties
 import au.org.ala.ws.service.WebService
 import grails.converters.JSON
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.media.ArraySchema
+import io.swagger.v3.oas.annotations.media.Content
+import io.swagger.v3.oas.annotations.media.Schema
+import io.swagger.v3.oas.annotations.responses.ApiResponse
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.passay.RuleResult
 import org.springframework.context.i18n.LocaleContextHolder
 import org.springframework.validation.Errors
+
+import javax.ws.rs.Path
+import javax.ws.rs.Produces
+
+import static io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY
 
 /**
  * Controller that handles the interactions with general public.
@@ -360,11 +371,61 @@ class RegistrationController {
         }
     }
 
+    @Operation(
+            method = "GET",
+            tags = "registration",
+            summary = "Get list of registrable countries",
+            operationId = "states",
+            description = "Get a list of registered countries",
+            parameters = [],
+            responses = [
+                    @ApiResponse(
+                            description = "Successful get a list of countries",
+                            responseCode = "200",
+                            content = [
+                                    @Content(
+                                            mediaType = "application/json",
+                                            array = @ArraySchema(schema = @Schema(implementation = Map))
+                                    )
+                            ]
+                    )
+            ]
+    )
+    @Path("/ws/registration/countries.json")
+    @Produces("application/json")
     def countries() {
         Map locations = locationService.getStatesAndCountries()
         respond locations.countries
     }
-
+    @Operation(
+            method = "GET",
+            tags = "registration",
+            summary = "Get list of registrable states",
+            operationId = "states",
+            description = "Get a list of registered states, optionally for a specified country",
+            parameters = [
+                    @Parameter(
+                            name = "country",
+                            in = QUERY,
+                            description = "Country to return states for - specified by ISO country code e.g AU, NZ etc.",
+                            required = false
+                    )
+            ],
+            responses = [
+                    @ApiResponse(
+                            description = "Successful get a list of states",
+                            responseCode = "200",
+                            content = [
+                                    @Content(
+                                            mediaType = "application/json",
+                                            array = @ArraySchema(schema = @Schema(implementation = Map))
+                                    )
+                            ]
+                    )
+            ]
+    )
+    @Path("/ws/registration/states.json")
+    @Produces("application/json")
     def states(String country) {
         Map locations = locationService.getStatesAndCountries()
         if (country)

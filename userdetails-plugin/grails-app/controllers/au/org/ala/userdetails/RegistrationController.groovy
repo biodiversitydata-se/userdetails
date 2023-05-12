@@ -375,12 +375,12 @@ class RegistrationController {
             method = "GET",
             tags = "registration",
             summary = "Get list of registrable countries",
-            operationId = "states",
-            description = "Get a list of registered countries",
+            operationId = "countries",
+            description = "Get a list of registrable countries",
             parameters = [],
             responses = [
                     @ApiResponse(
-                            description = "Successful get a list of countries",
+                            description = "Get a list of countries",
                             responseCode = "200",
                             content = [
                                     @Content(
@@ -402,7 +402,7 @@ class RegistrationController {
             tags = "registration",
             summary = "Get list of registrable states",
             operationId = "states",
-            description = "Get a list of registered states, optionally for a specified country",
+            description = "Get a list of registrable states, optionally for a specified country",
             parameters = [
                     @Parameter(
                             name = "country",
@@ -413,7 +413,7 @@ class RegistrationController {
             ],
             responses = [
                     @ApiResponse(
-                            description = "Successful get a list of states",
+                            description = "Get a list of states",
                             responseCode = "200",
                             content = [
                                     @Content(

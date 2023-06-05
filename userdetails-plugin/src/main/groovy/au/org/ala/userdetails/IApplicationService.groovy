@@ -2,25 +2,23 @@ package au.org.ala.userdetails
 
 interface IApplicationService {
 
-    /***
-     * This method is used to generate an api key for a given aws apigateway usage plan
-     * @param usagePlanId
-     * @return
+    /**
+     * List all client ids attached to a given user
+     * @param userId The user id
+     * @return The list of client ids for the user
      */
-    Map generateApikey(String usagePlanId)
-
-    /***
-     * This method is used to get registered api keys of a user
-     * @param userId
-     * @return
-     */
-    def getApikeys(String userId)
+    List<String> listClientIdsForUser(String userId)
 
     /***
      * This method is used to generate an oauth client
      * @param userId
      * @return
      */
-    def generateClient(String userId, List<String> callbackURLs, boolean forGalah)
+    ApplicationRecord generateClient(String userId, ApplicationRecord applicationRecord)
 
+    List<ApplicationRecord> listApplicationsForUser(String s)
+
+    void updateClient(String userId, ApplicationRecord applicationRecord)
+
+    ApplicationRecord findClientByClientId(String userId, String clientId)
 }

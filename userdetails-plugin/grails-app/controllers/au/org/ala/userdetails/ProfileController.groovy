@@ -48,6 +48,8 @@ class ProfileController {
     IUserService userService
     @Autowired
     IApplicationService applicationService
+    @Autowired(required = false)
+    IApikeyService apikeyService
 
     def index() {
 
@@ -187,11 +189,16 @@ class ProfileController {
 
     def myClientAndApikey() {
         def user = userService.currentUser
-        def clientId = user.additionalAttributes.find { it.name == 'clientId' }?.value
-        render view: "myClientAndApikey", model: [apikeys: String.join(",", applicationService.getApikeys(user.userId)), clientId: clientId]
+//        def clientId = user.additionalAttributes.find { it.name == 'clientId' }?.value
+        render view: "myClientAndApikey", model: [apikeys: String.join(",", apikeyService.getApikeys(user.userId)), clientId: clientId]
     }
 
     def generateApikey(String application) {
+        if (grailsApplication.config.getProperty('apikey.type', 'none')) {
+            render(status: 404)
+            return
+        }
+
         if(!application) {
             render(view: "myClientAndApikey", model:[ errors: ['No application name']])
             return
@@ -203,32 +210,73 @@ class ProfileController {
             render(view: "myClientAndApikey", model:[ errors: ['No usage plan id to generate api key']])
             return
         }
-        def response = applicationService.generateApikey(usagePlanId)
-        if(response.error) {
-            render view: "myClientAndApikey", model:[ errors: [response.error]]
+        try {
+            def response = apikeyService.generateApikey(usagePlanId)
+
+        } catch (e) {
+            render view: "myClientAndApikey", model:[ errors: [e.message]]
             return
         }
         redirect(action: "myClientAndApikey")
     }
 
-    def generateClient() {
+    def generateClient(ApplicationRecord applicationRecord) {
 
-        def isForGalah = params.forGalah? true: false
-        List<String> callbackURLs = params.list('callbackURLs').findAll {it != ""}
+        // TODO
         // add default defaultCallbackURLs if available
-        callbackURLs.addAll(grailsApplication.config.getProperty('oauth.support.dynamic.client.defaultCallbackURLs', List, []))
+//        callbackURLs.addAll(grailsApplication.config.getProperty('oauth.support.dynamic.client.defaultCallbackURLs', List, []))
 
 
-        if(!isForGalah && callbackURLs.empty){
-            render(view: "myClientAndApikey", model:[ errors: ["callbackURLs cannot be empty if the client is not for Galah"]])
+//        def isForGalah = params.forGalah? true: false
+//        List<String> callbackURLs = params.list('callbackURLs').findAll {it != ""}
+
+        if (applicationRecord.clientId || applicationRecord.secret) {
+            render(status: 400, [ errors: ["Can't specify client id or secret when creating a new application"]])
+        }
+
+        if(applicationRecord.callbacks.findAll().empty && (applicationRecord.type in [ApplicationType.GALAH, ApplicationType.M2M])) {
+            render(status: 400, [ errors: ["callbackURLs cannot be empty if the client is web-app or native"]] as JSON)
             return
         }
 
-        def response = applicationService.generateClient(userService.currentUser.userId, callbackURLs, isForGalah)
-        if(response.error) {
-            render(view: "myClientAndApikey", model:[ errors: [response.error]])
+        try {
+            def response = applicationService.generateClient(userService.currentUser.userId, applicationRecord)
+            render(response as JSON)
+        } catch (e) {
+            log.error('e', e)
+            render(status: 500, [errors: [e.message]] as JSON)
             return
         }
-        redirect(action: "myClientAndApikey")
+    }
+
+    def updateClient(ApplicationRecord applicationRecord) {
+        try {
+            applicationService.updateClient(userService.currentUser.userId, applicationRecord)
+            render(status: 204)
+        } catch (IllegalStateException e) {
+            log.error('ise', e)
+            render(status: 400, [errors: [e.message ]] as JSON)
+        } catch (e) {
+            log.error('e', e)
+            render(status: 500)
+        }
+    }
+
+    def listClients() {
+        render(applicationService.listApplicationsForUser(userService.currentUser.userId) as JSON)
+    }
+
+    def createApplication() {
+        render(view: 'createApplication', model: [applicationInstance: new ApplicationRecord()])
+    }
+
+    def applications() {
+        def userId = userService.currentUser.userId
+        render(view: 'applications', model: [apikeys: String.join(",", apikeyService.getApikeys(userId)), applicationList: applicationService.listApplicationsForUser(userId)])
+    }
+
+    def application(String id) {
+        def userId = userService.currentUser.userId
+        respond applicationService.findClientByClientId(userId, id)
     }
 }

@@ -2,103 +2,187 @@ package au.org.ala.userdetails
 
 import com.amazonaws.AmazonWebServiceResult
 import com.amazonaws.ResponseMetadata
-import com.amazonaws.services.apigateway.AmazonApiGateway
-import com.amazonaws.services.apigateway.model.CreateApiKeyRequest
-import com.amazonaws.services.apigateway.model.CreateUsagePlanKeyRequest
-import com.amazonaws.services.apigateway.model.GetApiKeysRequest
-import com.amazonaws.services.apigateway.model.GetApiKeysResult
 import com.amazonaws.services.cognitoidp.AWSCognitoIdentityProvider
 import com.amazonaws.services.cognitoidp.model.CreateUserPoolClientRequest
 import com.amazonaws.services.cognitoidp.model.CreateUserPoolClientResult
-import grails.config.Config
-import org.springframework.beans.factory.annotation.Autowired
+import com.amazonaws.services.cognitoidp.model.DescribeUserPoolClientRequest
+import com.amazonaws.services.cognitoidp.model.UpdateUserPoolClientRequest
+import com.amazonaws.services.cognitoidp.model.UserPoolClientType
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
+import com.amazonaws.services.dynamodbv2.model.AttributeValue
+import com.amazonaws.services.dynamodbv2.model.PutItemRequest
+import com.amazonaws.services.dynamodbv2.model.QueryRequest
 
 class CognitoApplicationService implements IApplicationService {
 
-    @Autowired
     IUserService userService
     AWSCognitoIdentityProvider cognitoIdp
     String poolId
-    AmazonApiGateway apiGatewayIdp
-    Config config
 
-    @Override
-    Map generateApikey(String usagePlanId) {
-        if(!usagePlanId){
-            return [apikeys:null, err: "No usage plan id to generate api key"]
-        }
+//    Config config
+    List<String> supportedIdentityProviders
+    List<String> authFlows
+    List<String> clientScopes
+    List<String> galahCallbackURLs
 
-        def currentUser = userService.currentUser
+    AmazonDynamoDB dynamoDB
+    String dynamoDBTable
+    String dynamoDBPK
+    String dynamoDBSK
 
-        CreateApiKeyRequest request = new CreateApiKeyRequest()
-        request.enabled = true
-        request.customerId = currentUser.userId
-        request.name = "API key for user " + currentUser.userId
-        def response = apiGatewayIdp.createApiKey(request)
+    List<ApplicationRecord> listApplicationsForUser(String userId) {
+        def qr = new QueryRequest()
+                .withTableName(dynamoDBTable)
+                .withKeyConditionExpression("$dynamoDBPK := :userId")
+                .withExpressionAttributeValues([userId: new AttributeValue(userId)])
+        def result = dynamoDB.query(qr)
 
-        if(isSuccessful(response)) {
-            //add api key to usage plan
-            CreateUsagePlanKeyRequest usagePlanKeyRequest = new CreateUsagePlanKeyRequest()
-            usagePlanKeyRequest.keyId = response.id
-            usagePlanKeyRequest.keyType = "API_KEY"
-            usagePlanKeyRequest.usagePlanId = usagePlanId
-            apiGatewayIdp.createUsagePlanKey(usagePlanKeyRequest)
-
-            return [apikeys:getApikeys(currentUser.userId), error: null]
-        }
-        else{
-            return [apikeys:null, error: "Could not generate api key"]
+        if (result.sdkHttpMetadata.httpStatusCode == 200) {
+            result.items.collect { itemToApplication(it) }
+        } else {
+            throw new RuntimeException("Could not list clients for user $userId")
         }
     }
 
-    @Override
-    def getApikeys(String userId) {
+    private ApplicationRecord itemToApplication(item) {
+        def clientId = item.get(dynamoDBSK).getS()
 
-        GetApiKeysRequest getApiKeysRequest = new GetApiKeysRequest().withCustomerId(userId).withIncludeValues(true)
-        GetApiKeysResult response = apiGatewayIdp.getApiKeys(getApiKeysRequest)
-        if(isSuccessful(response)){
-            return response.items.value
+        def client = cognitoIdp.describeUserPoolClient(
+                new DescribeUserPoolClientRequest()
+                        .withUserPoolId(poolId)
+                        .withClientId(clientId)
+        )
+        userPoolClientToApplication(client.userPoolClient)
+    }
+
+    private ApplicationRecord userPoolClientToApplication(UserPoolClientType userPoolClient) {
+        def name = userPoolClient.clientName
+        def clientId = userPoolClient.clientId
+        def secret = userPoolClient.clientSecret
+        def callbackUrls = userPoolClient.callbackURLs
+        def allowedFlows = userPoolClient.allowedOAuthFlows
+        userPoolClient.logoutURLs
+        userPoolClient.defaultRedirectURI
+
+        def type
+        if (callbackUrls.containsAll(galahCallbackURLs) && callbackUrls.size() == galahCallbackURLs.size()) {
+            type = ApplicationType.GALAH
+        } else if (allowedFlows.contains('client_credentials')) {
+            type = ApplicationType.M2M
+        } else if (allowedFlows.contains('code')) {
+            if (userPoolClient.clientSecret) {
+                type = ApplicationType.CONFIDENTIAL
+            } else {
+                type = ApplicationType.PUBLIC
+            }
+
+        } else {
+            type = ApplicationType.UNKNOWN
         }
-        else{
-            return null
+
+        return new ApplicationRecord(
+                name: name,
+                clientId: clientId,
+                secret: secret,
+                callbacks: callbackUrls,
+                type: type
+        )
+    }
+
+    List<String> listClientIdsForUser(String userId) {
+        listApplicationsForUser(userId).collect { it.clientId }
+    }
+
+    private def addClientIdForUser(String userId, String clientId) {
+        def putResponse = dynamoDB.putItem(
+                new PutItemRequest(dynamoDBTable, [(dynamoDBPK): new AttributeValue(userId), (dynamoDBSK): new AttributeValue(clientId)]))
+        if (putResponse.sdkHttpMetadata.httpStatusCode != 200) {
+            throw new RuntimeException("Couldn't add mapping for $clientId to $userId")
         }
     }
 
+    private def getClientByUserIdAndClientId(String userId, String clientId) {
+        def result = dynamoDB.getItem(dynamoDBTable, [(dynamoDBPK): new AttributeValue(userId), (dynamoDBSK): new AttributeValue(clientId)])
+        return result.item
+    }
+
+    private def isUserOwnsClientId(String userId, String clientId) {
+        return getClientByUserIdAndClientId(userId, clientId) != null
+    }
+
     @Override
-    def generateClient(String userId, List<String> callbackURLs, boolean forGalah) {
+    ApplicationRecord generateClient(String userId, ApplicationRecord applicationRecord) {
         CreateUserPoolClientRequest request =  new CreateUserPoolClientRequest().withUserPoolId(poolId)
-        request.clientName = "Client for user " + userId
-        request.allowedOAuthFlows = ["code"]
-        request.generateSecret = false
-        request.supportedIdentityProviders = config.getProperty('oauth.support.dynamic.client.supportedIdentityProviders', List, [])
+        request.clientName = applicationRecord.name
+        // TODO enable user consent
+        if (applicationRecord.type == ApplicationType.M2M) {
+            request.generateSecret = true
+            request.allowedOAuthFlows = ["client_credentials"]
+        } else {
+            request.generateSecret = applicationRecord.type != ApplicationType.PUBLIC
+            request.allowedOAuthFlows = ["code"]
+        }
+        request.supportedIdentityProviders = new ArrayList<>(supportedIdentityProviders)
         request.preventUserExistenceErrors = "ENABLED"
-        request.explicitAuthFlows = config.getProperty('oauth.support.dynamic.client.authFlows', List, [])
+        request.explicitAuthFlows = new ArrayList<>(authFlows)
         request.allowedOAuthFlowsUserPoolClient = true
 
-        def scopes = config.getProperty('oauth.support.dynamic.client.scopes', List, [])
+        def scopes = new ArrayList<>(clientScopes)
 
-        if(scopes) {
+        if (scopes) {
             request.allowedOAuthScopes = scopes
         }
 
-        request.callbackURLs = callbackURLs
-        if(forGalah) {
-            request.callbackURLs.addAll(config.getProperty('oauth.support.dynamic.client.galah.callbackURLs', List, []))
+        request.callbackURLs = new ArrayList<>(applicationRecord.callbacks.findAll())
+        if (applicationRecord.type == ApplicationType.GALAH) {
+            request.callbackURLs.addAll(galahCallbackURLs)
         }
 
         CreateUserPoolClientResult response = cognitoIdp.createUserPoolClient(request)
 
-        if(isSuccessful(response)){
+        if (isSuccessful(response)) {
             //update user custom attribute with new clientId
-            userService.addOrUpdateProperty(userService.currentUser, "clientId", response.userPoolClient.clientId)
-            return [apikeys: response.userPoolClient.clientId, error: null]
-        }
-        else{
-            return [clientId: null, error: "Could not generate client"]
+//            userService.addOrUpdateProperty(userService.currentUser, "clientId", response.userPoolClient.clientId)
+            def clientId = response.userPoolClient.clientId
+            addClientIdForUser(userId, clientId)
+            //return applicationRecord.tap { it.clientId = clientId; it.secret = response.userPoolClient.clientSecret }
+            return userPoolClientToApplication(response.userPoolClient)
+        } else {
+            throw new RuntimeException("Could not generate client")
         }
     }
 
-    private boolean isSuccessful(AmazonWebServiceResult<? extends ResponseMetadata> result) {
+    @Override
+    void updateClient(String userId, ApplicationRecord applicationRecord) {
+        if (!isUserOwnsClientId(userId, applicationRecord.clientId)) {
+            throw new IllegalArgumentException("${applicationRecord.clientId} not found")
+        }
+        def request = new UpdateUserPoolClientRequest().withUserPoolId(poolId)
+        request.withClientId(applicationRecord.clientId)
+        request.withClientName(applicationRecord.name)
+        if (applicationRecord.type == ApplicationType.M2M) {
+            request.allowedOAuthFlows = ["client_credentials"]
+        } else {
+            request.allowedOAuthFlows = ["code"]
+        }
+
+        request.callbackURLs = new ArrayList<>(applicationRecord.callbacks.findAll())
+        if (applicationRecord.type == ApplicationType.GALAH) {
+            request.callbackURLs.addAll(galahCallbackURLs)
+        }
+
+        def response = cognitoIdp.updateUserPoolClient(request)
+        if (!isSuccessful(response)) {
+            throw new RuntimeException("Could not update client $applicationRecord.clientId")
+        }
+    }
+
+    @Override
+    ApplicationRecord findClientByClientId(String userId, String clientId) {
+        return itemToApplication(getClientByUserIdAndClientId(userId, clientId))
+    }
+
+    private static boolean isSuccessful(AmazonWebServiceResult<? extends ResponseMetadata> result) {
         def code = result.sdkHttpMetadata.httpStatusCode
         return code >= 200 && code < 300
     }

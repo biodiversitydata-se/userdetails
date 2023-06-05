@@ -81,7 +81,7 @@
                         </div>
                         <div class="content">
                             <h4 id="myClientAndApikey">
-                                <g:link controller="profile" action="myClientAndApikey">
+                                <g:link controller="profile" action="applications">
                                     <g:message code="myprofile.myClientAndApikey" />
                                 </g:link>
                             </h4>

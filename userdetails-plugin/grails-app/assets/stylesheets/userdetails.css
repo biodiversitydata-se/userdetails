@@ -146,3 +146,36 @@ body #main {
     text-align: center;
     padding-top: 10px;
 }
+
+#callback-list {
+    padding-bottom: 0.5em;
+}
+
+.tag {
+    font-size: 14px;
+    padding: .3em .4em .4em;
+    margin: 0 .1em;
+}
+.tag a {
+    color: #bbb;
+    cursor: pointer;
+    opacity: 0.6;
+}
+.tag a:hover {
+    opacity: 1.0
+}
+/*.tag .remove {*/
+/*    vertical-align: bottom;*/
+/*    top: 0;*/
+/*}*/
+.tag a {
+    margin: 0 -0.4em 0 .3em;
+    padding: .1em .4em;
+}
+.tag a i {
+    vertical-align: initial;
+}
+/*.tag a .glyphicon-white {*/
+/*    color: #fff;*/
+/*    margin-bottom: 2px;*/
+/*}*/

@@ -20,10 +20,14 @@ import au.org.ala.web.OidcClientProperties
 import au.org.ala.ws.security.JwtProperties
 import au.org.ala.ws.tokens.TokenService
 import com.amazonaws.auth.*
+import com.amazonaws.regions.Region
 import com.amazonaws.services.apigateway.AmazonApiGateway
 import com.amazonaws.services.apigateway.AmazonApiGatewayClientBuilder
 import com.amazonaws.services.cognitoidp.AWSCognitoIdentityProvider
 import com.amazonaws.services.cognitoidp.AWSCognitoIdentityProviderClientBuilder
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder
+import com.amazonaws.services.dynamodbv2.document.DynamoDB
 import grails.boot.GrailsApp
 import grails.boot.config.GrailsAutoConfiguration
 import groovy.util.logging.Slf4j
@@ -71,15 +75,11 @@ class Application extends GrailsAutoConfiguration {
     }
 
     @Bean
-    AmazonApiGateway gatewayIdpClient(AWSCredentialsProvider awsCredentialsProvider) {
-        def region = grailsApplication.config.getProperty('cognito.region')
-
-        AmazonApiGateway gatewayIdp = AmazonApiGatewayClientBuilder.standard()
-                .withRegion(region)
+    AmazonDynamoDB amazonDynamoDB(AWSCredentialsProvider awsCredentialsProvider, Region awsRegion) {
+        return AmazonDynamoDBClientBuilder.standard()
+                .withRegion(awsRegion)
                 .withCredentials(awsCredentialsProvider)
                 .build()
-
-        return gatewayIdp
     }
 
     @Bean('userService')
@@ -105,13 +105,25 @@ class Application extends GrailsAutoConfiguration {
     }
 
     @Bean('applicationService')
-    IApplicationService applicationService(AWSCognitoIdentityProvider cognitoIdp, AmazonApiGateway gatewayIdp) {
+    IApplicationService applicationService(AWSCognitoIdentityProvider cognitoIdp, IUserService userService, AmazonDynamoDB amazonDynamoDB) {
 
-        CognitoApplicationService applicationService = new CognitoApplicationService()
-        applicationService.cognitoIdp = cognitoIdp
-        applicationService.poolId = grailsApplication.config.getProperty('cognito.poolId')
-        applicationService.apiGatewayIdp = gatewayIdp
-        applicationService.config = grailsApplication.config
+        def poolId = grailsApplication.config.getProperty('cognito.poolId')
+        def supportedIdentityProviders = grailsApplication.config.getProperty('oauth.support.dynamic.client.supportedIdentityProviders', List, [])
+        def authFlows = grailsApplication.config.getProperty('oauth.support.dynamic.client.authFlows', List, [])
+        def clientScopes = grailsApplication.config.getProperty('oauth.support.dynamic.client.scopes', List, [])
+        def galahCallbackURLs = grailsApplication.config.getProperty('oauth.support.dynamic.client.galah.callbackURLs', List, [])
+
+        CognitoApplicationService applicationService = new CognitoApplicationService(
+                userService: userService,
+                cognitoIdp: cognitoIdp,
+                poolId: poolId,
+                supportedIdentityProviders: supportedIdentityProviders,
+                authFlows: authFlows,
+                clientScopes: clientScopes,
+                galahCallbackURLs: galahCallbackURLs,
+                dynamoDB: amazonDynamoDB
+        )
+
 
         return applicationService
     }

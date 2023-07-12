@@ -8,11 +8,9 @@ import au.org.ala.userdetails.secrets.RandomStringGenerator
 import com.mongodb.ClientSessionOptions
 import com.mongodb.client.MongoClient
 import org.apache.commons.lang3.StringUtils
-import org.bson.BsonType
 import org.bson.codecs.pojo.annotations.BsonId
 import org.bson.codecs.pojo.annotations.BsonIgnore
 import org.bson.codecs.pojo.annotations.BsonProperty
-import org.bson.codecs.pojo.annotations.BsonRepresentation
 
 import java.util.regex.Pattern
 
@@ -126,6 +124,8 @@ class GormApplicationService implements IApplicationService {
             service.applicationType = 'native' // This field doesn't appear to be used in CAS but we fill it in anyway, just in case
             if (generateSecret) {
                 service.clientSecret = randomStringGenerator.getNewString()
+            } else if (!service.clientSecret) {
+                service.clientSecret = randomStringGenerator.getNewString()
             }
             service.supportedGrantTypes = ["client_credentials"] as Set
         } else {
@@ -133,10 +133,14 @@ class GormApplicationService implements IApplicationService {
                 service.applicationType = 'web'
                 if (generateSecret) {
                     service.clientSecret = ''
+                } else if (serivce.clientSecret) {
+                    service.clientSecret = ''
                 }
             } else {
                 service.applicationType = 'native'
                 if (generateSecret) {
+                    service.clientSecret = randomStringGenerator.getNewString()
+                } else if (!service.clientSecret) {
                     service.clientSecret = randomStringGenerator.getNewString()
                 }
             }

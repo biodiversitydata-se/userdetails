@@ -77,7 +77,7 @@ class Application extends GrailsAutoConfiguration {
     @Bean
     AmazonDynamoDB amazonDynamoDB(AWSCredentialsProvider awsCredentialsProvider, Region awsRegion) {
         return AmazonDynamoDBClientBuilder.standard()
-                .withRegion(awsRegion)
+                .withRegion(awsRegion.toString())
                 .withCredentials(awsCredentialsProvider)
                 .build()
     }

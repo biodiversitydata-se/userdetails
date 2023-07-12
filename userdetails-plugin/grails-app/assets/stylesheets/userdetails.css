@@ -160,6 +160,8 @@ body #main {
     color: #bbb;
     cursor: pointer;
     opacity: 0.6;
+    margin: 0 -0.4em 0 .3em;
+    padding: .1em .4em;
 }
 .tag a:hover {
     opacity: 1.0
@@ -168,10 +170,6 @@ body #main {
 /*    vertical-align: bottom;*/
 /*    top: 0;*/
 /*}*/
-.tag a {
-    margin: 0 -0.4em 0 .3em;
-    padding: .1em .4em;
-}
 .tag a i {
     vertical-align: initial;
 }

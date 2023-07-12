@@ -244,7 +244,7 @@
             let $this = $(this);
             let $saveButton = $this.find('btn-save-app');
             let $saveButtonContent = $saveButton.content;
-            $saveButton.content('<i class="fa fa-spinner"></i>');
+            $saveButton.html('<i class="fa fa-spinner"></i>');
             setModalButtonsDisabled(true);
             $.post(
                 url,
@@ -253,7 +253,7 @@
                 showEditModal(data);
                 refreshAppTable();
             }).always(function() {
-                $saveButton.content($saveButtonContent);
+                $saveButton.html($saveButtonContent);
                 setModalButtonsDisabled(false);
             });
         });
@@ -279,6 +279,7 @@
                 $(this).serialize()
             ).done(function(data) {
                 showEditModal(data);
+                refreshAppTable();
             }).always(function() {
                 $saveButton.html($saveButtonContent);
                 setModalButtonsDisabled(false);

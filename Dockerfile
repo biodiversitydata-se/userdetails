@@ -8,5 +8,5 @@ WORKDIR /opt
 ADD https://nexus.ala.org.au/service/local/repositories/releases/content/au/org/ala/${APP_ARTIFACT}/${APP_VERSION}/${APP_ARTIFACT}-${APP_VERSION}-exec.war app.war
 RUN mkdir /data
 RUN mkdir -p /var/log/atlas/userdetails
-EXPOSE 8080
+EXPOSE 9001
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.war"]

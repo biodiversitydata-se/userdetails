@@ -461,7 +461,7 @@ class CognitoUserService implements IUserService<UserRecord, UserPropertyRecord,
     Collection<RoleRecord> listRoles() {
         ListGroupsResult result = cognitoIdp.listGroups(
             new ListGroupsRequest()
-                .withUserPoolId(poolId)
+                .withUserPoolId(poolId).withLimit(60)
         )
 
         return result.groups.collect { groupType ->

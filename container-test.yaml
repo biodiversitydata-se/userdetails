@@ -1,0 +1,22 @@
+# Run with: container-structure-test test --driver tar --image livingatlases/userdetails:latest --config container-test.yaml
+schemaVersion: 2.0.0
+fileExistenceTests:
+- name: 'data'
+  path: '/data/userdetails/'
+  shouldExist: true
+  permissions: 'drwxr-xr-x'
+# Does not work:
+#  uid: 1000
+#  gid: 1000
+  isExecutableBy: 'any'
+- name: 'logs'
+  path: '/var/log/atlas/userdetails'
+  shouldExist: true
+  permissions: 'drwxr-xr-x'
+#  uid: 1000
+#  gid: 1000
+  isExecutableBy: 'any'
+- name: 'war exits'
+  path: '/opt/app.war'
+  shouldExist: true
+  permissions: '-rw-------'

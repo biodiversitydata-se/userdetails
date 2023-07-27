@@ -190,34 +190,34 @@ class ProfileController {
     def myClientAndApikey() {
         def user = userService.currentUser
 //        def clientId = user.additionalAttributes.find { it.name == 'clientId' }?.value
-        render view: "myClientAndApikey", model: [apikeys: String.join(",", apikeyService.getApikeys(user.userId)), clientId: clientId]
+        render view: "myClientAndApikey", model: [apikeys: String.join(",", apikeyService.getApikeys(user.userId)), clientId: null]
     }
 
     def generateApikey(String application) {
-        if (grailsApplication.config.getProperty('apikey.type', 'none')) {
+        if (!grailsApplication.config.getProperty('apikey.type', 'none')) {
             render(status: 404)
             return
         }
 
         if(!application) {
-            render(view: "myClientAndApikey", model:[ errors: ['No application name']])
+            render(view: "applications", model:[ errors: ['No application name']])
             return
         }
 
         String usagePlanId = grailsApplication.config.getProperty("apigateway.${application}.usagePlanId")
 
         if(!usagePlanId) {
-            render(view: "myClientAndApikey", model:[ errors: ['No usage plan id to generate api key']])
+            render(view: "applications", model:[ errors: ['No usage plan id to generate api key']])
             return
         }
         try {
             def response = apikeyService.generateApikey(usagePlanId)
 
         } catch (e) {
-            render view: "myClientAndApikey", model:[ errors: [e.message]]
+            render view: "applications", model:[ errors: [e.message]]
             return
         }
-        redirect(action: "myClientAndApikey")
+        redirect(action: "applications")
     }
 
     def generateClient(ApplicationRecord applicationRecord) {

@@ -19,7 +19,7 @@
     <g:set var="entityName" value="${message(code: 'application.label', default: 'Application')}"/>
     <meta name="section" content="home"/>
     <meta name="breadcrumbParent" content="${g.createLink(controller: 'profile')},My Profile" />
-    <title><g:message code="myprofile.my.applications" /></title>
+    <title><g:message code="myprofile.myClientAndApikey" /></title>
     <asset:stylesheet src="userdetails.css" />
 </head>
 <body>
@@ -27,20 +27,18 @@
 <div id="my-applications" role="main">
 
     <div class="page-header">
-        <h1><g:message code="myprofile.my.applications" /></h1>
+        <h1><g:message code="myprofile.myClientAndApikey" /></h1>
     </div>
 
     <!-- Nav tabs -->
-    <ul class="nav nav-tabs" role="tablist">
-        <li role="presentation" class="active"><a href="#apikey" aria-controls="apikey" role="tab" data-toggle="tab"><g:message code="myprofile.apikey"/></a></li>
-        <li role="presentation"><a href="#applications" aria-controls="applications" role="tab" data-toggle="tab"><g:message code="myprofile.applications" default="Applications" /></a></li>
-%{--        <li role="presentation"><a href="#messages" aria-controls="messages" role="tab" data-toggle="tab">Messages</a></li>--}%
-%{--        <li role="presentation"><a href="#settings" aria-controls="settings" role="tab" data-toggle="tab">Settings</a></li>--}%
+    <ul class="nav nav-tabs">
+        <li class="active"><a href="#apikey" data-toggle="tab"><g:message code="myprofile.apikey"/></a></li>
+        <li><a href="#applications" data-toggle="tab"><g:message code="myprofile.applications" default="Applications" /></a></li>
     </ul>
 
     <!-- Tab panes -->
     <div class="tab-content">
-        <div role="tabpanel" class="tab-pane active" id="apikey">
+        <div class="tab-pane active" id="apikey">
 
             <div class="row">
                 <div class="col-md-12">
@@ -49,7 +47,6 @@
                     <g:form name="generateApikeyForm" controller="profile" action="generateApikey" params="[application:'galah']">
                         <br/>
                         <p><g:message code="generate.apikey.desc.1" /></p>
-                        <p><g:message code="generate.apikey.desc.2" /></p>
                         <br/>
                         <g:if test="${apikeys}">
                             <g:message code="my.apikey" /><code>${apikeys}</code>
@@ -63,7 +60,7 @@
             </div>
 
         </div>
-        <div role="tabpanel" class="tab-pane" id="applications">
+        <div class="tab-pane" id="applications">
             <div class="row">
                 <div class="col-md-4">
 %{--                    <div class="page-header">--}%
@@ -96,20 +93,6 @@
                             <g:sortableColumn property="clientId" title="${message(code: 'application.clientId.label', default: 'Client ID')}" />
 
                             <td></td>
-
-                            %{--            <g:sortableColumn property="firstName"--}%
-                            %{--                              title="${message(code: 'user.firstName.label', default: 'First Name')}" mapping="adminUserList"/>--}%
-
-                            %{--            <g:sortableColumn property="lastName"--}%
-                            %{--                              title="${message(code: 'user.lastName.label', default: 'Last Name')}" mapping="adminUserList"/>--}%
-
-                            %{--            <g:sortableColumn property="activated"--}%
-                            %{--                              title="${message(code: 'user.activated.label', default: 'Activated')}" mapping="adminUserList"/>--}%
-
-                            %{--            <g:sortableColumn property="locked" title="${message(code: 'user.locked.label', default: 'Locked')}" mapping="adminUserList"/>--}%
-
-                            %{--            <g:sortableColumn property="dateCreated" title="${message(code: 'user.dateCreated.label', default: 'Created')}" mapping="adminUserList"/>--}%
-
                         </tr>
                         </thead>
                         <tbody>
@@ -123,21 +106,10 @@
                                             id="${application.clientId}">${fieldValue(bean: application, field: "clientId")}</g:link></td>
 
                                 <td>
-%{--                                    <button class="app-enable" data-id="${application.clientId}">Enable</button>--}%
+                                    <button class="app-enable" data-id="${application.clientId}">Enable</button>
                                     <button class="app-edit" aria-label="View/Edit" data-id="${application.clientId}"><i class="fa fa-eye"></i></button>
                                     <button class="app-delete" aria-label="Delete" data-id="${application.clientId}"><i class="fa fa-trash"></i></button>
                                 </td>
-
-                                %{--                <td>${fieldValue(bean: userInstance, field: "firstName")}</td>--}%
-
-                                %{--                <td>${fieldValue(bean: userInstance, field: "lastName")}</td>--}%
-
-                                %{--                <td><g:formatBoolean boolean="${userInstance.activated}"/></td>--}%
-
-                                %{--                <td><g:formatBoolean boolean="${userInstance.locked}"/></td>--}%
-
-                                %{--                <td>${fieldValue(bean: userInstance, field: "dateCreated")}</td>--}%
-
                             </tr>
                         </g:each>
                         </tbody>
@@ -149,18 +121,16 @@
                 </div>
             </div>
         </div>
-%{--        <div role="tabpanel" class="tab-pane" id="messages">...</div>--}%
-%{--        <div role="tabpanel" class="tab-pane" id="settings">...</div>--}%
     </div>
     <div id="client-modal" class="modal fade" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                    <h4 class="modal-title">Modal title</h4>
+                    <h4 class="modal-title">Create Application</h4>
                 </div>
                 <div class="modal-body">
-                    <g:form name="modal-save-form" action="saveApplication">
+                    <g:form name="modal-save-form" action="generateClient">
                         <fieldset class="form">
                             <div class="form-group">
                                 <label for="clientId">

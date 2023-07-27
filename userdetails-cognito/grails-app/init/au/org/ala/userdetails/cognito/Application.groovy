@@ -112,6 +112,9 @@ class Application extends GrailsAutoConfiguration {
         def authFlows = grailsApplication.config.getProperty('oauth.support.dynamic.client.authFlows', List, [])
         def clientScopes = grailsApplication.config.getProperty('oauth.support.dynamic.client.scopes', List, [])
         def galahCallbackURLs = grailsApplication.config.getProperty('oauth.support.dynamic.client.galah.callbackURLs', List, [])
+        def dynamoDBTable = grailsApplication.config.getProperty('oauth.support.dynamic.client.dynamoDBTableName', String, null)
+        def dynamoDBPK = grailsApplication.config.getProperty('oauth.support.dynamic.client.dynamoDBTable.dynamoDBPK', String, null)
+        def dynamoDBSK = grailsApplication.config.getProperty('oauth.support.dynamic.client.dynamoDBTable.dynamoDBSK', String, null)
 
         CognitoApplicationService applicationService = new CognitoApplicationService(
                 userService: userService,
@@ -121,10 +124,18 @@ class Application extends GrailsAutoConfiguration {
                 authFlows: authFlows,
                 clientScopes: clientScopes,
                 galahCallbackURLs: galahCallbackURLs,
-                dynamoDB: amazonDynamoDB
+                dynamoDB: amazonDynamoDB,
+                dynamoDBTable: dynamoDBTable,
+                dynamoDBPK: dynamoDBPK,
+                dynamoDBSK: dynamoDBSK
         )
 
 
         return applicationService
     }
+//
+//    @Bean('apikeyService')
+//    IApikeyService apikeyService(IUserService userService, AmazonApiGateway apiGatewayIdp) {
+//        return new AWSApikeyService(userService: userService, apiGatewayIdp: apiGatewayIdp)
+//    }
 }

@@ -33,8 +33,8 @@ class CognitoApplicationService implements IApplicationService {
     List<ApplicationRecord> listApplicationsForUser(String userId) {
         def qr = new QueryRequest()
                 .withTableName(dynamoDBTable)
-                .withKeyConditionExpression("$dynamoDBPK := :userId")
-                .withExpressionAttributeValues([userId: new AttributeValue(userId)])
+                .withKeyConditionExpression("$dynamoDBPK = :userId")
+                .withExpressionAttributeValues([":userId": new AttributeValue(userId)])
         def result = dynamoDB.query(qr)
 
         if (result.sdkHttpMetadata.httpStatusCode == 200) {

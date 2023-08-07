@@ -158,13 +158,15 @@ class Application extends GrailsAutoConfiguration {
         def password = grailsApplication.config.getProperty('applications.mongo.password')
         def authDb = grailsApplication.config.getProperty('applications.mongo.auth-db')
 
-
-        MongoClientSettings settings = MongoClientSettings.builder()
+        def builder = MongoClientSettings.builder()
                 .applicationName(appName)
                 .applyConnectionString(new ConnectionString(connectionString))
-                .credential(MongoCredential.createCredential(username, authDb, password.toCharArray()))
-                .codecRegistry(codecRegistry)
-                .build()
+
+        if (username && password) {
+            builder = builder.credential(MongoCredential.createCredential(username, authDb ?: '', password.toCharArray()))
+        }
+
+        MongoClientSettings settings =  builder.codecRegistry(codecRegistry).build()
         MongoClient mongoClient = MongoClients.create(settings)
         return mongoClient
     }

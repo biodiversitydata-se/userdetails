@@ -68,7 +68,7 @@ class UserDetailsGrailsPluginConfiguration {
     @Bean('awsRegion')
     Region awsRegion() {
         def region = grailsApplication.config.getProperty('aws.region') ?: grailsApplication.config.getProperty('cognito.region')
-        return Region.getRegion(Regions.fromName(region)) ?: Regions.currentRegion
+        return region ? Region.getRegion(Regions.fromName(region)) : Regions.currentRegion
     }
 
     @Bean

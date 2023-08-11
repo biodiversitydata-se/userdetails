@@ -235,7 +235,7 @@
                     <g:select id="country" name="country"
                               class="form-control chosen-select"
                               autocomplete="off"
-                              value="${props?.country ?: 'AU'}"
+                              value="${props?.country ?: edit ? null :'AU'}"
                               keys="${l.countries()*.isoCode}"
                               from="${l.countries()*.name}"
                               noSelection="${['': message(code:'create.account.choose.your.country')]}"

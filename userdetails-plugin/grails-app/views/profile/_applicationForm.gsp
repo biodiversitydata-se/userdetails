@@ -16,11 +16,11 @@
 
 <div id="app-form" class="row">
     <div class="col-md-12">
-        <div class="form-group fieldcontain ${hasErrors(bean: applicationInstance, field: 'name', 'error')} ">
+        <div class="form-group">
             <label for="name">
                 <g:message code="application.name.label" default="Name"/> <button class="btn btn-link" aria-label="Help for name field" role="button" type="button" data-toggle="popover" title="Name" data-content="This name will be used to identify your application to end users when logging into their ALA account."><i class="fa fa-question"></i></button>
             </label>
-            <g:textField name="name" class="form-control" value="${applicationInstance?.name}" placeholder="Application Name"/>
+            <g:textField name="name" class="form-control" value="${applicationInstance?.name}" placeholder="Application Name" data-validation-engine="validate[required]"/>
         </div>
 
         <div class="form-group">
@@ -35,13 +35,9 @@ Confidential: Your web application requires user authentication and the client c
                 value="${applicationInstance?.type}"
                 from="${ApplicationType.values() - ApplicationType.UNKNOWN}"
                 valueMessagePrefix="application.type"
-                />
-            <%-- from="${['Galah', 'M2M', 'Public', 'Confidential']}" --%>
+                      data-validation-engine="validate[required]"/>
         </div>
         <g:set var="galah" value="${!applicationInstance?.type || applicationInstance?.type == ApplicationType.GALAH || applicationInstance?.type == ApplicationType.M2M}" />
-%{--        <div id="galah-section" style="${!galah ? 'display:none;' : ''}">--}%
-
-%{--        </div>--}%
         <div id="callback-section" style="${galah ? 'display:none;' : ''}">
 
             <div class="form-group fieldcontain ${hasErrors(bean: applicationInstance, field: 'callbacks', 'error')} ">
@@ -56,7 +52,8 @@ Confidential: Your web application requires user authentication and the client c
                 </g:each>
                 </div>
                 <div class="input-group">
-                    <g:textField type="url" name="callbacks" class="form-control" value="" placeholder="https://yourdomain.com/callback"/>
+                    <g:textField type="url" name="callbacks" class="form-control" value="" placeholder="https://yourdomain.com/callback"
+                                 data-validation-engine="validate[funcCall[validateCallbacksRequired]]"/>
                     <span class="input-group-btn">
                         <button type="button" id="btn-add-callback" class="btn btn-primary"><i class="fa fa-plus"></i></button>
                     </span>
@@ -81,13 +78,10 @@ Confidential: Your web application requires user authentication and the client c
 
     function show(type) {
         if (type === 'GALAH' || type === 'M2M') {
-            // $('#galah-section').show();
             $('#callback-section').hide();
             reset('#callback');
         } else {
             $('#callback-section').show();
-            // $('#galah-section').hide();
-            // reset('#galah');
         }
     }
 
@@ -134,7 +128,6 @@ Confidential: Your web application requires user authentication and the client c
         span.append(innerSpan);
         span.append(button);
         $callbacks.append(span);
-        // $callbacks.append(button);
         $callbacks.append(input);
     }
 
@@ -164,7 +157,7 @@ Confidential: Your web application requires user authentication and the client c
         $('#btn-add-callback').on('click', function(e) {
             addCallback();
         });
-        $('#callback-list').on('click', 'button.delete', function(e) {
+        $('#callback-list').on('click', 'a.delete', function(e) {
             e.preventDefault();
             removeCallback($(this).data('index'));
         });

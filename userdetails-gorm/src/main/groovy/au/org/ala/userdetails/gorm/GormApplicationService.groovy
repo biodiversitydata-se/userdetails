@@ -108,6 +108,23 @@ class GormApplicationService implements IApplicationService {
         return getExistingClient(userId, clientId).toApplicationRecord(galahCallbackURLs)
     }
 
+    @Override
+    boolean deleteApplication(String userId, String clientId) {
+        def existing = getExistingClient(userId, clientId)
+        if (!existing) {
+            throw new IllegalStateException("${clientId} doesn't exist")
+        }
+
+        mongoClient.startSession(clientSessionOptions).withCloseable { session ->
+            def collection = mongoClient.getDatabase(mongoDbName).getCollection(mongoCollectionName, Cas66Service)
+            def deleteResult  = collection.findOneAndDelete(session, and(eq('clientId', clientId), eq('properties.owner', userId)))
+            if (!deleteResult) {
+                throw new RuntimeException("Couldn't delete ${clientId}")
+            }
+        }
+        return true
+    }
+
     private void applyApplicationRecordToService(ApplicationRecord applicationRecord, Cas66Service service, boolean generateSecret = true) {
         service.name = applicationRecord.name
         service.description = "A placeholder description"

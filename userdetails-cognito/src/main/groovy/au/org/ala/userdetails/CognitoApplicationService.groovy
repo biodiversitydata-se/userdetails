@@ -5,11 +5,13 @@ import com.amazonaws.ResponseMetadata
 import com.amazonaws.services.cognitoidp.AWSCognitoIdentityProvider
 import com.amazonaws.services.cognitoidp.model.CreateUserPoolClientRequest
 import com.amazonaws.services.cognitoidp.model.CreateUserPoolClientResult
+import com.amazonaws.services.cognitoidp.model.DeleteUserPoolClientRequest
 import com.amazonaws.services.cognitoidp.model.DescribeUserPoolClientRequest
 import com.amazonaws.services.cognitoidp.model.UpdateUserPoolClientRequest
 import com.amazonaws.services.cognitoidp.model.UserPoolClientType
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 import com.amazonaws.services.dynamodbv2.model.AttributeValue
+import com.amazonaws.services.dynamodbv2.model.DeleteItemRequest
 import com.amazonaws.services.dynamodbv2.model.PutItemRequest
 import com.amazonaws.services.dynamodbv2.model.QueryRequest
 
@@ -65,7 +67,7 @@ class CognitoApplicationService implements IApplicationService {
         userPoolClient.defaultRedirectURI
 
         def type
-        if (callbackUrls.containsAll(galahCallbackURLs) && callbackUrls.size() == galahCallbackURLs.size()) {
+        if (callbackUrls?.containsAll(galahCallbackURLs) && callbackUrls.size() == galahCallbackURLs.size()) {
             type = ApplicationType.GALAH
         } else if (allowedFlows.contains('client_credentials')) {
             type = ApplicationType.M2M
@@ -101,6 +103,14 @@ class CognitoApplicationService implements IApplicationService {
         }
     }
 
+    private def deleteClientIdForUser(String userId, String clientId) {
+        def deleteResponse = dynamoDB.deleteItem(
+                new DeleteItemRequest(dynamoDBTable, [(dynamoDBPK): new AttributeValue(userId), (dynamoDBSK): new AttributeValue(clientId)]))
+        if (deleteResponse.sdkHttpMetadata.httpStatusCode != 200) {
+            throw new RuntimeException("Couldn't delete mapping for $clientId to $userId")
+        }
+    }
+
     private def getClientByUserIdAndClientId(String userId, String clientId) {
         def result = dynamoDB.getItem(dynamoDBTable, [(dynamoDBPK): new AttributeValue(userId), (dynamoDBSK): new AttributeValue(clientId)])
         return result.item
@@ -129,11 +139,14 @@ class CognitoApplicationService implements IApplicationService {
 
         def scopes = new ArrayList<>(clientScopes)
 
-        if (scopes) {
+        if (scopes && applicationRecord.type != ApplicationType.M2M) {
             request.allowedOAuthScopes = scopes
         }
+        if(applicationRecord.type == ApplicationType.M2M) {
+            request.allowedOAuthScopes = ["ala/attrs"]
+        }
 
-        request.callbackURLs = new ArrayList<>(applicationRecord.callbacks.findAll())
+        request.callbackURLs = new ArrayList<>(applicationRecord.callbacks.findAll{it != ""})
         if (applicationRecord.type == ApplicationType.GALAH) {
             request.callbackURLs.addAll(galahCallbackURLs)
         }
@@ -141,11 +154,8 @@ class CognitoApplicationService implements IApplicationService {
         CreateUserPoolClientResult response = cognitoIdp.createUserPoolClient(request)
 
         if (isSuccessful(response)) {
-            //update user custom attribute with new clientId
-//            userService.addOrUpdateProperty(userService.currentUser, "clientId", response.userPoolClient.clientId)
             def clientId = response.userPoolClient.clientId
             addClientIdForUser(userId, clientId)
-            //return applicationRecord.tap { it.clientId = clientId; it.secret = response.userPoolClient.clientSecret }
             return userPoolClientToApplication(response.userPoolClient)
         } else {
             throw new RuntimeException("Could not generate client")
@@ -160,15 +170,32 @@ class CognitoApplicationService implements IApplicationService {
         def request = new UpdateUserPoolClientRequest().withUserPoolId(poolId)
         request.withClientId(applicationRecord.clientId)
         request.withClientName(applicationRecord.name)
+        request.supportedIdentityProviders = new ArrayList<>(supportedIdentityProviders)
+        request.preventUserExistenceErrors = "ENABLED"
+        request.explicitAuthFlows = new ArrayList<>(authFlows)
+        request.allowedOAuthFlowsUserPoolClient = true
+
         if (applicationRecord.type == ApplicationType.M2M) {
             request.allowedOAuthFlows = ["client_credentials"]
         } else {
             request.allowedOAuthFlows = ["code"]
         }
 
-        request.callbackURLs = new ArrayList<>(applicationRecord.callbacks.findAll())
+        def scopes = new ArrayList<>(clientScopes)
+
+        if (scopes && applicationRecord.type != ApplicationType.M2M) {
+            request.allowedOAuthScopes = scopes
+        }
+        if(applicationRecord.type == ApplicationType.M2M) {
+            request.allowedOAuthScopes = ["ala/attrs"]
+        }
+
+        request.callbackURLs = new ArrayList<>(applicationRecord.callbacks.findAll{it != ""})
         if (applicationRecord.type == ApplicationType.GALAH) {
             request.callbackURLs.addAll(galahCallbackURLs)
+        }
+        if (applicationRecord.type == ApplicationType.M2M) {
+            request.callbackURLs = null
         }
 
         def response = cognitoIdp.updateUserPoolClient(request)
@@ -185,5 +212,22 @@ class CognitoApplicationService implements IApplicationService {
     private static boolean isSuccessful(AmazonWebServiceResult<? extends ResponseMetadata> result) {
         def code = result.sdkHttpMetadata.httpStatusCode
         return code >= 200 && code < 300
+    }
+
+    @Override
+    boolean deleteApplication(String userId, String clientId){
+        if (!isUserOwnsClientId(userId, clientId)) {
+            throw new IllegalArgumentException("${clientId} not found")
+        }
+        def request = new DeleteUserPoolClientRequest().withUserPoolId(poolId).withClientId(clientId)
+
+        def response = cognitoIdp.deleteUserPoolClient(request)
+        if (!isSuccessful(response)) {
+            throw new RuntimeException("Could not delete client $clientId")
+        }
+        else{
+            deleteClientIdForUser(userId, clientId)
+            return true
+        }
     }
 }

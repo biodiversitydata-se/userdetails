@@ -21,4 +21,6 @@ interface IApplicationService {
     void updateClient(String userId, ApplicationRecord applicationRecord)
 
     ApplicationRecord findClientByClientId(String userId, String clientId)
+
+    boolean deleteApplication(String userId, String clientId)
 }

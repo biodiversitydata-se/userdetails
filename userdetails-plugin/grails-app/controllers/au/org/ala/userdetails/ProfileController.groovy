@@ -187,12 +187,6 @@ class ProfileController {
         redirect(controller: 'profile')
     }
 
-    def myClientAndApikey() {
-        def user = userService.currentUser
-//        def clientId = user.additionalAttributes.find { it.name == 'clientId' }?.value
-        render view: "myClientAndApikey", model: [apikeys: String.join(",", apikeyService.getApikeys(user.userId)), clientId: null]
-    }
-
     def generateApikey(String application) {
         if (!grailsApplication.config.getProperty('apikey.type', 'none')) {
             render(status: 404)
@@ -222,20 +216,18 @@ class ProfileController {
 
     def generateClient(ApplicationRecord applicationRecord) {
 
-        // TODO
-        // add default defaultCallbackURLs if available
-//        callbackURLs.addAll(grailsApplication.config.getProperty('oauth.support.dynamic.client.defaultCallbackURLs', List, []))
-
-
-//        def isForGalah = params.forGalah? true: false
-//        List<String> callbackURLs = params.list('callbackURLs').findAll {it != ""}
-
         if (applicationRecord.clientId || applicationRecord.secret) {
-            render(status: 400, [ errors: ["Can't specify client id or secret when creating a new application"]])
+            render(status: 400, model: [ errors: ["Can't specify client id or secret when creating a new application"]])
+            return
         }
 
-        if(applicationRecord.callbacks.findAll().empty && (applicationRecord.type in [ApplicationType.GALAH, ApplicationType.M2M])) {
-            render(status: 400, [ errors: ["callbackURLs cannot be empty if the client is web-app or native"]] as JSON)
+        if(!applicationRecord.name || !applicationRecord.type) {
+            render([errors: ["No application name or type"]] as JSON)
+            return
+        }
+
+        if(applicationRecord.callbacks.findAll().empty && !(applicationRecord.type in [ApplicationType.GALAH, ApplicationType.M2M])) {
+            render([errors: ["callbackURLs cannot be empty if the client is web-app or native"]] as JSON)
             return
         }
 
@@ -243,26 +235,43 @@ class ProfileController {
             def response = applicationService.generateClient(userService.currentUser.userId, applicationRecord)
             render(response as JSON)
         } catch (e) {
-            log.error('e', e)
+            log.error('error', e)
             render(status: 500, [errors: [e.message]] as JSON)
             return
         }
     }
 
-    def updateClient(ApplicationRecord applicationRecord) {
+    def updateClient(String id, ApplicationRecord applicationRecord) {
+
+        if (!id) {
+            render(status: 400, model: [ errors: ["No client Id"]])
+            return
+        }
+
+        if(!applicationRecord.name || !applicationRecord.type) {
+            render([errors: ["No application name or type"]] as JSON)
+            return
+        }
+
+        if(applicationRecord.callbacks.findAll().empty && !(applicationRecord.type in [ApplicationType.GALAH, ApplicationType.M2M])) {
+            render([errors: ["callbackURLs cannot be empty if the client is web-app or native"]] as JSON)
+            return
+        }
+
         try {
+            applicationRecord.clientId = applicationRecord.clientId ?: id;
             applicationService.updateClient(userService.currentUser.userId, applicationRecord)
             render(status: 204)
         } catch (IllegalStateException e) {
             log.error('ise', e)
             render(status: 400, [errors: [e.message ]] as JSON)
         } catch (e) {
-            log.error('e', e)
+            log.error('error', e)
             render(status: 500)
         }
     }
 
-    def listClients() {
+    def listApplications() {
         render(applicationService.listApplicationsForUser(userService.currentUser.userId) as JSON)
     }
 
@@ -276,7 +285,23 @@ class ProfileController {
     }
 
     def application(String id) {
+        if (!id) {
+            render(status: 400, model: [ errors: ["No client Id"]])
+            return
+        }
+
         def userId = userService.currentUser.userId
         respond applicationService.findClientByClientId(userId, id)
+    }
+
+    def deleteApplication(String id) {
+        if (!id) {
+            render(status: 400, model: [ errors: ["No client Id"]])
+            return
+        }
+
+        def userId = userService.currentUser.userId
+        applicationService.deleteApplication(userId, id)
+        redirect(action:"applications")
     }
 }

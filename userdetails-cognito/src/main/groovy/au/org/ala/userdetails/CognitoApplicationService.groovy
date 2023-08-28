@@ -129,7 +129,7 @@ class CognitoApplicationService implements IApplicationService {
             request.generateSecret = true
             request.allowedOAuthFlows = ["client_credentials"]
         } else {
-            request.generateSecret = applicationRecord.type != ApplicationType.PUBLIC
+            request.generateSecret = applicationRecord.type == ApplicationType.CONFIDENTIAL //do not need secret for galah and public clients
             request.allowedOAuthFlows = ["code"]
         }
         request.supportedIdentityProviders = new ArrayList<>(supportedIdentityProviders)

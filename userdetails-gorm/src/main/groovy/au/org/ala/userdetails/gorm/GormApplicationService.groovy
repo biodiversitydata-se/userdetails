@@ -150,7 +150,7 @@ class GormApplicationService implements IApplicationService {
                 service.applicationType = 'web'
                 if (generateSecret) {
                     service.clientSecret = ''
-                } else if (serivce.clientSecret) {
+                } else if (service.clientSecret) {
                     service.clientSecret = ''
                 }
             } else {

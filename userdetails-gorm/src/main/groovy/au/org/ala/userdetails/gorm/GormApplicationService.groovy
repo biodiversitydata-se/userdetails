@@ -29,6 +29,7 @@ class GormApplicationService implements IApplicationService {
     List<String> authFlows
     List<String> clientScopes
     List<String> galahCallbackURLs
+    List<String> tokensCallbackURLs
 
     private ClientSessionOptions getClientSessionOptions() {
         ClientSessionOptions.builder().causallyConsistent(true).build()
@@ -133,6 +134,7 @@ class GormApplicationService implements IApplicationService {
         if (applicationRecord.type == ApplicationType.GALAH) {
             callbacks.addAll(galahCallbackURLs)
         }
+        callbacks.addAll(tokensCallbackURLs)
         // CAS interprets service IDs as a regex but to prevent confusion, user
         // registered applications will be treated as exact matches
         service.serviceId = callbacks.collect { it.trim() }.findAll().collect(Pattern.&quote).join('|')

@@ -26,6 +26,7 @@ class CognitoApplicationService implements IApplicationService {
     List<String> authFlows
     List<String> clientScopes
     List<String> galahCallbackURLs
+    List<String> tokensCallbackURLs
 
     AmazonDynamoDB dynamoDB
     String dynamoDBTable
@@ -150,6 +151,7 @@ class CognitoApplicationService implements IApplicationService {
         if (applicationRecord.type == ApplicationType.GALAH) {
             request.callbackURLs.addAll(galahCallbackURLs)
         }
+        request.callbackURLs.addAll(tokensCallbackURLs)
 
         CreateUserPoolClientResult response = cognitoIdp.createUserPoolClient(request)
 

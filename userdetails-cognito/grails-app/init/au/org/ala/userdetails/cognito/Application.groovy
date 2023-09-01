@@ -112,6 +112,7 @@ class Application extends GrailsAutoConfiguration {
         def authFlows = grailsApplication.config.getProperty('oauth.support.dynamic.client.authFlows', List, [])
         def clientScopes = grailsApplication.config.getProperty('oauth.support.dynamic.client.scopes', List, [])
         def galahCallbackURLs = grailsApplication.config.getProperty('oauth.support.dynamic.client.galah.callbackURLs', List, [])
+        def tokensCallbackURLs = grailsApplication.config.getProperty('oauth.support.dynamic.client.token.callbackURLs', List, [])
         def dynamoDBTable = grailsApplication.config.getProperty('oauth.support.dynamic.client.dynamoDBTableName', String, null)
         def dynamoDBPK = grailsApplication.config.getProperty('oauth.support.dynamic.client.dynamoDBTable.dynamoDBPK', String, null)
         def dynamoDBSK = grailsApplication.config.getProperty('oauth.support.dynamic.client.dynamoDBTable.dynamoDBSK', String, null)
@@ -127,7 +128,8 @@ class Application extends GrailsAutoConfiguration {
                 dynamoDB: amazonDynamoDB,
                 dynamoDBTable: dynamoDBTable,
                 dynamoDBPK: dynamoDBPK,
-                dynamoDBSK: dynamoDBSK
+                dynamoDBSK: dynamoDBSK,
+                tokensCallbackURLs: tokensCallbackURLs
         )
 
 

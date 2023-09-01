@@ -180,11 +180,12 @@ class Application extends GrailsAutoConfiguration {
         def authFlows = grailsApplication.config.getProperty('oauth.support.dynamic.client.authFlows', List, [])
         def clientScopes = grailsApplication.config.getProperty('oauth.support.dynamic.client.scopes', List, [])
         def galahCallbackURLs = grailsApplication.config.getProperty('oauth.support.dynamic.client.galah.callbackURLs', List, [])
+        def tokensCallbackURLs = grailsApplication.config.getProperty('oauth.support.dynamic.client.token.callbackURLs', List, [])
 
         GormApplicationService applicationService = new GormApplicationService(mongoClient: mongoClient,
                 mongoDbName: database, mongoCollectionName: collection, randomStringGenerator: randomStringGenerator,
                 supportedIdentityProviders: supportedIdentityProviders, authFlows: authFlows,
-                clientScopes: clientScopes, galahCallbackURLs: galahCallbackURLs)
+                clientScopes: clientScopes, galahCallbackURLs: galahCallbackURLs, tokensCallbackURLs: tokensCallbackURLs)
 
         return applicationService
     }

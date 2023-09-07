@@ -281,7 +281,7 @@ class ProfileController {
 
     def applications() {
         def userId = userService.currentUser.userId
-        render(view: 'applications', model: [apikeys: String.join(",", apikeyService.getApikeys(userId)), applicationList: applicationService.listApplicationsForUser(userId)])
+        render(view: 'applications', model: [applicationList: applicationService.listApplicationsForUser(userId)])
     }
 
     def application(String id) {

@@ -34,35 +34,12 @@
 
     <!-- Nav tabs -->
     <ul class="nav nav-tabs">
-        <li class="active"><a href="#apikey" data-toggle="tab"><g:message code="myprofile.apikey"/></a></li>
-        <li><a href="#applications" data-toggle="tab"><g:message code="myprofile.applications" default="Applications" /></a></li>
+        <li class="active"><a href="#applications" data-toggle="tab"><g:message code="myprofile.applications" default="Applications" /></a></li>
     </ul>
 
     <!-- Tab panes -->
     <div class="tab-content">
-        <div class="tab-pane active" id="apikey">
-
-            <div class="row">
-                <div class="col-md-12">
-                    <h3><g:message code="myprofile.my.apikey" /></h3>
-                    <h4><g:message code="myprofile.my.apikey.desc" /></h4>
-                    <g:form name="generateApikeyForm" controller="profile" action="generateApikey" params="[application:'galah']">
-                        <br/>
-                        <p><g:message code="generate.apikey.desc.1" /></p>
-                        <br/>
-                        <g:if test="${apikeys}">
-                            <g:message code="my.apikey" /><code>${apikeys}</code>
-                        </g:if>
-                        <g:else>
-                            <button id="generateApikey" class="btn btn-primary"><g:message code="myprofile.generate.apikey" /></button>
-                        </g:else>
-                    </g:form>
-                    <br/>
-                </div>
-            </div>
-
-        </div>
-        <div class="tab-pane" id="applications">
+        <div class="tab-pane active" id="applications">
             <div class="row">
                 <div class="col-md-4">
                 </div>

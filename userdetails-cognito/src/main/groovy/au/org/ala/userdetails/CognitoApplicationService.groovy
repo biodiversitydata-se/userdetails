@@ -88,7 +88,8 @@ class CognitoApplicationService implements IApplicationService {
                 clientId: clientId,
                 secret: secret,
                 callbacks: callbackUrls,
-                type: type
+                type: type,
+                needTokenAppAsCallback: callbackUrls?.containsAll(tokensCallbackURLs)
         )
     }
 
@@ -151,7 +152,9 @@ class CognitoApplicationService implements IApplicationService {
         if (applicationRecord.type == ApplicationType.GALAH) {
             request.callbackURLs.addAll(galahCallbackURLs)
         }
-        request.callbackURLs.addAll(tokensCallbackURLs)
+        if(applicationRecord.needTokenAppAsCallback) {
+            request.callbackURLs.addAll(tokensCallbackURLs)
+        }
 
         CreateUserPoolClientResult response = cognitoIdp.createUserPoolClient(request)
 
@@ -198,6 +201,9 @@ class CognitoApplicationService implements IApplicationService {
         }
         if (applicationRecord.type == ApplicationType.M2M) {
             request.callbackURLs = null
+        }
+        if(applicationRecord.needTokenAppAsCallback) {
+            request.callbackURLs.addAll(tokensCallbackURLs)
         }
 
         def response = cognitoIdp.updateUserPoolClient(request)

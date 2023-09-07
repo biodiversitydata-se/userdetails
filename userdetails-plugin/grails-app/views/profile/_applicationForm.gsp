@@ -59,6 +59,14 @@ Confidential: Your web application requires user authentication and the client c
                     </span>
                 </div>
 
+                <div class="form-group">
+                    <div class="checkbox">
+                        <label>
+                            <g:checkBox checked="true" name="needTokenAppAsCallback"/> Do you need to add tokens app as a callback url?
+                        </label>
+                    </div>
+                </div>
+
 %{--            <div class="fieldcontain ${hasErrors(bean: applicationInstance, field: 'allowTokensApp', 'error')} ">--}%
 %{--                <div class="checkbox">--}%
 %{--                    <label>--}%

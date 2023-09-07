@@ -80,7 +80,7 @@ class GormApplicationService implements IApplicationService {
             }
         }
         
-        return service.toApplicationRecord(galahCallbackURLs)
+        return service.toApplicationRecord(galahCallbackURLs, tokensCallbackURLs)
     }
 
     void updateClient(String userId, ApplicationRecord applicationRecord) {
@@ -101,12 +101,12 @@ class GormApplicationService implements IApplicationService {
             }
         }
 
-        return //existing.toApplicationRecord(galahCallbackURLs)
+        return //existing.toApplicationRecord(galahCallbackURLs, tokensCallbackURLs)
     }
 
     @Override
     ApplicationRecord findClientByClientId(String userId, String clientId) {
-        return getExistingClient(userId, clientId).toApplicationRecord(galahCallbackURLs)
+        return getExistingClient(userId, clientId).toApplicationRecord(galahCallbackURLs, tokensCallbackURLs)
     }
 
     @Override
@@ -134,7 +134,9 @@ class GormApplicationService implements IApplicationService {
         if (applicationRecord.type == ApplicationType.GALAH) {
             callbacks.addAll(galahCallbackURLs)
         }
-        callbacks.addAll(tokensCallbackURLs)
+        if(applicationRecord.needTokenAppAsCallback) {
+            callbacks.addAll(tokensCallbackURLs)
+        }
         // CAS interprets service IDs as a regex but to prevent confusion, user
         // registered applications will be treated as exact matches
         service.serviceId = callbacks.collect { it.trim() }.findAll().collect(Pattern.&quote).join('|')
@@ -180,13 +182,13 @@ class GormApplicationService implements IApplicationService {
         return mongoClient.startSession(clientSessionOptions).withCloseable { session ->
             def collection = mongoClient.getDatabase(mongoDbName).getCollection(mongoCollectionName, Cas66Service)
             def results = collection.find(session, eq('properties.owner.values', userId), Cas66Service)
-            results.collect { it.toApplicationRecord(galahCallbackURLs) }
+            results.collect { it.toApplicationRecord(galahCallbackURLs, tokensCallbackURLs) }
         }
     }
 }
 
 interface CasOidcService {
-    ApplicationRecord toApplicationRecord(List<String> galahCallbackURLs)
+    ApplicationRecord toApplicationRecord(List<String> galahCallbackURLs, List<String> tokensCallbackURLs)
 
     void setName(String name);
     void setDescription(String name);
@@ -481,11 +483,11 @@ class Cas66Service implements CasOidcService {
 
     @Override
     @BsonIgnore
-    ApplicationRecord toApplicationRecord(List<String> galahCallbackURLs) {
+    ApplicationRecord toApplicationRecord(List<String> galahCallbackURLs, List<String> tokensCallbackURLs) {
         def callbacks = StringUtils.split(this.serviceId, '|').collect {PatternUtils.unquotePattern(it) }.toList()
 
         def type
-        if (callbacks.containsAll(galahCallbackURLs) && callbacks.size() == galahCallbackURLs.size()) {
+        if (callbacks?.containsAll(galahCallbackURLs) && callbacks.size() == galahCallbackURLs.size()) {
             type = ApplicationType.GALAH
         } else if (supportedGrantTypes.contains('client_credentials')) {
             type = ApplicationType.M2M
@@ -505,7 +507,8 @@ class Cas66Service implements CasOidcService {
                 callbacks: callbacks,
                 clientId: this.clientId,
                 secret: this.clientSecret,
-                type: type
+                type: type,
+                needTokenAppAsCallback: callbacks?.containsAll(tokensCallbackURLs)
         )
     }
 }

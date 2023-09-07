@@ -11,12 +11,14 @@ class ApplicationRecord implements WebDataBinding, Validateable {
     String secret
     ApplicationType type
     List<String> callbacks = []
+    boolean needTokenAppAsCallback
 
     static constraints = {
         clientId blank: true
         secret blank: true
         name blank: false
         type nullable: false
+        needTokenAppAsCallback blank: true
     }
 
 }

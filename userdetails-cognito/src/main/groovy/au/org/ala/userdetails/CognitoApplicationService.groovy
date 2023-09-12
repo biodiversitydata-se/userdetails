@@ -68,17 +68,14 @@ class CognitoApplicationService implements IApplicationService {
         userPoolClient.defaultRedirectURI
 
         def type
-        if (callbackUrls?.containsAll(galahCallbackURLs) && callbackUrls.size() == galahCallbackURLs.size()) {
-            type = ApplicationType.GALAH
-        } else if (allowedFlows.contains('client_credentials')) {
+        if (allowedFlows.contains('client_credentials')) {
             type = ApplicationType.M2M
         } else if (allowedFlows.contains('code')) {
             if (userPoolClient.clientSecret) {
-                type = ApplicationType.CONFIDENTIAL
+                type = ApplicationType.API_ACCESS
             } else {
                 type = ApplicationType.PUBLIC
             }
-
         } else {
             type = ApplicationType.UNKNOWN
         }
@@ -131,7 +128,7 @@ class CognitoApplicationService implements IApplicationService {
             request.generateSecret = true
             request.allowedOAuthFlows = ["client_credentials"]
         } else {
-            request.generateSecret = applicationRecord.type == ApplicationType.CONFIDENTIAL //do not need secret for galah and public clients
+            request.generateSecret = applicationRecord.type == ApplicationType.API_ACCESS //do not need secret for public clients
             request.allowedOAuthFlows = ["code"]
         }
         request.supportedIdentityProviders = new ArrayList<>(supportedIdentityProviders)
@@ -149,9 +146,6 @@ class CognitoApplicationService implements IApplicationService {
         }
 
         request.callbackURLs = new ArrayList<>(applicationRecord.callbacks.findAll{it != ""})
-        if (applicationRecord.type == ApplicationType.GALAH) {
-            request.callbackURLs.addAll(galahCallbackURLs)
-        }
         if(applicationRecord.needTokenAppAsCallback) {
             request.callbackURLs.addAll(tokensCallbackURLs)
         }
@@ -196,9 +190,6 @@ class CognitoApplicationService implements IApplicationService {
         }
 
         request.callbackURLs = new ArrayList<>(applicationRecord.callbacks.findAll{it != ""})
-        if (applicationRecord.type == ApplicationType.GALAH) {
-            request.callbackURLs.addAll(galahCallbackURLs)
-        }
         if (applicationRecord.type == ApplicationType.M2M) {
             request.callbackURLs = null
         }

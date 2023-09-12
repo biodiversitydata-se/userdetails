@@ -131,9 +131,6 @@ class GormApplicationService implements IApplicationService {
         service.description = "A placeholder description"
 
         def callbacks = new ArrayList<>(applicationRecord.callbacks)
-        if (applicationRecord.type == ApplicationType.GALAH) {
-            callbacks.addAll(galahCallbackURLs)
-        }
         if(applicationRecord.needTokenAppAsCallback) {
             callbacks.addAll(tokensCallbackURLs)
         }
@@ -487,13 +484,11 @@ class Cas66Service implements CasOidcService {
         def callbacks = StringUtils.split(this.serviceId, '|').collect {PatternUtils.unquotePattern(it) }.toList()
 
         def type
-        if (callbacks?.containsAll(galahCallbackURLs) && callbacks.size() == galahCallbackURLs.size()) {
-            type = ApplicationType.GALAH
-        } else if (supportedGrantTypes.contains('client_credentials')) {
+        if (supportedGrantTypes.contains('client_credentials')) {
             type = ApplicationType.M2M
         } else if (supportedGrantTypes.contains('code')) {
             if (clientSecret) {
-                type = ApplicationType.CONFIDENTIAL
+                type = ApplicationType.API_ACCESS
             } else {
                 type = ApplicationType.PUBLIC
             }

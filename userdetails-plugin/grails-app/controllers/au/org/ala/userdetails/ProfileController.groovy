@@ -226,7 +226,7 @@ class ProfileController {
             return
         }
 
-        if(applicationRecord.callbacks.findAll().empty && !(applicationRecord.type in [ApplicationType.GALAH, ApplicationType.M2M])) {
+        if(applicationRecord.callbacks.findAll().empty && !(applicationRecord.type in [ApplicationType.M2M])) {
             render([errors: ["callbackURLs cannot be empty if the client is web-app or native"]] as JSON)
             return
         }
@@ -253,7 +253,7 @@ class ProfileController {
             return
         }
 
-        if(applicationRecord.callbacks.findAll().empty && !(applicationRecord.type in [ApplicationType.GALAH, ApplicationType.M2M])) {
+        if(applicationRecord.callbacks.findAll().empty && !(applicationRecord.type in [ApplicationType.M2M])) {
             render([errors: ["callbackURLs cannot be empty if the client is web-app or native"]] as JSON)
             return
         }

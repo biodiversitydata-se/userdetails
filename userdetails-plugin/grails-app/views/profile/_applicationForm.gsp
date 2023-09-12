@@ -25,10 +25,9 @@
 
         <div class="form-group">
             <label for="type"><g:message code="application.type.label" default="Type"/>  <button class="btn btn-link" aria-label="Help for type field" role="button" type="button" data-toggle="popover" title="Type" data-content="The type of application you're creating:
-Galah: You're using the Galah library.
+API Access: You're accessing ALA APIs. This will allow your client to generate tokens with the auth code grant.
 Machine to Machine: Your application is only doing machine to machine communication and doesn't require end user authentication.  This will allow your client to generate tokens with the client credential grant.
 Public: Your application is distributed to clients, such as a JS app in the browser, mobile app or native application.  This will allow your client to generate tokens with the auth code w/ PKCE grant.
-Confidential: Your web application requires user authentication and the client credentials can be kept confidential from the end users, such as a server side web application.  This will allow your client to generate tokens with the auth code grant.
 "><i class="fa fa-question"></i></button></label>
             <g:select id="type" name="type"
                 class="form-control"
@@ -37,8 +36,8 @@ Confidential: Your web application requires user authentication and the client c
                 valueMessagePrefix="application.type"
                       data-validation-engine="validate[required]"/>
         </div>
-        <g:set var="galah" value="${!applicationInstance?.type || applicationInstance?.type == ApplicationType.GALAH || applicationInstance?.type == ApplicationType.M2M}" />
-        <div id="callback-section" style="${galah ? 'display:none;' : ''}">
+        <g:set var="m2m" value="${!applicationInstance?.type || applicationInstance?.type == ApplicationType.M2M}" />
+        <div id="callback-section" style="${m2m ? 'display:none;' : ''}">
 
             <div class="form-group fieldcontain ${hasErrors(bean: applicationInstance, field: 'callbacks', 'error')} ">
                 <label for="callbacks">
@@ -85,7 +84,7 @@ Confidential: Your web application requires user authentication and the client c
 <asset:script type="text/javascript">
 
     function show(type) {
-        if (type === 'GALAH' || type === 'M2M') {
+        if (type === 'M2M') {
             $('#callback-section').hide();
             reset('#callback');
         } else {

@@ -18,15 +18,13 @@ class ApplicationRecord implements WebDataBinding, Validateable {
         secret blank: true
         name blank: false
         type nullable: false
-        needTokenAppAsCallback blank: true
     }
 
 }
 
 enum ApplicationType {
-    GALAH,
+    API_ACCESS,
     M2M,
     PUBLIC,
-    CONFIDENTIAL,
     UNKNOWN
 }

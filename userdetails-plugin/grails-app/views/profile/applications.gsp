@@ -214,7 +214,7 @@
         $('#client-modal').modal({});
         $('#heading').text("Create Application");
         $('#name').val('');
-        $('#type').val('GALAH').trigger('change');
+        $('#type').val('API_ACCESS').trigger('change');
         $('#clientId').val('').parents('.form-group').hide();
         $('#clientSecret').val('').parents('.form-group').hide();
         $('#callback-list').find('[data-index').remove()
@@ -270,7 +270,7 @@
     }
 
     function validateCallbacksRequired(field, rules, i, options) {
-      if (($('#type').val() =='PUBLIC' || $('#type').val() == 'CONFIDENTIAL') && $('#callback-list input').length == 0) {
+      if (($('#type').val() =='PUBLIC' || $('#type').val() == 'API_ACCESS') && $('#callback-list input').length == 0) {
         rules.push('required');
         return "At least one callback url is required.";
       }

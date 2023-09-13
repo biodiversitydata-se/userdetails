@@ -119,6 +119,10 @@ class CognitoUserService implements IUserService<UserRecord, UserPropertyRecord,
         params.findAll { customAttrs.contains(it.key) }
                 .each { userAttributes.add(new AttributeType().withName("custom:${it.key}").withValue(it.value)) }
 
+        if (affiliationsEnabled) {
+            userAttributes.add(new AttributeType().withName("custom:affiliation").withValue(params.get('affiliation', '')))
+        }
+
         AdminUpdateUserAttributesRequest request =
                 new AdminUpdateUserAttributesRequest()
                         .withUserPoolId(poolId)
@@ -310,6 +314,9 @@ class CognitoUserService implements IUserService<UserRecord, UserPropertyRecord,
         params.findAll {customAttrs.contains(it.key) }
                 .each {userAttributes.add(new AttributeType().withName("custom:${it.key}").withValue(it.value as String)) }
 
+        if (affiliationsEnabled) {
+            userAttributes.add(new AttributeType().withName("custom:affiliation").withValue(params.get('affiliation', '')))
+        }
         request.userAttributes = userAttributes
 
         def userResponse = cognitoIdp.adminCreateUser(request)

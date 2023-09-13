@@ -24,10 +24,10 @@
         </div>
 
         <div class="form-group">
-            <label for="type"><g:message code="application.type.label" default="Type"/>  <button class="btn btn-link" aria-label="Help for type field" role="button" type="button" data-toggle="popover" title="Type" data-content="The type of application you're creating:
-API Access: You're accessing ALA APIs. This will allow your client to generate tokens with the auth code grant.
-Machine to Machine: Your application is only doing machine to machine communication and doesn't require end user authentication.  This will allow your client to generate tokens with the client credential grant.
-Public: Your application is distributed to clients, such as a JS app in the browser, mobile app or native application.  This will allow your client to generate tokens with the auth code w/ PKCE grant.
+            <label for="type"><g:message code="application.type.label" default="Type"/>  <button class="btn btn-link" aria-label="Help for type field" role="button" type="button" data-toggle="popover" title="Type" data-html="true" data-content="The type of application you're creating:
+<br/><b>API Access</b>: You're accessing ALA APIs. This will allow your client to generate tokens with the auth code grant.
+<br/><b>Machine to Machine</b>: Your application is only doing machine to machine communication and doesn't require end user authentication.  This will allow your client to generate tokens with the client credential grant.
+<br/><b>Public</b>: Your application is distributed to clients, such as a JS app in the browser, mobile app or native application.  This will allow your client to generate tokens with the auth code w/ PKCE grant.
 "><i class="fa fa-question"></i></button></label>
             <g:select id="type" name="type"
                 class="form-control"

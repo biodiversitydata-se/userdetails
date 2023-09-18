@@ -146,7 +146,10 @@ class CognitoApplicationService implements IApplicationService {
         }
 
         request.callbackURLs = new ArrayList<>(applicationRecord.callbacks.findAll{it != ""})
-        if(applicationRecord.needTokenAppAsCallback) {
+        if (applicationRecord.type == ApplicationType.M2M) {
+            request.callbackURLs = null
+        }
+        else if(applicationRecord.needTokenAppAsCallback) {
             request.callbackURLs.addAll(tokensCallbackURLs)
         }
 
@@ -193,7 +196,7 @@ class CognitoApplicationService implements IApplicationService {
         if (applicationRecord.type == ApplicationType.M2M) {
             request.callbackURLs = null
         }
-        if(applicationRecord.needTokenAppAsCallback) {
+        else if(applicationRecord.needTokenAppAsCallback) {
             request.callbackURLs.addAll(tokensCallbackURLs)
         }
 

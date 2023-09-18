@@ -61,7 +61,7 @@
                 <div class="form-group">
                     <div class="checkbox">
                         <label>
-                            <g:checkBox checked="true" name="needTokenAppAsCallback"/> Do you need to add tokens app as a callback url?
+                            <g:checkBox checked="true" name="needTokenAppAsCallback"/> Do you need to add <a href="${grailsApplication.config.getProperty('tokenApp.url')}" target="_blank">tokens app</a> (which can be used to generate JWT tokens) as a callback url?
                         </label>
                     </div>
                 </div>

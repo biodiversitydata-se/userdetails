@@ -130,7 +130,7 @@ class GormApplicationService implements IApplicationService {
         service.name = applicationRecord.name
         service.description = "A placeholder description"
 
-        def callbacks = new ArrayList<>(applicationRecord.callbacks)
+        def callbacks = new ArrayList<>(applicationRecord.callbacks.findAll{it != ""})
         if(applicationRecord.needTokenAppAsCallback) {
             callbacks.addAll(tokensCallbackURLs)
         }

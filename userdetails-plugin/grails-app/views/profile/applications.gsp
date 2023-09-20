@@ -105,18 +105,31 @@
                 </div>
             </div>
             <div>
-                <p>For further configuration information, please <a href="${grailsApplication.config.getProperty('security.oidc.discoveryUri')}" target="_blank" >click here</a></p>
+                <p>For further configuration information, please <a href="${grailsApplication.config.getProperty('security.oidc.discovery-uri')}" target="_blank" >click here</a></p>
                 <p><a href="https://github.com/AtlasOfLivingAustralia/jwt-usage-examples/blob/main/python/example.py" target="_blank">Python example client</a> to access ALA restricted APIs</p>
                 <p><a href="https://github.com/AtlasOfLivingAustralia/jwt-usage-examples/blob/main/R/example.R" target="_blank">R example client</a> to access ALA restricted APIs</p>
             </div>
         </div>
         <div class="tab-pane" id="help">
-
+            <br/>
+            <h4>Client Types</h4>
+            <br/>
+            <p>
+                <b>Public Client (Client-side Application)</b>: If your application is intended for distribution to clients like web browsers, mobile apps, or native applications, then select this option. It empowers your client to generate tokens using the authorisation code with PKCE grant, providing a secure way to interact with APIs.
+            </p>
+            <p>
+                <b>Confidential Client (Server-side Application)</b>: Select this option if your application needs secure access to ALA APIs using the authorisation code grant. This is suitable for server-side applications where the client can keep a client secret confidential.
+            </p>
+            <p>
+                <b>Machine-to-Machine (M2M)</b>: Choose this option if your application is involved in machine-to-machine communication, without the need for end-user authentication. This option allows your client to obtain tokens via the client credential grant, ensuring secure access to APIs.
+            </p>
+            <br/>
+            <h4>FAQ</h4>
         </div>
     </div>
     <div>
         </br>
-        <p>Further documentation and a full list of available endpoints are available on the <a href="https://docs.ala.org.au/#introduction" target="_blank">ALA API Docs Portal</a>. For more information or assistance, please contact us at support@ala.org.au.</p>
+        <p>Further documentation and a full list of available endpoints are available on the <a href="${grailsApplication.config.getProperty('docsPortal.url')}" target="_blank">ALA API Docs Portal</a>. For more information or assistance, please contact us at support@ala.org.au.</p>
     </div>
     <div id="client-modal" class="modal fade" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
@@ -179,7 +192,7 @@
                 $buttonsTd.append($('<button>', {class: 'app-edit', 'aria-label': 'View/Edit', 'data-id': data[i].clientId}).append($('<i></i>', {class: 'fa fa-eye'})));
                 $buttonsTd.append($('<button>', {class: 'app-delete', 'aria-label': 'Delete', 'data-id': data[i].clientId}).append($('<i></i>', {class: 'fa fa-trash'})));
                 if(data[i].type.name !== "M2M"){
-                    var url = "${grailsApplication.config.getProperty('tokenApp.url')}?step=generation&client_id=" + data[i].clientId + "&client_secret=" + data[i].secret
+                    var url = "${grailsApplication.config.getProperty('tokenApp.url')}?step=generation&client_id=" + data[i].clientId + (data[i].secret ? "&client_secret=" + data[i].secret : "");
                     var createA = document.createElement('a');
                     var createAText = document.createTextNode("Generate JWT");
                     createA.setAttribute('href', url);

@@ -36,7 +36,7 @@
     </div>
 
     <div>
-        <p>The ALA’s <a href="https://docs.ala.org.au/#introduction" target="_blank">API Gateway</a> provides web service access to ALA features, including species occurrence records, taxonomic and scientific name information, images, and downloads for use offline. ALA data are still open and freely accessible, and most of our endpoints are publicly available. For the protected APIs (such as sensitive or private data), you’ll need a JSON Web Token (JWT), which can be generated via a Client ID and Client Secret. </p>
+        <p>The ALA’s <a href="${grailsApplication.config.getProperty('docsPortal.url')}" target="_blank">API Gateway</a> provides web service access to ALA features, including species occurrence records, taxonomic and scientific name information, images, and downloads for use offline. ALA data are still open and freely accessible, and most of our endpoints are publicly available. For the protected APIs (such as sensitive or private data), you’ll need a JSON Web Token (JWT), which can be generated via a Client ID and Client Secret. </p>
         </br>
     </div>
 

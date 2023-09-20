@@ -488,7 +488,7 @@ class Cas66Service implements CasOidcService {
             type = ApplicationType.M2M
         } else if (supportedGrantTypes.contains('code')) {
             if (clientSecret) {
-                type = ApplicationType.API_ACCESS
+                type = ApplicationType.CONFIDENTIAL
             } else {
                 type = ApplicationType.PUBLIC
             }

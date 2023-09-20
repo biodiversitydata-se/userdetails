@@ -72,7 +72,7 @@ class CognitoApplicationService implements IApplicationService {
             type = ApplicationType.M2M
         } else if (allowedFlows.contains('code')) {
             if (userPoolClient.clientSecret) {
-                type = ApplicationType.API_ACCESS
+                type = ApplicationType.CONFIDENTIAL
             } else {
                 type = ApplicationType.PUBLIC
             }
@@ -128,7 +128,7 @@ class CognitoApplicationService implements IApplicationService {
             request.generateSecret = true
             request.allowedOAuthFlows = ["client_credentials"]
         } else {
-            request.generateSecret = applicationRecord.type == ApplicationType.API_ACCESS //do not need secret for public clients
+            request.generateSecret = applicationRecord.type == ApplicationType.CONFIDENTIAL //do not need secret for public clients
             request.allowedOAuthFlows = ["code"]
         }
         request.supportedIdentityProviders = new ArrayList<>(supportedIdentityProviders)

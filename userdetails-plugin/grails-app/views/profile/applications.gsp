@@ -1,3 +1,4 @@
+<%@ page import="au.org.ala.userdetails.ApplicationType" %>
 %{--
    - Copyright (C) 2023 Atlas of Living Australia
    - All Rights Reserved.
@@ -30,11 +31,19 @@
 
     <div class="page-header">
         <h1><g:message code="myprofile.myClientAndApikey" /></h1>
+        </br>
+        <h3><g:message code="myprofile.myClientAndApikey.subheading" /></h3>
+    </div>
+
+    <div>
+        <p>The ALA’s <a href="https://docs.ala.org.au/#introduction" target="_blank">API Gateway</a> provides web service access to ALA features, including species occurrence records, taxonomic and scientific name information, images, and downloads for use offline. ALA data are still open and freely accessible, and most of our endpoints are publicly available. For the protected APIs (such as sensitive or private data), you’ll need a JSON Web Token (JWT), which can be generated via a Client ID and Client Secret. </p>
+        </br>
     </div>
 
     <!-- Nav tabs -->
     <ul class="nav nav-tabs">
         <li class="active"><a href="#applications" data-toggle="tab"><g:message code="myprofile.applications" default="Applications" /></a></li>
+        <li><a href="#help" data-toggle="tab"><g:message code="help" default="Help" /></a></li>
     </ul>
 
     <!-- Tab panes -->
@@ -64,8 +73,8 @@
                         <thead>
                         <tr>
                             <g:sortableColumn property="name" title="${message(code: 'application.name.label', default: 'Name')}" />
-
                             <g:sortableColumn property="clientId" title="${message(code: 'application.clientId.label', default: 'Client ID')}" />
+                            <g:sortableColumn property="type" title="${message(code: 'application.type.label', default: 'Type')}" />
 
                             <td></td>
                         </tr>
@@ -75,13 +84,15 @@
                             <tr class="${(i % 2) == 0 ? 'even' : 'odd'}">
 
                                 <td>${application.name}</td>
-
                                 <td>${application.clientId}</td>
+                                <td><g:message code="${application.type}"/></td>
 
                                 <td>
 %{--                                    <button class="app-enable" data-id="${application.clientId}">Enable</button>--}%
                                     <button class="app-edit" aria-label="View/Edit" data-id="${application.clientId}"><i class="fa fa-eye"></i></button>
                                     <button class="app-delete" aria-label="Delete" data-id="${application.clientId}"><i class="fa fa-trash"></i></button>
+                                    <g:set var="m2m" value="${!application?.type || application?.type == ApplicationType.M2M}" />
+                                    <a href="${grailsApplication.config.getProperty('tokenApp.url')}?step=generation&client_id=${application.clientId}&client_secret=${application.secret}" target="_blank" style="${m2m ? 'display:none;' : ''}">Generate JWT</a>
                                 </td>
                             </tr>
                         </g:each>
@@ -93,7 +104,19 @@
                     </div>
                 </div>
             </div>
+            <div>
+                <p>For further configuration information, please <a href="${grailsApplication.config.getProperty('security.oidc.discoveryUri')}" target="_blank" >click here</a></p>
+                <p><a href="https://github.com/AtlasOfLivingAustralia/jwt-usage-examples/blob/main/python/example.py" target="_blank">Python example client</a> to access ALA restricted APIs</p>
+                <p><a href="https://github.com/AtlasOfLivingAustralia/jwt-usage-examples/blob/main/R/example.R" target="_blank">R example client</a> to access ALA restricted APIs</p>
+            </div>
         </div>
+        <div class="tab-pane" id="help">
+
+        </div>
+    </div>
+    <div>
+        </br>
+        <p>Further documentation and a full list of available endpoints are available on the <a href="https://docs.ala.org.au/#introduction" target="_blank">ALA API Docs Portal</a>. For more information or assistance, please contact us at support@ala.org.au.</p>
     </div>
     <div id="client-modal" class="modal fade" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
@@ -147,9 +170,23 @@
                 let $tr = $('<tr></tr>', {class: (i % 2) === 0 ? 'even': 'odd'});
                 $tr.append($('<td></td>', {text: data[i].name}));
                 $tr.append($('<td></td>', {text: data[i].clientId}));
+                var type;
+                if(data[i].type.name === "M2M") type = "Machine-to-Machine (M2M)";
+                else if(data[i].type.name === "PUBLIC") type = "Public Client (Client-side Application)";
+                else if(data[i].type.name === "CONFIDENTIAL") type = "Confidential Client (Server-side Application)";
+                $tr.append($('<td></td>', {text: type}));
                 let $buttonsTd = $('<td></td>');
                 $buttonsTd.append($('<button>', {class: 'app-edit', 'aria-label': 'View/Edit', 'data-id': data[i].clientId}).append($('<i></i>', {class: 'fa fa-eye'})));
                 $buttonsTd.append($('<button>', {class: 'app-delete', 'aria-label': 'Delete', 'data-id': data[i].clientId}).append($('<i></i>', {class: 'fa fa-trash'})));
+                if(data[i].type.name !== "M2M"){
+                    var url = "${grailsApplication.config.getProperty('tokenApp.url')}?step=generation&client_id=" + data[i].clientId + "&client_secret=" + data[i].secret
+                    var createA = document.createElement('a');
+                    var createAText = document.createTextNode("Generate JWT");
+                    createA.setAttribute('href', url);
+                    createA.setAttribute('target', "_blank");
+                    createA.appendChild(createAText);
+                    $buttonsTd.append(createA);
+                }
                 $tr.append($buttonsTd);
                 $appsTableBody.append($tr);
             }
@@ -163,6 +200,13 @@
         $('#name').val(data.name);
         $('#type').val(data.type.name).trigger('change');
         $('#clientId').val(data.clientId).parents('.form-group').show();
+        $("#needTokenAppAsCallback").prop("checked", data.needTokenAppAsCallback);
+        if(data.needTokenAppAsCallback == true){
+            document.getElementById("needTokenAppAsCallback").disabled = true;
+        }
+        else{
+            document.getElementById("needTokenAppAsCallback").disabled = false;
+        }
         let $clientSecret = $('#clientSecret');
         $clientSecret.val(data.secret);
         if (data.secret) {
@@ -177,7 +221,7 @@
         $callbacks.children().remove();
 
         for (var i = 0; i < callbacks.length; ++i) {
-            addCallbackToForm($callbacks, callbacks, i);
+            addCallbackToForm($callbacks, callbacks, i, true);
         }
 
         $('input.callbacks').val('');
@@ -214,10 +258,17 @@
         $('#client-modal').modal({});
         $('#heading').text("Create Application");
         $('#name').val('');
-        $('#type').val('API_ACCESS').trigger('change');
+        $('#type').val('PUBLIC').trigger('change');
         $('#clientId').val('').parents('.form-group').hide();
         $('#clientSecret').val('').parents('.form-group').hide();
         $('#callback-list').find('[data-index').remove()
+        $("#needTokenAppAsCallback").prop("checked", true);
+        document.getElementById("needTokenAppAsCallback").disabled = false;
+
+        let $callbacks = $('#callback-list')
+        $callbacks.children().remove();
+        addCallbackToForm($callbacks, ["http://localhost:8080/callback"], 0, false);
+
         let url = '<g:createLink controller="profile" action="generateClient" />';
         $('#modal-save-form').validationEngine('attach', { scroll: false });
         $("#modal-save-form").off('submit').on('submit', function (e) {
@@ -251,7 +302,7 @@
         });
     }
 
-    function addCallbackToForm($callbacks, callbacks, index) {
+    function addCallbackToForm($callbacks, callbacks, index, isEdit) {
         let value = callbacks[index];
         let span = $('<span></span>', {class: 'tag label label-default', 'data-index': index});
         let innerSpan = $('<span></span>', {text: value});
@@ -259,7 +310,9 @@
         let input = $('<input></input>', {value: value, 'data-index': index, type: 'hidden', name: 'callbacks'});
 
         span.append(innerSpan);
-        span.append(button);
+        if(!isEdit) {
+            span.append(button);
+        }
         $callbacks.append(span);
         $callbacks.append(input);
     }
@@ -270,7 +323,7 @@
     }
 
     function validateCallbacksRequired(field, rules, i, options) {
-      if (($('#type').val() =='PUBLIC' || $('#type').val() == 'API_ACCESS') && $('#callback-list input').length == 0) {
+      if (($('#type').val() =='PUBLIC' || $('#type').val() == 'CONFIDENTIAL') && $('#callback-list input').length == 0) {
         rules.push('required');
         return "At least one callback url is required.";
       }

@@ -23,7 +23,7 @@ class ApplicationRecord implements WebDataBinding, Validateable {
 }
 
 enum ApplicationType {
-    API_ACCESS,
+    CONFIDENTIAL,
     M2M,
     PUBLIC,
     UNKNOWN

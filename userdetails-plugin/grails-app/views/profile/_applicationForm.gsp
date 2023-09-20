@@ -25,9 +25,9 @@
 
         <div class="form-group">
             <label for="type"><g:message code="application.type.label" default="Type"/>  <button class="btn btn-link" aria-label="Help for type field" role="button" type="button" data-toggle="popover" title="Type" data-html="true" data-content="The type of application you're creating:
-<br/><b>API Access</b>: You're accessing ALA APIs. This will allow your client to generate tokens with the auth code grant.
-<br/><b>Machine to Machine</b>: Your application is only doing machine to machine communication and doesn't require end user authentication.  This will allow your client to generate tokens with the client credential grant.
-<br/><b>Public</b>: Your application is distributed to clients, such as a JS app in the browser, mobile app or native application.  This will allow your client to generate tokens with the auth code w/ PKCE grant.
+<br/><b>Public Client</b>: Your application is distributed to clients, such as a JS app in the browser, mobile app or native application.  This will allow your client to generate tokens with the auth code w/ PKCE grant.
+<br/><b>Confidential Client</b>: You're accessing ALA APIs. This will allow your client to generate tokens with the auth code grant.
+<br/><b>Machine-to-Machine (M2M)</b>: Your application is only doing machine to machine communication and doesn't require end user authentication.  This will allow your client to generate tokens with the client credential grant.
 "><i class="fa fa-question"></i></button></label>
             <g:select id="type" name="type"
                 class="form-control"
@@ -61,7 +61,7 @@
                 <div class="form-group">
                     <div class="checkbox">
                         <label>
-                            <g:checkBox checked="true" name="needTokenAppAsCallback"/> Do you need to add <a href="${grailsApplication.config.getProperty('tokenApp.url')}" target="_blank">tokens app</a> (which can be used to generate JWT tokens) as a callback url?
+                            <g:checkBox checked="true" name="needTokenAppAsCallback" id="needTokenAppAsCallback"/> Do you need to add <a href="${grailsApplication.config.getProperty('tokenApp.url')}" target="_blank">tokens app</a> (which can be used to generate JWT tokens) as a callback url?
                         </label>
                     </div>
                 </div>

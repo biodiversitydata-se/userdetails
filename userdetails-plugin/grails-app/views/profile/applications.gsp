@@ -104,32 +104,32 @@
                     </div>
                 </div>
             </div>
-            <div>
-                <p>For further configuration information, please <a href="${grailsApplication.config.getProperty('security.oidc.discovery-uri')}" target="_blank" >click here</a></p>
-                <p><a href="https://github.com/AtlasOfLivingAustralia/jwt-usage-examples/blob/main/python/example.py" target="_blank">Python example client</a> to access ALA restricted APIs</p>
-                <p><a href="https://github.com/AtlasOfLivingAustralia/jwt-usage-examples/blob/main/R/example.R" target="_blank">R example client</a> to access ALA restricted APIs</p>
+            <div class="well">
+                <p>For further configuration information, please refer <a href="${grailsApplication.config.getProperty('security.oidc.discovery-uri')}" target="_blank" >Discovery endpoint.</a></p>
+                <p><a href="https://github.com/AtlasOfLivingAustralia/jwt-usage-examples/blob/main/python/example.py" target="_blank">Python example client</a> to access ALA restricted APIs.</p>
+                <p><a href="https://github.com/AtlasOfLivingAustralia/jwt-usage-examples/blob/main/R/example.R" target="_blank">R example client</a> to access ALA restricted APIs.</p>
+                <p>Further documentation and a full list of available endpoints are available on the <a href="${grailsApplication.config.getProperty('docsPortal.url')}" target="_blank">ALA API Docs Portal</a>. For more information or assistance, please contact us at <a href="mailto:support@ala.org.au">support@ala.org.au</a>.</p>
             </div>
         </div>
         <div class="tab-pane" id="help">
             <br/>
-            <h4>Client Types</h4>
-            <br/>
-            <p>
-                <b>Public Client (Client-side Application)</b>: If your application is intended for distribution to clients like web browsers, mobile apps, or native applications, then select this option. It empowers your client to generate tokens using the authorisation code with PKCE grant, providing a secure way to interact with APIs.
-            </p>
-            <p>
-                <b>Confidential Client (Server-side Application)</b>: Select this option if your application needs secure access to ALA APIs using the authorisation code grant. This is suitable for server-side applications where the client can keep a client secret confidential.
-            </p>
-            <p>
-                <b>Machine-to-Machine (M2M)</b>: Choose this option if your application is involved in machine-to-machine communication, without the need for end-user authentication. This option allows your client to obtain tokens via the client credential grant, ensuring secure access to APIs.
-            </p>
-            <br/>
             <h4>FAQ</h4>
+            <br/>
+            <g:each in="${ (1..13) }" var="c">
+                <div class="panel-group" id="faq" role="tablist" aria-multiselectable="false">
+                    <div class="panel panel-default">
+                        <div class="panel-heading" role="tab" id="q${c}">
+                            <h5 class="panel-title">
+                                <a role="button" data-toggle="collapse" class="accordion-plus-toggle collapsed" data-parent="#faq" href="#a${c}" aria-expanded="false" aria-controls="a${c}"><g:message code="application.q${c}"/></a>
+                            </h5>
+                        </div>
+                        <div id="a${c}" class="panel-collapse collapse" role="tabpanel" aria-labelledby="q${c}">
+                            <div class="panel-body"><g:message code="application.a${c}" args="[grailsApplication.config.getProperty('docsPortal.url')]"/></div>
+                        </div>
+                    </div>
+                </div>
+            </g:each>
         </div>
-    </div>
-    <div>
-        </br>
-        <p>Further documentation and a full list of available endpoints are available on the <a href="${grailsApplication.config.getProperty('docsPortal.url')}" target="_blank">ALA API Docs Portal</a>. For more information or assistance, please contact us at support@ala.org.au.</p>
     </div>
     <div id="client-modal" class="modal fade" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
@@ -317,7 +317,7 @@
 
     function addCallbackToForm($callbacks, callbacks, index, isEdit) {
         let value = callbacks[index];
-        let span = $('<span></span>', {class: 'tag label label-default', 'data-index': index});
+        let span = $('<span></span>', {class: 'tag label label-default', 'data-index': index, style: "display: inline-block;"});
         let innerSpan = $('<span></span>', {text: value});
         let button = $('<a></a>', {'data-index': index, role: 'button', class: 'btn btn-danger delete'}).append('<i class="fa fa-trash"></i>');
         let input = $('<input></input>', {value: value, 'data-index': index, type: 'hidden', name: 'callbacks'});

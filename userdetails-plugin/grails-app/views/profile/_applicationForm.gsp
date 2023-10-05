@@ -18,13 +18,13 @@
     <div class="col-md-12">
         <div class="form-group">
             <label for="name">
-                <g:message code="application.name.label" default="Name"/> <button class="btn btn-link" aria-label="Help for name field" role="button" type="button" data-toggle="popover" title="Name" data-content="This name will be used to identify your application to end users when logging into their ALA account."><i class="fa fa-question"></i></button>
+                <g:message code="application.name.label" default="Name"/> <button class="btn btn-link" aria-label="Help for name field" role="button" type="button" data-toggle="popover" title="Name" data-content="This name will be used to identify your application to end users when logging into their ALA account." data-trigger="hover"><i class="fa fa-question"></i></button>
             </label>
             <g:textField name="name" class="form-control" value="${applicationInstance?.name}" placeholder="Application Name" data-validation-engine="validate[required]"/>
         </div>
 
         <div class="form-group">
-            <label for="type"><g:message code="application.type.label" default="Type"/>  <button class="btn btn-link" aria-label="Help for type field" role="button" type="button" data-toggle="popover" title="Type" data-html="true" data-content="The type of application you're creating:
+            <label for="type"><g:message code="application.type.label" default="Type"/>  <button class="btn btn-link" aria-label="Help for type field" role="button" type="button" data-toggle="popover" title="Type" data-html="true" data-trigger="hover" data-content="The type of application you're creating:
 <br/><b>Public Client</b>: Your application is distributed to clients, such as a JS app in the browser, mobile app or native application.  This will allow your client to generate tokens with the auth code w/ PKCE grant.
 <br/><b>Confidential Client</b>: You're accessing ALA APIs. This will allow your client to generate tokens with the auth code grant.
 <br/><b>Machine-to-Machine (M2M)</b>: Your application is only doing machine to machine communication and doesn't require end user authentication.  This will allow your client to generate tokens with the client credential grant.
@@ -41,7 +41,7 @@
 
             <div class="form-group fieldcontain ${hasErrors(bean: applicationInstance, field: 'callbacks', 'error')} ">
                 <label for="callbacks">
-                    <g:message code="application.callback.label" default="Callback URLs"/>  <button class="btn btn-link" aria-label="Help for callback field" role="button" type="button" data-toggle="popover" title="Callback" data-content="For applications, provide one or more callback URLs that your application will use to receive the OAuth tokens via callback.  Callback URLs must be https (except for localhost) or a custom app scheme."><i class="fa fa-question"></i></button>
+                    <g:message code="application.callback.label" default="Callback URLs"/>  <button class="btn btn-link" aria-label="Help for callback field" role="button" type="button" data-toggle="popover" title="Callback" data-content="For applications, provide one or more callback URLs that your application will use to receive the OAuth tokens via callback.  Callback URLs must be https (except for localhost) or a custom app scheme." data-trigger="hover"><i class="fa fa-question"></i></button>
                 </label>
                 <div id="callback-list">
                 <g:each in="${applicationInstance?.callbacks}" status="i" var="callback">
@@ -168,9 +168,6 @@
             e.preventDefault();
             removeCallback($(this).data('index'));
         });
-        $('[data-toggle="popover"]').on('click', function() {
-            let $this = $(this);
-            $this.popover();
-        });
+        $('[data-toggle="popover"]').popover()
     });
 </asset:script>

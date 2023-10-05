@@ -69,7 +69,7 @@
                     <g:if test="${flash.message}">
                         <div class="message" role="status">${flash.message}</div>
                     </g:if>
-                    <table id="apps-table" class="table table-bordered table-striped table-condensed">
+                    <table id="apps-table" class="table table-bordered table-striped table-condensed" style="${applicationList ? '' : 'display:none;'}">
                         <thead>
                         <tr>
                             <g:sortableColumn property="name" title="${message(code: 'application.name.label', default: 'Name')}" />
@@ -98,6 +98,7 @@
                         </g:each>
                         </tbody>
                     </table>
+                    <p id="newApplication" style="${applicationList ? 'display:none;' : ''}">Click the 'New Application' button to generate your first client ID. Once created, your entries will be displayed here.</p>
 
                     <div class="text-center">
                         <ud:paginate action="list" total="${applicationList}" params="${params}"/>
@@ -105,9 +106,10 @@
                 </div>
             </div>
             <div class="well">
-                <p>For further configuration information, please refer <a href="${grailsApplication.config.getProperty('security.oidc.discovery-uri')}" target="_blank" >Discovery endpoint.</a></p>
-                <p><a href="https://github.com/AtlasOfLivingAustralia/jwt-usage-examples/blob/main/python/example.py" target="_blank">Python example client</a> to access ALA restricted APIs.</p>
-                <p><a href="https://github.com/AtlasOfLivingAustralia/jwt-usage-examples/blob/main/R/example.R" target="_blank">R example client</a> to access ALA restricted APIs.</p>
+                <p>For further configuration information, please refer to <a href="${grailsApplication.config.getProperty('security.oidc.discovery-uri')}" target="_blank" >Discovery endpoint.</a></p>
+                <p>How to access ALA restricted APIs using <a href="https://github.com/AtlasOfLivingAustralia/jwt-usage-examples/blob/main/python/example.py"
+                        target="_blank">Python example client</a> and <a href="https://github.com/AtlasOfLivingAustralia/jwt-usage-examples/blob/main/R/example.R"
+                                                                         target="_blank">R example client</a>.</p>
                 <p>Further documentation and a full list of available endpoints are available on the <a href="${grailsApplication.config.getProperty('docsPortal.url')}" target="_blank">ALA API Docs Portal</a>. For more information or assistance, please contact us at <a href="mailto:support@ala.org.au">support@ala.org.au</a>.</p>
             </div>
         </div>
@@ -177,31 +179,39 @@
         let url = '<g:createLink controller="profile" action="listApplications" />';
         $.get(url)
         .done(function(data) {
-            let $appsTableBody = $('#apps-table tbody');
-            $appsTableBody.children().remove();
-            for (var i = 0; i < data.length; ++i) {
-                let $tr = $('<tr></tr>', {class: (i % 2) === 0 ? 'even': 'odd'});
-                $tr.append($('<td></td>', {text: data[i].name}));
-                $tr.append($('<td></td>', {text: data[i].clientId}));
-                var type;
-                if(data[i].type.name === "M2M") type = "Machine-to-Machine (M2M)";
-                else if(data[i].type.name === "PUBLIC") type = "Public Client (Client-side Application)";
-                else if(data[i].type.name === "CONFIDENTIAL") type = "Confidential Client (Server-side Application)";
-                $tr.append($('<td></td>', {text: type}));
-                let $buttonsTd = $('<td></td>');
-                $buttonsTd.append($('<button>', {class: 'app-edit', 'aria-label': 'View/Edit', 'data-id': data[i].clientId}).append($('<i></i>', {class: 'fa fa-eye'})));
-                $buttonsTd.append($('<button>', {class: 'app-delete', 'aria-label': 'Delete', 'data-id': data[i].clientId}).append($('<i></i>', {class: 'fa fa-trash'})));
-                if(data[i].type.name !== "M2M"){
-                    var url = "${grailsApplication.config.getProperty('tokenApp.url')}?step=generation&client_id=" + data[i].clientId + (data[i].secret ? "&client_secret=" + data[i].secret : "");
-                    var createA = document.createElement('a');
-                    var createAText = document.createTextNode("Generate JWT");
-                    createA.setAttribute('href', url);
-                    createA.setAttribute('target', "_blank");
-                    createA.appendChild(createAText);
-                    $buttonsTd.append(createA);
+            if(data.length > 0){
+                $('#newApplication').hide()
+                $('#apps-table').show()
+                let $appsTableBody = $('#apps-table tbody');
+                $appsTableBody.children().remove();
+                for (var i = 0; i < data.length; ++i) {
+                    let $tr = $('<tr></tr>', {class: (i % 2) === 0 ? 'even': 'odd'});
+                    $tr.append($('<td></td>', {text: data[i].name}));
+                    $tr.append($('<td></td>', {text: data[i].clientId}));
+                    var type;
+                    if(data[i].type.name === "M2M") type = "Machine-to-Machine (M2M)";
+                    else if(data[i].type.name === "PUBLIC") type = "Public Client (Client-side Application)";
+                    else if(data[i].type.name === "CONFIDENTIAL") type = "Confidential Client (Server-side Application)";
+                    $tr.append($('<td></td>', {text: type}));
+                    let $buttonsTd = $('<td></td>');
+                    $buttonsTd.append($('<button>', {class: 'app-edit', 'aria-label': 'View/Edit', 'data-id': data[i].clientId}).append($('<i></i>', {class: 'fa fa-eye'})));
+                    $buttonsTd.append($('<button>', {class: 'app-delete', 'aria-label': 'Delete', 'data-id': data[i].clientId}).append($('<i></i>', {class: 'fa fa-trash'})));
+                    if(data[i].type.name !== "M2M"){
+                        var url = "${grailsApplication.config.getProperty('tokenApp.url')}?step=generation&client_id=" + data[i].clientId + (data[i].secret ? "&client_secret=" + data[i].secret : "");
+                        var createA = document.createElement('a');
+                        var createAText = document.createTextNode("Generate JWT");
+                        createA.setAttribute('href', url);
+                        createA.setAttribute('target', "_blank");
+                        createA.appendChild(createAText);
+                        $buttonsTd.append(createA);
+                    }
+                    $tr.append($buttonsTd);
+                    $appsTableBody.append($tr);
                 }
-                $tr.append($buttonsTd);
-                $appsTableBody.append($tr);
+            }
+            else{
+                $('#newApplication').show()
+                $('#apps-table').hide()
             }
         });
 

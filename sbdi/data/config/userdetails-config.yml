@@ -1,0 +1,173 @@
+# CAS Config
+security:
+  core:
+    authCookieName: ALA-Auth
+  cas:
+    enabled: true
+    casServerName: https://auth.biodiversitydata.se
+    casServerUrlPrefix: ${security.cas.casServerName}/cas
+    loginUrl: ${security.cas.casServerUrlPrefix}/login
+    logoutUrl: ${security.cas.casServerUrlPrefix}/logout
+    appServerName: http://localhost:8080
+    # authCookieName: {{ auth_cookie_name | default('ALA-Auth') }}
+  oidc:
+    enabled: false
+    client-id:
+    secret:
+    discovery-uri:
+  jwt:
+    enabled: false
+    fallback-to-legacy-behaviour: true
+    discovery-uri: false
+  user:
+    name: admin
+    password: secret
+    role:
+      - ACTUATOR
+  basic:
+    enabled: true
+    authorizeMode: role
+    realm: ALA CAS
+    path:
+      - /status/**
+endpoints:
+  enabled: true
+  health:
+    sensitive: false
+management:
+  security:
+    enabled: true
+    roles: ACTUATOR
+
+serverURL: http://localhost:8080
+serverName: http://localhost:8080
+grails:
+  serverURL: http://localhost:8080/userdetails
+  mail:
+    host: mail.biodiversitydata.se
+    port: 587
+    username: admin@biodiversitydata.se
+    password:
+    props:
+      mail:
+        smtp:
+          starttls:
+            enable: true
+          port: 587
+
+server:
+  port: 8080
+  servlet:
+    contextPath: /userdetails
+  forward-headers-strategy: native
+  tomcat:
+    remoteip:
+      protocol-header: x-forwarded-proto
+      port-header: x-forwarded-port
+      remote-ip-header: x-forwarded-for
+      protocol-header-https-value: https
+
+redirectAfterFirstLogin: ${grails.serverURL}/myprofile
+
+# Data source configuration
+dataSource:
+  dbCreate: "none"
+  url: jdbc:mysql://127.0.0.1:3306/emmet?autoReconnect=true&connectTimeout=0&serverTimezone=Europe/Stockholm&zeroDateTimeBehavior=convertToNull&characterEncoding=UTF-8&useSSL=false&allowPublicKeyRetrieval=true
+  username: cas
+  password: cas
+
+oauth:
+  providers:
+    flickr:
+      enabled: false
+    inaturalist:
+      enabled: false
+
+password:
+  encoder: legacy
+bcrypt:
+  strength: 10
+encoding:
+  algorithm: MD5
+  salt: salt
+
+registration:
+  showAlaMessage: false
+  resetPasswordArticle:
+  alertArticle:
+  activationArticle:
+
+recaptcha:
+  baseUrl: https://www.google.com/recaptcha/api/
+  siteKey:
+  secretKey:
+
+ala:
+  baseURL: https://biodiversitydata.se
+
+supportEmail: support@biodiversitydata.se
+homeUrl: https://tools.biodiversitydata.se
+homeLogoUrl: https://biodiversitydata.se/wp-content/uploads/2021/02/sbdi-logo-orginal-large.png
+mainTitle: Swedish Biodiversity Data Infrastructure
+emailSenderTitle: Swedish Biodiversity Data Infrastructure
+emailSender: admin@biodiversitydata.se
+
+sightings.url: /mine
+spatial.url: https://spatial.biodiversitydata.se?tool=log
+volunteer.url: /user/myStats
+lists.url: https://lists.biodiversitydata.se/speciesList/list
+biocache.search.baseUrl: https://records.biodiversitydata.se/occurrences/search
+biocache.search.url: https://records.biodiversitydata.se/occurrences/search/?q=*%3A*&fq=assertion_user_id%3A
+biocache.myDownloads.url:
+myData.url:
+alerts.url:
+
+# this property is read/used by ala-auth-plugin (included by userdetails)
+userDetails:
+  url: https://auth.biodiversitydata.se/userdetails/
+
+# Header and footer
+headerAndFooter:
+  baseURL: https://static.biodiversitydata.se
+  version: 2
+ala.baseURL: https://biodiversitydata.se
+bie.baseURL: https://species.biodiversitydata.se
+bie.searchPath: /search
+
+# Skin options
+skin.layout: ala-main
+skin.fluidLayout: false
+skin.orgNameLong: Swedish Biodiversity Data Infrastructure
+skin.orgNameShort: SBDI
+skin.favicon: https://static.biodiversitydata.se/favicon.ico
+skin.homeUrl: https://tools.biodiversitydata.se
+
+attributes:
+    affiliations:
+      enabled: false
+
+# API key for external apps
+webservice:
+  apiKey:
+  jwt:
+  scope:
+
+# Default primary fields for Export to CSV functionality
+admin.export.csv.primary.fields: id,userName,firstName,lastName,email,activated,locked,created
+
+spring:
+  session:
+    enabled: false
+    store-type: none
+
+# Allow to disable some tools for non-ALA Portals
+myProfile:
+  useDigiVol: false
+  useSandbox: false
+  useBiocollect: false
+
+privacyPolicy: https://docs.biodiversitydata.se/sbdi-data/sbdi-atlas-terms-of-use/privacy-policy/
+termsOfUse : https://docs.biodiversitydata.se/sbdi-data/sbdi-atlas-terms-of-use/
+
+openapi:
+  terms: https://docs.biodiversitydata.se/sbdi-data/sbdi-atlas-terms-of-use/

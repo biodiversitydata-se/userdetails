@@ -1,0 +1,33 @@
+services:
+
+  mysqldb:
+    image: mysql:8.0
+    volumes:
+      - db_data_cas:/var/lib/mysql
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: 1
+      MYSQL_DATABASE: emmet
+      MYSQL_USER: cas
+      MYSQL_PASSWORD: cas
+    ports:
+      - 3306:3306
+
+  userdetails:
+    depends_on:
+      - mysqldb
+    image: sbdi/userdetails-dev
+    build:
+      context: .
+    ports:
+      - 8080:8080
+    volumes:
+      - ./sbdi/data/config/userdetails-config.yml:/data/userdetails/config/userdetails-config.yml
+
+volumes:
+  db_data_cas:
+#  db_data_cas_local:
+#    driver: local
+#    driver_opts:
+#      type: none
+#      o: bind
+#      device: "/home/mats/Documents/sbdi/ala-cas-5/db_data_cas"

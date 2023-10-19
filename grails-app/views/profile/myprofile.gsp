@@ -79,6 +79,7 @@
 
                 <!-- Column 2 -->
                 <div class="col-lg-4">
+                    <%--
                     <div class="d-flex">
                         <div class="image">
                                 <img src="${grailsApplication.config.getProperty('logo.downloads')}" alt="">
@@ -92,6 +93,7 @@
                             <p><g:message code="myprofile.your.downloads.desc" /></p>
                         </div>
                     </div>
+                    --%>
                     <div class="d-flex">
                         <div class="image">
                             <img src="${grailsApplication.config.getProperty('logo.specieslists')}" alt="">
@@ -118,6 +120,7 @@
                             <p><g:message code="myprofile.view.records.you.annotated.desc" /></p>
                         </div>
                     </div>
+                    <%--
                     <div class="d-flex">
                         <div class="image">
                             <img src="${grailsApplication.config.getProperty('logo.sandbox')}" alt="">
@@ -131,10 +134,12 @@
                             <p><g:message code="myprofile.your.datasets.desc" /></p>
                         </div>
                     </div>
+                    --%>
                 </div>
 
                 <!-- Column 3 -->
                 <div class="col-lg-4">
+                    <%--
                     <div class="d-flex">
                         <div class="image">
                             <i class="glyphicon glyphicon-envelope"></i>
@@ -174,6 +179,7 @@
                             <p><g:message code="myprofile.tasks.digivol.desc" /></p>
                         </div>
                     </div>
+                    --%>
                     <div class="d-flex">
                         <div class="image">
                             <img src="${grailsApplication.config.getProperty('logo.spatialportal')}" alt="">

@@ -74,7 +74,7 @@ dataSource:
   dbCreate: "none"
   url: jdbc:mysql://127.0.0.1:3306/emmet?autoReconnect=true&connectTimeout=0&serverTimezone=Europe/Stockholm&zeroDateTimeBehavior=convertToNull&characterEncoding=UTF-8&useSSL=false&allowPublicKeyRetrieval=true
   username: cas
-  password: password
+  password: cas
 
 oauth:
   providers:

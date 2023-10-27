@@ -179,7 +179,6 @@
                             <p><g:message code="myprofile.tasks.digivol.desc" /></p>
                         </div>
                     </div>
-                    --%>
                     <div class="d-flex">
                         <div class="image">
                             <img src="${grailsApplication.config.getProperty('logo.spatialportal')}" alt="">
@@ -193,6 +192,7 @@
                             <p><g:message code="myprofile.spatial.portal.desc" /></p>
                         </div>
                     </div>
+                    --%>
                 </div>
             </div>
         </div>

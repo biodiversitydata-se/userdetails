@@ -92,7 +92,7 @@
                     <h2><g:message code="create.account.do.i.need.account" /></h2>
 
                     <p><g:message code="create.account.motivation.intro" />
-
+                    %{--
                     <ul>
                     <li><g:message code="create.account.motivation.1" />
                     <li><g:message code="create.account.motivation.2" />
@@ -100,6 +100,7 @@
                     <li><g:message code="create.account.motivation.4" />
                     </ul>
                     <p><g:message code="create.account.motivation.footer" />
+                    --}%
                 </g:if>
                 <h2><g:message code="create.account.your.account.title" /></h2>
                 <p>

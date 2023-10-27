@@ -64,10 +64,12 @@ class UserService {
         try {
             user.activated = false
             user.save(failOnError: true, flush: true)
-            Map resp = webService.post("${grailsApplication.config.getProperty('alerts.url')}/api/alerts/user/${user.id}/unsubscribe", [:])
-            if (resp.statusCode != HttpStatus.SC_OK) {
-                log.error("Alerts returned ${resp} when trying to disable the user's alerts. " +
-                        "The user has been disabled, but their alerts are still active.")
+            if (grailsApplication.config.getProperty('alerts.url')) {
+                Map resp = webService.post("${grailsApplication.config.getProperty('alerts.url')}/api/alerts/user/${user.id}/unsubscribe", [:])
+                if (resp.statusCode != HttpStatus.SC_OK) {
+                    log.error("Alerts returned ${resp} when trying to disable the user's alerts. " +
+                            "The user has been disabled, but their alerts are still active.")
+                }
             }
             true
         } catch (Exception e){

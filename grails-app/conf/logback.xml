@@ -14,6 +14,9 @@
     <!-- SBDI: this is to get rid of noise in the logs -->
     <logger name="org.grails.config.NavigableMap" level="ERROR">
         <appender-ref ref="STDOUT" />
+    </logger>org.hibernate.orm.deprecation
+    <logger name="org.hibernate.orm.deprecation" level="ERROR">
+        <appender-ref ref="STDOUT" />
     </logger>
 
     <root level="warn">

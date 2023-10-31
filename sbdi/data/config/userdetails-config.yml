@@ -9,7 +9,6 @@ security:
     loginUrl: ${security.cas.casServerUrlPrefix}/login
     logoutUrl: ${security.cas.casServerUrlPrefix}/logout
     appServerName: http://localhost:8080
-    # authCookieName: {{ auth_cookie_name | default('ALA-Auth') }}
   oidc:
     enabled: false
     client-id:
@@ -84,12 +83,12 @@ oauth:
       enabled: false
 
 password:
-  encoder: legacy
+  encoder: bcrypt
 bcrypt:
   strength: 10
 encoding:
   algorithm: MD5
-  salt: salt
+  salt: supersecret
 
 registration:
   showAlaMessage: false

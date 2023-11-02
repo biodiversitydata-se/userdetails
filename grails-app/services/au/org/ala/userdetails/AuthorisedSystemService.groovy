@@ -38,7 +38,10 @@ class AuthorisedSystemService {
     DirectBearerAuthClient directBearerAuthClient
 
     def isAuthorisedSystem(HttpServletRequest request){
-        def host = request.getRemoteAddr()
+        def host = request.getHeader("x-forwarded-for")
+        if(host == null){
+            host = request.getRemoteHost()
+        }
         log.debug("RemoteHost: " + request.getRemoteHost())
         log.debug("RemoteAddr: " + request.getRemoteAddr())
         log.debug("host using: " + host)

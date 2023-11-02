@@ -40,7 +40,7 @@ class AuthorisedSystemService {
     def isAuthorisedSystem(HttpServletRequest request){
         def host = request.getHeader("x-forwarded-for")
         if(host == null){
-            host = request.getRemoteHost()
+            host = request.getRemoteAddr()
         }
         log.debug("RemoteHost: " + request.getRemoteHost())
         log.debug("RemoteAddr: " + request.getRemoteAddr())

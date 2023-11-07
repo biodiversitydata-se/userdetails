@@ -170,3 +170,6 @@ termsOfUse : https://docs.biodiversitydata.se/sbdi-data/sbdi-atlas-terms-of-use/
 
 openapi:
   terms: https://docs.biodiversitydata.se/sbdi-data/sbdi-atlas-terms-of-use/
+  contact:
+    name:
+    email:

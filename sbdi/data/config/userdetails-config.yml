@@ -3,17 +3,17 @@ security:
   core:
     authCookieName: ALA-Auth
   cas:
-    enabled: true
+    enabled: false
     casServerName: https://auth.biodiversitydata.se
     casServerUrlPrefix: ${security.cas.casServerName}/cas
     loginUrl: ${security.cas.casServerUrlPrefix}/login
     logoutUrl: ${security.cas.casServerUrlPrefix}/logout
     appServerName: http://localhost:8080
   oidc:
-    enabled: false
-    client-id:
-    secret:
-    discovery-uri:
+    enabled: true
+    client-id: replace_with_real_value
+    secret: replace_with_real_value
+    discovery-uri: https://auth.biodiversitydata.se/cas/oidc/.well-known
   jwt:
     enabled: false
     fallback-to-legacy-behaviour: true

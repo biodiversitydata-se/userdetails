@@ -103,7 +103,7 @@
         </li>
     </g:if>
 
-        <g:if test="${userInstance?.tempAuthKey}">
+        <g:if test="${userInstance?.tempAuthKey && !isBiosecurityAdmin}">
         %{--If tempAuthKey is present then there should be a resetPasswordUrl--}%
             <li class="fieldcontain">
                 <span id="tempAuthKey-label" class="property-label"><g:message code="user.tempAuthKey.label"
@@ -172,16 +172,18 @@
 </div>
 
     </ol>
-    <g:form>
-        <fieldset class="buttons">
-            <g:hiddenField name="id" value="${userInstance?.id}"/>
-            <g:link class="edit" action="edit" id="${userInstance?.id}"><g:message code="default.button.edit.label"
-                                                                                   default="Edit"/></g:link>
-            %{--<g:actionSubmit class="delete" action="delete"--}%
-                            %{--value="${message(code: 'default.button.delete.label', default: 'Delete')}"--}%
-                            %{--onclick="return confirm('${message(code: 'default.button.delete.confirm.message', default: 'Are you sure?')}');"/>--}%
-        </fieldset>
-    </g:form>
+    <g:if test="${!isBiosecurityAdmin}">
+        <g:form>
+            <fieldset class="buttons">
+                <g:hiddenField name="id" value="${userInstance?.id}"/>
+                <g:link class="edit" action="edit" id="${userInstance?.id}"><g:message code="default.button.edit.label"
+                                                                                       default="Edit"/></g:link>
+                %{--<g:actionSubmit class="delete" action="delete"--}%
+                                %{--value="${message(code: 'default.button.delete.label', default: 'Delete')}"--}%
+                                %{--onclick="return confirm('${message(code: 'default.button.delete.confirm.message', default: 'Are you sure?')}');"/>--}%
+            </fieldset>
+        </g:form>
+    </g:if>
 </div>
 </body>
 </html>

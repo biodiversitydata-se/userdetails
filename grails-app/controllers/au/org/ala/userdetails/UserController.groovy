@@ -29,6 +29,7 @@ class UserController {
         redirect(action: "list", params: params)
     }
 
+    @PreAuthorise(requiredRoles = ["ROLE_ADMIN", "ROLE_BIOSECURITY_ADMIN"])
     def list(Integer max) {
         if (params.q) {
             def q = "%"+ params.q + "%"
@@ -40,10 +41,13 @@ class UserController {
         }
     }
 
+    @PreAuthorise(requiredRoles = ["ROLE_ADMIN", "ROLE_BIOSECURITY_ADMIN"])
     def create() {
-        [userInstance: new User(params)]
+        def isBiosecurityAdmin = request.isUserInRole("ROLE_BIOSECURITY_ADMIN")
+        [userInstance: new User(params), isBiosecurityAdmin: isBiosecurityAdmin]
     }
 
+    @PreAuthorise(requiredRoles = ["ROLE_ADMIN", "ROLE_BIOSECURITY_ADMIN"])
     @Transactional
     def save() {
         def userInstance = new User(params)
@@ -58,11 +62,13 @@ class UserController {
         }
 
         userService.updateProperties(userInstance, params)
+        userService.addUserRole(userInstance, "ROLE_USER")
 
         flash.message = message(code: 'default.created.message', args: [message(code: 'user.label', default: 'User'), userInstance.id])
         redirect(action: "show", id: userInstance.id)
     }
 
+    @PreAuthorise(requiredRoles = ["ROLE_ADMIN", "ROLE_BIOSECURITY_ADMIN"])
     def show(Long id) {
         def userInstance = User.get(id)
         if (!userInstance) {
@@ -72,8 +78,9 @@ class UserController {
         }
 
         String resetPasswordUrl = userService.getResetPasswordUrl(userInstance)
+        def isBiosecurityAdmin = request.isUserInRole("ROLE_BIOSECURITY_ADMIN")
 
-        [userInstance: userInstance, resetPasswordUrl: resetPasswordUrl]
+        [userInstance: userInstance, resetPasswordUrl: resetPasswordUrl, isBiosecurityAdmin: isBiosecurityAdmin]
     }
 
     def edit(Long id) {

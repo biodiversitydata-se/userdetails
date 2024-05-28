@@ -107,4 +107,48 @@ class RoleBasedInterceptorSpec extends UserDetailsSpec implements InterceptorUni
         response.status == HttpStatus.SC_OK
 
     }
+
+    void "ROLE_BIOSECURITY_ADMIN users should not be able to access the user role UI"(String action, boolean result) {
+
+        setup:
+        request.addUserRole("ROLE_BIOSECURITY_ADMIN")
+
+        when:
+        request.setAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE, 'userRole')
+        request.setAttribute(GrailsApplicationAttributes.ACTION_NAME_ATTRIBUTE, action)
+        withRequest(action: action)
+
+        then:
+        interceptor.before() == result
+
+        where:
+        action | result
+        'list' | false
+        'create' | false
+        'addRole' | false
+        'deleteRole' | false
+    }
+
+    void "ROLE_BIOSECURITY_ADMIN users should be able to access the user UI"(String action, boolean result) {
+
+        setup:
+        request.addUserRole("ROLE_BIOSECURITY_ADMIN")
+        controller = new UserController()
+        grailsApplication.addArtefact("Controller", UserController)
+
+        when:
+        request.setAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE, 'user')
+        request.setAttribute(GrailsApplicationAttributes.ACTION_NAME_ATTRIBUTE, action)
+        withRequest(action: action)
+
+        then:
+        interceptor.before() == result
+
+        where:
+        action | result
+        'list' | true
+        'create' | true
+        'save' | true
+        'edit' | false
+    }
 }

@@ -49,11 +49,11 @@ class AuthorisedSystemService {
     /**
      * Validate a JWT Bearer token instead of the API key.
      * @param fallbackToLegacy Whether to fall back to legacy authorised systems if the JWT is not present.
-     * @param role The user role required to continue
+     * @param roles The user roles required to continue. The user must have at least one role to be authorized.
      * @param scope The JWT scope required for the request to be authorized
      * @return true
      */
-    def isAuthorisedRequest(HttpServletRequest request, HttpServletResponse response, String role, String scope) {
+    def isAuthorisedRequest(HttpServletRequest request, HttpServletResponse response, String[] roles, String scope) {
         def result = false
 
         if (jwtProperties.enabled) {
@@ -73,8 +73,8 @@ class AuthorisedSystemService {
                     )
 
                     result = true
-                    if (role) {
-                        result = userProfile.roles.contains(role)
+                    if (roles) {
+                        result = roles.any { role -> userProfile.roles.contains(role) }
                     }
 
                     if (result && scope) {

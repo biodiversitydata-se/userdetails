@@ -371,6 +371,7 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
 
         then:
         1 * userService.currentUser >> user
+        1 * userService.isEmailInUse('test@example.org', user) >> false
         1 * passwordService.checkUserPassword(user, password) >> true
         1 * userService.updateUser(user, params) >> true
         0 * _ // no other interactions
@@ -398,6 +399,7 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
 
         then:
         1 * userService.currentUser >> user
+        1 * userService.isEmailInUse('test@example.org', user) >> false
         1 * passwordService.checkUserPassword(user, wrongPassword) >> false
         0 * _ // no other interactions
         flash.message == 'Incorrect password. Could not update account details. Please try again.'
@@ -451,6 +453,7 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
 
         then:
         1 * userService.currentUser >> user
+        1 * userService.isEmailInUse('test@example.org', user) >> false
         1 * passwordService.checkUserPassword(user, password) >> true
         1 * userService.updateUser(user, params) >> false
         0 * _ // no other interactions
@@ -489,6 +492,7 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
         params.city = 'Canberra'
         params.password = 'password'
         params.reenteredPassword = 'password'
+        params.confirmUserPassword = 'password'
 
         when:
         controller.update()
@@ -496,6 +500,7 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
         then:
         1 * userService.updateUser(_, _) >> true
         1 * userService.isEmailInUse(params.email, currentUser) >> false
+        1 * passwordService.checkUserPassword(_, 'password') >> true
         response.redirectedUrl == '/profile'
     }
 

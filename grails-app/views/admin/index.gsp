@@ -25,8 +25,8 @@
         <div class="col-md-12" id="page-body" role="main">
             <h1>User Administration</h1>
             <ul class="userdetails-menu">
-                <li><g:link controller="user" action="list">Find a user</g:link></li>
                 <g:if test="${!isBiosecurityAdmin}">
+                    <li><g:link controller="user" action="list">Find a user</g:link></li>
                     <li><g:link controller="admin" action="resetPasswordForUser">Reset user password</g:link></li>
                     <li><g:link controller="role" action="list">Roles</g:link></li>
                     <li><g:link controller="authorisedSystem" action="list">Authorised systems</g:link></li>
@@ -37,6 +37,9 @@
                     </g:if>
                     <li><g:link controller="alaAdmin" action="index">ALA admin page</g:link></li>
                 </g:if>
+                <g:else>
+                    <li><g:link controller="user" action="create">Create a user</g:link></li>
+                </g:else>
             </ul>
 
             <h2>Web services (HTTP POST)</h2>

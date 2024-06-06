@@ -146,9 +146,10 @@ class RoleBasedInterceptorSpec extends UserDetailsSpec implements InterceptorUni
 
         where:
         action | result
-        'list' | true
+        'list' | false
         'create' | true
         'save' | true
         'edit' | false
+        'show' | false
     }
 }

@@ -29,7 +29,6 @@ class UserController {
         redirect(action: "list", params: params)
     }
 
-    @PreAuthorise(requiredRoles = ["ROLE_ADMIN", "ROLE_BIOSECURITY_ADMIN"])
     def list(Integer max) {
         if (params.q) {
             def q = "%"+ params.q + "%"
@@ -64,11 +63,18 @@ class UserController {
         userService.updateProperties(userInstance, params)
         userService.addUserRole(userInstance, "ROLE_USER")
 
+        def isBiosecurityAdmin = request.isUserInRole("ROLE_BIOSECURITY_ADMIN")
+
         flash.message = message(code: 'default.created.message', args: [message(code: 'user.label', default: 'User'), userInstance.id])
-        redirect(action: "show", id: userInstance.id)
+        if(!isBiosecurityAdmin) {
+            redirect(action: "show", id: userInstance.id)
+        }
+        else{
+            //ROLE_BIOSECURITY_ADMIN role does not have permission to show(id) action
+            redirect(controller: "user", action: 'create')
+        }
     }
 
-    @PreAuthorise(requiredRoles = ["ROLE_ADMIN", "ROLE_BIOSECURITY_ADMIN"])
     def show(Long id) {
         def userInstance = User.get(id)
         if (!userInstance) {

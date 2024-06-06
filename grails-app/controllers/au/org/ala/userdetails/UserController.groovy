@@ -84,9 +84,8 @@ class UserController {
         }
 
         String resetPasswordUrl = userService.getResetPasswordUrl(userInstance)
-        def isBiosecurityAdmin = request.isUserInRole("ROLE_BIOSECURITY_ADMIN")
 
-        [userInstance: userInstance, resetPasswordUrl: resetPasswordUrl, isBiosecurityAdmin: isBiosecurityAdmin]
+        [userInstance: userInstance, resetPasswordUrl: resetPasswordUrl]
     }
 
     def edit(Long id) {

@@ -108,10 +108,10 @@ class RoleBasedInterceptorSpec extends UserDetailsSpec implements InterceptorUni
 
     }
 
-    void "ROLE_BIOSECURITY_ADMIN users should not be able to access the user role UI"(String action, boolean result) {
+    void "ROLE_USER_CREATOR users should not be able to access the user role UI"(String action, boolean result) {
 
         setup:
-        request.addUserRole("ROLE_BIOSECURITY_ADMIN")
+        request.addUserRole("ROLE_USER_CREATOR")
 
         when:
         request.setAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE, 'userRole')
@@ -129,10 +129,10 @@ class RoleBasedInterceptorSpec extends UserDetailsSpec implements InterceptorUni
         'deleteRole' | false
     }
 
-    void "ROLE_BIOSECURITY_ADMIN users should be able to access the user UI"(String action, boolean result) {
+    void "ROLE_USER_CREATOR users should be able to access the user UI"(String action, boolean result) {
 
         setup:
-        request.addUserRole("ROLE_BIOSECURITY_ADMIN")
+        request.addUserRole("ROLE_USER_CREATOR")
         controller = new UserController()
         grailsApplication.addArtefact("Controller", UserController)
 

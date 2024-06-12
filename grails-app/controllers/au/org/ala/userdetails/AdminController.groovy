@@ -34,12 +34,12 @@ class AdminController {
     def profileService
     def authorisedSystemService
 
-    @PreAuthorise(requiredRoles = ["ROLE_ADMIN", "ROLE_BIOSECURITY_ADMIN"])
+    @PreAuthorise(allowedRoles = ["ROLE_ADMIN", "ROLE_USER_CREATOR"])
     def index() {
         def user = userService.currentUser
 
         if (user) {
-            def isBiosecurityAdmin = request.isUserInRole("ROLE_BIOSECURITY_ADMIN")
+            def isBiosecurityAdmin = request.isUserInRole("ROLE_USER_CREATOR")
             [isBiosecurityAdmin: isBiosecurityAdmin]
         } else {
             log.info('my-profile without a user?')

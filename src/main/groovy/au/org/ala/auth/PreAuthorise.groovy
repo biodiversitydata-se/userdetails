@@ -34,7 +34,7 @@ public @interface PreAuthorise {
      *  A list of roles that is allowed to access the method. The user must have at least one role to access the method.
      * @return
      */
-    String[] requiredRoles() default ["ROLE_ADMIN"]
+    String[] allowedRoles() default ["ROLE_ADMIN"]
     String redirectController() default "userdetails"
     String redirectAction() default "index"
     String requiredScope() default "users/read"

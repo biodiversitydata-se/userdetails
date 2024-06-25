@@ -39,6 +39,7 @@ class PasswordService {
     static final String LEGACY_ENCODER_TYPE = 'legacy'
 
     static final String STATUS_CURRENT = 'CURRENT'
+    static final String STATUS_PREVIOUS = 'PREVIOUS'
 
     @Value('${password.encoder}')
     String passwordEncoderType = 'bcrypt'
@@ -73,6 +74,7 @@ class PasswordService {
         // TODO: previous passwords are saved for future use in the password policy (not yet implemented)
         Password.findAllByUser(user).each { password ->
             password.expiry = new Date().toTimestamp()
+            password.status = STATUS_PREVIOUS
             password.save(failOnError: true)
         }
 

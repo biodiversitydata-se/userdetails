@@ -32,7 +32,18 @@ class AdminController {
     def profileService
     def authorisedSystemService
 
-    def index() {}
+    @PreAuthorise(allowedRoles = ["ROLE_ADMIN", "ROLE_USER_CREATOR"])
+    def index() {
+        def user = userService.currentUser
+
+        if (user) {
+            def isBiosecurityAdmin = request.isUserInRole("ROLE_USER_CREATOR")
+            [isBiosecurityAdmin: isBiosecurityAdmin]
+        } else {
+            log.info('my-profile without a user?')
+            render(status: SC_UNAUTHORIZED)
+        }
+    }
 
     def resetPasswordForUser(){
     }

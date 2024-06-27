@@ -272,6 +272,17 @@ class UserService {
         }
     }
 
+    def addUserRole(User user, String roleString) {
+
+        def role = Role.findByRole(roleString)
+
+        def userRole = UserRole.findByUserAndRole(user, role)
+
+        if(!userRole) {
+            new UserRole(user:user, role:role).save(flush:true, failOnError: true)
+        }
+    }
+
     def deleteUser(User user) {
 
         if (user) {

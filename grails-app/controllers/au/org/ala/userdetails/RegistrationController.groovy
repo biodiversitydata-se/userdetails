@@ -78,7 +78,8 @@ class RegistrationController {
         buildErrorMessages(validationResult, cmd.errors)
 
         if (cmd.hasErrors()) {
-            render(view: 'passwordReset', model: [user: user, authKey: cmd.authKey, errors:cmd.errors, passwordMatchFail: true])
+            render(view: 'passwordReset', model: [user: user, authKey: cmd.authKey, errors:cmd.errors, passwordMatchFail: true,
+                                                  passwordPolicy: passwordService.buildPasswordPolicy()])
         }
         else {
             withForm {

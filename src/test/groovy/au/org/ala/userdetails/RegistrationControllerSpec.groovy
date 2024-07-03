@@ -63,6 +63,7 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
                 false,
                 new RuleResultDetail('TOO_SHORT', [minimumLength: 8, maximumLength: 64])
         )
+        1 * passwordService.buildPasswordPolicy()
         0 * _ // no other interactions
         model.errors.getFieldError("password").codes.any { c -> c.contains('.blank.') }
         view == '/registration/passwordReset'
@@ -87,6 +88,7 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
                 false,
                 new RuleResultDetail('TOO_SHORT', [minimumLength: 8, maximumLength: 64])
         )
+        1 * passwordService.buildPasswordPolicy()
         0 * _ // no other interactions
         model.errors.getFieldError("password").codes.any { c -> c.contains('.too_short.') }
         view == '/registration/passwordReset'
@@ -109,6 +111,7 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
 
         then:
         1 * passwordService.validatePassword(user.email, password) >> new RuleResult(true)
+        1 * passwordService.buildPasswordPolicy()
         0 * _ // no other interactions
         model.errors.getFieldError("reenteredPassword").codes.any { c -> c.contains('.validator.invalid') }
         model.passwordMatchFail
@@ -135,6 +138,7 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
                 false,
                 new RuleResultDetail('INSUFFICIENT_CHARACTERISTICS', [successCount: '2', minimumRequired: '3', ruleCount: '4'])
         )
+        1 * passwordService.buildPasswordPolicy()
         0 * _ // no other interactions
         model.errors.getFieldError("password").codes.any { c -> c.contains('.insufficient_characteristics') }
         model.passwordMatchFail

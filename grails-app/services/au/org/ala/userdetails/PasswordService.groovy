@@ -306,12 +306,15 @@ class PasswordService {
      * @return The list of general password rules.
      */
     List<Rule> buildPasswordGeneralRules() {
+        log.info("Starting building password general rules")
+
         def policy = this.buildPasswordPolicy()
         if (!policy.enabled) {
             return null
         }
 
         if (!this.builtPasswordGeneralRules) {
+            log.info("Building password general rules")
             List<Rule> rules = []
 
             rules.add(new LengthRule(policy.minLength, policy.maxLength))
@@ -326,6 +329,7 @@ class PasswordService {
                 rules.add(new IllegalSequenceRule(EnglishSequenceData.USQwerty))
             }
 
+            log.info("Excluding common passwords?" + policy.excludeCommonPasswords)
             // password must not be in the list of common passwords
             if (policy.excludeCommonPasswords) {
                 // source https://raw.githubusercontent.com/danielmiessler/SecLists/5e1dc9cc79aac54b373349e2a97bbb22f1b63bb3/Passwords/Common-Credentials/10-million-password-list-top-100000.txt

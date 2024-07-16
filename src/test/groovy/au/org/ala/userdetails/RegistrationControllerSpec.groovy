@@ -309,6 +309,7 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
         0 * userService.registerUser(_)
         0 * passwordService.resetPassword(_, _)
         0 * emailService.sendAccountActivation(_, _)
+        1 * passwordService.buildPasswordPolicy()
         0 * _ // no other interactions
         view == '/registration/createAccount'
         !model.edit
@@ -348,6 +349,7 @@ class RegistrationControllerSpec extends UserDetailsSpec implements ControllerUn
                 false,
                 new RuleResultDetail('INSUFFICIENT_CHARACTERISTICS', [successCount: '2', minimumRequired: '3', ruleCount: '4'])
         )
+        1 * passwordService.buildPasswordPolicy()
         0 * _ // no other interactions
         view == '/registration/createAccount'
         !model.edit

@@ -17,7 +17,7 @@ plugins {
     id "com.gorylenko.gradle-git-properties" version "2.4.1"
 }
 
-version "3.1.0"
+version "3.2.0-SNAPSHOT"
 group "au.org.ala"
 
 apply plugin:"eclipse"
@@ -161,6 +161,8 @@ dependencies {
         exclude module: 'jquery' // dependency from skin
         exclude module: 'bootstrap' // dependency from skin
     }
+
+    implementation 'org.passay:passay:1.6.0'
 
     implementation('au.org.ala.plugins:openapi:1.1.0')
 

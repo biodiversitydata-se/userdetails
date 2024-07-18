@@ -22,6 +22,8 @@ import com.opencsv.RFC4180ParserBuilder
 import org.springframework.web.multipart.MultipartFile
 import org.springframework.web.multipart.MultipartHttpServletRequest
 
+import static org.apache.http.HttpStatus.SC_UNAUTHORIZED
+
 @PreAuthorise
 class AdminController {
 

@@ -40,10 +40,13 @@ class UserController {
         }
     }
 
+    @PreAuthorise(allowedRoles = ["ROLE_ADMIN", "ROLE_USER_CREATOR"])
     def create() {
-        [userInstance: new User(params)]
+        def isBiosecurityAdmin = request.isUserInRole("ROLE_USER_CREATOR")
+        [userInstance: new User(params), isBiosecurityAdmin: isBiosecurityAdmin]
     }
 
+    @PreAuthorise(allowedRoles = ["ROLE_ADMIN", "ROLE_USER_CREATOR"])
     @Transactional
     def save() {
         def userInstance = new User(params)
@@ -58,9 +61,18 @@ class UserController {
         }
 
         userService.updateProperties(userInstance, params)
+        userService.addUserRole(userInstance, "ROLE_USER")
+
+        def isBiosecurityAdmin = request.isUserInRole("ROLE_USER_CREATOR")
 
         flash.message = message(code: 'default.created.message', args: [message(code: 'user.label', default: 'User'), userInstance.id])
-        redirect(action: "show", id: userInstance.id)
+        if(!isBiosecurityAdmin) {
+            redirect(action: "show", id: userInstance.id)
+        }
+        else{
+            //ROLE_USER_CREATOR role does not have permission to show(id) action
+            redirect(controller: "user", action: 'create')
+        }
     }
 
     def show(Long id) {

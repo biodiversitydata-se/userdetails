@@ -18,7 +18,7 @@
 <div class="row">
     <div class="col-md-6">
         <div class="form-group fieldcontain ${hasErrors(bean: userInstance, field: 'firstName', 'error')} ">
-            <label for="fi rstName">
+            <label for="firstName">
                 <g:message code="user.firstName.label" default="First Name"/>
             </label>
             <g:textField name="firstName" class="form-control" value="${userInstance?.firstName}"/>
@@ -92,6 +92,7 @@
 
 <hr/>
 
+<g:if test="${!isBiosecurityAdmin}">
 <div class="fieldcontain ${hasErrors(bean: userInstance, field: 'userRoles', 'error')} ">
     <label for="userRoles">
         <g:message code="user.userRoles.label" default=" Roles"/>
@@ -119,6 +120,7 @@
                     params="['user.id': userInstance?.id]">${message(code: 'default.add.label', args: [message(code: 'userRole.label', default: 'UserRole')])}</g:link>
 
 </div>
+</g:if>
 
 </div>
 

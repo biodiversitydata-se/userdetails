@@ -2,8 +2,13 @@
 security:
   core:
     authCookieName: ALA-Auth
+    defaultLogoutRedirectUri: https://biodiversitydata.se/
+  cookie:
+    enabled: false
+    domain: '.biodiversitydata.se'
   cas:
     enabled: false
+    authenticateOnlyIfLoggedInFilterPattern:
     casServerName: https://auth.biodiversitydata.se
     casServerUrlPrefix: ${security.cas.casServerName}/cas
     loginUrl: ${security.cas.casServerUrlPrefix}/login
@@ -29,6 +34,14 @@ security:
     realm: ALA CAS
     path:
       - /status/**
+  apikey:
+    enabled: true
+    auth:
+      serviceUrl: https://auth.biodiversitydata.se/apikey/
+    check:
+      serviceUrl: https://auth.biodiversitydata.se/apikey/ws/check?apikey=
+    userdetails:
+      serviceUrl: https://auth.biodiversitydata.se/userdetails/
 endpoints:
   enabled: true
   health:
@@ -124,6 +137,11 @@ alerts.url:
 # this property is read/used by ala-auth-plugin (included by userdetails)
 userDetails:
   url: https://auth.biodiversitydata.se/userdetails/
+userdetails: # TODO Make this the same as above
+  features:
+    authorisedSystems: true
+    bulkCreate: true
+    exportUsers: true
 
 # Header and footer
 headerAndFooter:
@@ -149,7 +167,7 @@ attributes:
 webservice:
   apiKey:
   jwt:
-  scope:
+  jwt-scopes: openid ala/internal
 
 # Default primary fields for Export to CSV functionality
 admin.export.csv.primary.fields: id,userName,firstName,lastName,email,activated,locked,created
@@ -173,3 +191,13 @@ openapi:
   contact:
     name:
     email:
+
+ala.admin.systemMessage.path: /data/userdetails/config
+users:
+  delegated-group-names:
+
+userdetails.url: https://auth.biodiversitydata.se/userdetails
+userdetails.web.url: https://auth.biodiversitydata.se/userdetails/
+userdetails.api.url: https://auth.biodiversitydata.se/userdetails/
+
+userdetails.api.useGatewayAPI: false

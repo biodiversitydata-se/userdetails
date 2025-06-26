@@ -58,7 +58,7 @@ grails:
   mail:
     host: mail.biodiversitydata.se
     port: 587
-    username: admin@biodiversitydata.se
+    username: noreply@biodiversitydata.se
     password:
     props:
       mail:
@@ -122,7 +122,7 @@ homeUrl: https://tools.biodiversitydata.se
 homeLogoUrl: https://biodiversitydata.se/wp-content/uploads/2021/02/sbdi-logo-orginal-large.png
 mainTitle: Swedish Biodiversity Data Infrastructure
 emailSenderTitle: Swedish Biodiversity Data Infrastructure
-emailSender: admin@biodiversitydata.se
+emailSender: noreply@biodiversitydata.se
 
 sightings.url: /mine
 spatial.url: https://spatial.biodiversitydata.se?tool=log

@@ -242,9 +242,12 @@ class RegistrationController {
                     return
                 }
 
-                // This is to mitigate spam users. Disallows http:// and https:// in names
-                def invalidName = params.firstName ==~ /(?i).*(http:\/\/|https:\/\/).*/ ||
-                        params.lastName ==~ /(?i).*(http:\/\/|https:\/\/).*/
+                // This is to mitigate spam users. Disallows http:// and https:// in names.
+                // Remove controls characters and whitespace
+                def firstName = params.firstName.replaceAll(/[\p{Z}\p{C}]/, '')
+                def lastName = params.lastName.replaceAll(/[\p{Z}\p{C}]/, '')
+                def invalidName = firstName ==~ /(?i).*(http:\/\/|https:\/\/).*/ ||
+                        lastName ==~ /(?i).*(http:\/\/|https:\/\/).*/
                 if (invalidName) {
                     flash.message = "Invalid first or last name"
                     render(view: 'createAccount', model: [edit: false, user: params, props: params, passwordPolicy: passwordService.buildPasswordPolicy()])

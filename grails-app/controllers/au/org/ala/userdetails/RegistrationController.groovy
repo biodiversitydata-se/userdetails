@@ -201,11 +201,6 @@ class RegistrationController {
     }
 
     def register() {
-        log.warn("---")
-        log.warn(params.firstName)
-        log.warn("---")
-        log.warn(params.lastName)
-        log.warn("---")
         def paramsEmail = params?.email?.toString()
         def paramsPassword = params?.password?.toString()
         withForm {
@@ -248,19 +243,8 @@ class RegistrationController {
                 }
 
                 // This is to mitigate spam users. Disallows http:// and https:// in names
-                def firstName = params.firstName.replaceAll(/[\p{Z}\p{C}]/, '')
-                def lastName = params.lastName.replaceAll(/[\p{Z}\p{C}]/, '')
-                log.warn("----")
-                log.warn(firstName)
-                log.warn("----")
-                log.warn(lastName)
-                log.warn("----")
-                def invalidName = firstName ==~ /(?i).*(http:\/\/|https:\/\/).*/ ||
-                        lastName ==~ /(?i).*(http:\/\/|https:\/\/).*/
-                log.warn("first: " + (firstName ==~ /(?i).*(http:\/\/|https:\/\/).*/))
-                log.warn("last: " + (lastName ==~ /(?i).*(http:\/\/|https:\/\/).*/))
-                log.warn("invalid: " + invalidName)
-                log.warn("----")
+                def invalidName = params.firstName ==~ /(?i).*(http:\/\/|https:\/\/).*/ ||
+                        params.lastName ==~ /(?i).*(http:\/\/|https:\/\/).*/
                 if (invalidName) {
                     flash.message = "Invalid first or last name"
                     render(view: 'createAccount', model: [edit: false, user: params, props: params, passwordPolicy: passwordService.buildPasswordPolicy()])

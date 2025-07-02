@@ -111,15 +111,15 @@ registration:
 
 recaptcha:
   baseUrl: https://www.google.com/recaptcha/api/
-  siteKey:
-  secretKey:
+  siteKey: 6LfcOoApAAAAAND-HKmSqBIOt034i1Jx89I8tFfk
+  secretKey: 6LfcOoApAAAAADfErOm_nF9quC3Jj3czoaqfy2Zx
 
 ala:
   baseURL: https://biodiversitydata.se
 
 supportEmail: support@biodiversitydata.se
 homeUrl: https://tools.biodiversitydata.se
-homeLogoUrl: https://biodiversitydata.se/wp-content/uploads/2021/02/sbdi-logo-orginal-large.png
+homeLogoUrl: https://static.biodiversitydata.se/images/sbdi-logo-orginal-large.png
 mainTitle: Swedish Biodiversity Data Infrastructure
 emailSenderTitle: Swedish Biodiversity Data Infrastructure
 emailSender: noreply@biodiversitydata.se

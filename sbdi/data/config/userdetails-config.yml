@@ -183,7 +183,7 @@ myProfile:
   useSandbox: false
   useBiocollect: false
 
-privacyPolicy: https://docs.biodiversitydata.se/sbdi-data/sbdi-atlas-terms-of-use/privacy-policy/
+privacyPolicy: https://biodiversitydata.se/privacy-policy/
 termsOfUse : https://docs.biodiversitydata.se/sbdi-data/sbdi-atlas-terms-of-use/
 
 openapi:

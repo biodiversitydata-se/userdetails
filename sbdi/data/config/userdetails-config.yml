@@ -111,8 +111,8 @@ registration:
 
 recaptcha:
   baseUrl: https://www.google.com/recaptcha/api/
-  siteKey: 6LfcOoApAAAAAND-HKmSqBIOt034i1Jx89I8tFfk
-  secretKey: 6LfcOoApAAAAADfErOm_nF9quC3Jj3czoaqfy2Zx
+  siteKey:
+  secretKey:
 
 ala:
   baseURL: https://biodiversitydata.se

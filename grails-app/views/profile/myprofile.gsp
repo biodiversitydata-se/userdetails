@@ -94,6 +94,7 @@
                         </div>
                     </div>
                     -->
+                    <!--
                     <div class="d-flex">
                         <div class="image">
                             <img src="${grailsApplication.config.getProperty('logo.specieslists')}" alt="">
@@ -107,6 +108,8 @@
                             <p><g:message code="myprofile.uploaded.species.lists.desc" /></p>
                         </div>
                     </div>
+                    -->
+                    <!--
                     <div class="d-flex">
                         <div class="image">
                             <i class="glyphicon glyphicon-pencil"></i>
@@ -120,6 +123,7 @@
                             <p><g:message code="myprofile.view.records.you.annotated.desc" /></p>
                         </div>
                     </div>
+                    -->
                     <g:if test="${Holders.config.getProperty('myProfile.useSandbox', Boolean, true)}">
                         <div class="d-flex">
                             <div class="image">
@@ -184,6 +188,7 @@
                             </div>
                         </div>
                     </g:if>
+                    <!--
                     <div class="d-flex">
                         <div class="image">
                             <img src="${grailsApplication.config.getProperty('logo.spatialportal')}" alt="">
@@ -197,6 +202,7 @@
                             <p><g:message code="myprofile.spatial.portal.desc" /></p>
                         </div>
                     </div>
+                    -->
                 </div>
             </div>
         </div>

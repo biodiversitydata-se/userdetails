@@ -6,7 +6,7 @@ RUN mkdir -p /data/userdetails/config
 
 COPY build/libs/userdetails-*-plain.war $CATALINA_HOME/webapps/userdetails.war
 
-ENV DOCKERIZE_VERSION=v0.11.0
+ENV DOCKERIZE_VERSION=v0.15.1
 
 RUN apt-get update \
     && apt-get install -y wget \
